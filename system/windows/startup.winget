@@ -1,0 +1,42 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+
+resources:
+  - name: KomorebiAndWhkd
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      getScript: |
+        $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'komorebi.lnk'
+        $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        @{ target = $shortcut.TargetPath; arguments = $shortcut.Arguments }
+      testScript: |
+        $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'komorebi.lnk'
+        $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        $shortcut.TargetPath -eq "$env:ProgramFiles\komorebi\bin\komorebic-no-console.exe" -and $shortcut.Arguments -eq 'start --whkd'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        & "$env:ProgramFiles\komorebi\bin\komorebic.exe" enable-autostart --whkd
+        if ($LASTEXITCODE -ne 0) { throw 'Enabling komorebi and whkd startup failed.' }
+
+  - name: Zebar
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      getScript: |
+        $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'Zebar.lnk'
+        $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        @{ target = $shortcut.TargetPath; arguments = $shortcut.Arguments }
+      testScript: |
+        $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'Zebar.lnk'
+        $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        $shortcut.TargetPath -eq "$env:ProgramFiles\glzr.io\Zebar\zebar.exe" -and $shortcut.Arguments -eq 'startup'
+      setScript: |
+        $executable = Get-Item "$env:ProgramFiles\glzr.io\Zebar\zebar.exe" -ErrorAction Stop
+        $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'Zebar.lnk'
+        $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        $shortcut.TargetPath = $executable.FullName
+        $shortcut.Arguments = 'startup'
+        $shortcut.WorkingDirectory = $executable.DirectoryName
+        $shortcut.Save()
