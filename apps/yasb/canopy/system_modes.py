@@ -8,43 +8,61 @@ from queue import Queue
 from threading import Event
 import time
 
+from comtypes import GUID
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
 MODE_NAMES = {'wifi_enabled': 'Wi-Fi', 'bluetooth_enabled': 'Bluetooth',
-              'airplane_mode': 'Airplane mode', 'battery_saver': 'Battery saver'}
+              'airplane_mode': 'Airplane mode', 'battery_saver': 'Energy saver'}
 
 
-class _SystemPowerStatus(ctypes.Structure):
-    _fields_ = [
-        ('ACLineStatus', wintypes.BYTE),
-        ('BatteryFlag', wintypes.BYTE),
-        ('BatteryLifePercent', wintypes.BYTE),
-        ('SystemStatusFlag', wintypes.BYTE),
-        ('BatteryLifeTime', wintypes.DWORD),
-        ('BatteryFullLifeTime', wintypes.DWORD),
-    ]
+_PowerSettingCallback = ctypes.WINFUNCTYPE(wintypes.ULONG, ctypes.c_void_p, wintypes.ULONG, ctypes.c_void_p)
 
 
-def _read_power_status():
-    kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-    read = kernel32.GetSystemPowerStatus
-    read.argtypes = [ctypes.POINTER(_SystemPowerStatus)]
-    read.restype = wintypes.BOOL
-    status = _SystemPowerStatus()
-    if not read(ctypes.byref(status)):
-        raise ctypes.WinError(ctypes.get_last_error())
-    return status
+class _PowerSettingSubscription(ctypes.Structure):
+    _fields_ = [('callback', _PowerSettingCallback), ('context', ctypes.c_void_p)]
+
+
+class _PowerSetting(ctypes.Structure):
+    _fields_ = [('guid', GUID), ('size', wintypes.DWORD), ('value', wintypes.DWORD)]
 
 
 def battery_saver_enabled() -> bool | None:
-    """Return the documented saver flag; never guess from charge or power mode.
+    """Read Windows 11 Energy saver, including standard savings while plugged in.
 
-    https://learn.microsoft.com/windows/win32/api/winbase/ns-winbase-system_power_status
+    Registration delivers the current GUID_ENERGY_SAVER_STATUS immediately.
+    The legacy GetSystemPowerStatus flag misses standard savings on AC power.
+    https://learn.microsoft.com/windows/win32/api/powersetting/nf-powersetting-powersettingregisternotification
     """
+    guid = GUID('{550E8400-E29B-41D4-A716-446655440000}')
+    ready, current = Event(), [None]
+
+    @_PowerSettingCallback
+    def receive(context, event, data):
+        if event == 0x8013 and data:  # PBT_POWERSETTINGCHANGE
+            setting = ctypes.cast(data, ctypes.POINTER(_PowerSetting)).contents
+            if setting.guid == guid and setting.size == ctypes.sizeof(wintypes.DWORD):
+                current[0] = bool(setting.value) if setting.value in (0, 1, 2) else None
+                ready.set()
+        return 0
+
     try:
-        flag = _read_power_status().SystemStatusFlag
-        return bool(flag) if flag in (0, 1) else None
+        power = ctypes.WinDLL('powrprof')
+        register = power.PowerSettingRegisterNotification
+        register.argtypes = [ctypes.POINTER(GUID), wintypes.DWORD, ctypes.c_void_p, ctypes.POINTER(wintypes.HANDLE)]
+        register.restype = wintypes.DWORD
+        unregister = power.PowerSettingUnregisterNotification
+        unregister.argtypes = [wintypes.HANDLE]
+        unregister.restype = wintypes.DWORD
+        subscription = _PowerSettingSubscription(receive, None)
+        handle = wintypes.HANDLE()
+        if register(ctypes.byref(guid), 2, ctypes.byref(subscription), ctypes.byref(handle)):
+            return None
+        try:
+            ready.wait(1)
+            return current[0]
+        finally:
+            unregister(handle)
     except (OSError, AttributeError):
         return None
 
@@ -100,9 +118,9 @@ class WindowsModes:
 
 
 def _set_battery_saver(enabled):
-    # Verified against the installed Windows 11 SettingsHandlers_OneCore_BatterySaver.dll:
-    # its simple toggle publishes DWORD 2 for on, 1 for off. No power-plan changes.
-    _publish_saver_override(2 if enabled else 1)
+    # Matches Windows 11 Settings: DWORD 1 enables Energy saver; 2 disables it.
+    # Verified against the actual toggle and readback on Windows 11 25H2.
+    _publish_saver_override(1 if enabled else 2)
 
 
 def _publish_saver_override(value):
@@ -114,7 +132,7 @@ def _publish_saver_override(value):
     payload = wintypes.DWORD(value)
     status = publish(0x41C6013DA3BC3075, None, ctypes.byref(payload), ctypes.sizeof(payload), None)
     if status < 0:
-        raise OSError(f'Windows refused the battery saver change (NTSTATUS 0x{status & 0xffffffff:08X}).')
+        raise OSError(f'Windows refused the Energy saver change (NTSTATUS 0x{status & 0xffffffff:08X}).')
 
 
 async def _matching_radios(mode):

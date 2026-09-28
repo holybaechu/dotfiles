@@ -55,7 +55,7 @@ Click the Windows-logo button or press Alt+Space to open Canopy's centered app l
 
 The launcher uses a compact 480 × 420 logical-pixel panel (960 × 840 physical pixels at 200% scaling) with its scrollbar at the right edge. Its frosted backdrop is captured and blurred in memory when opened, preserving the rounded corners and shadow while keeping text sharp. Search results stay visible until the next query finishes.
 
-Quick controls include Wi-Fi, Bluetooth, Airplane mode, and Battery saver. Click a card to toggle its mode; click its separate arrow to open Windows Settings. Cards turn green only after Windows confirms the change, and show pending or failure feedback when necessary. Airplane mode and Battery saver use private Windows interfaces, with system-state readback to catch unsupported behavior.
+Quick controls include Wi-Fi, Bluetooth, Airplane mode, and Energy saver. Click a card to toggle its mode; click its separate arrow to open Windows Settings. Cards turn green only after Windows confirms the change, and show pending or failure feedback when necessary. Energy saver reads Windows 11's current saver status, including standard savings while plugged in. Airplane mode and Energy saver use private Windows interfaces for toggling, with system-state readback to catch unsupported behavior.
 
 YASB services provide Komorebi events, Windows media artwork and playback, audio, battery, network status, brightness, and tray callbacks. Playback time is interpolated between Windows timeline updates. Brightness controls identify each connected display independently; external displays need DDC/CI support. Unsupported or ambiguous mirrored displays stay read-only.
 

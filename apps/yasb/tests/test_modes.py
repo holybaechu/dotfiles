@@ -1,9 +1,63 @@
 import asyncio
+import ctypes
+from ctypes import wintypes
 from threading import Event
+from types import SimpleNamespace
+from uuid import UUID
 
 from PyQt6.QtTest import QTest
 
 from core.widgets.canopy import system_modes
+
+
+def test_windows_saver_reads_standard_savings_and_toggles_the_correct_direction(monkeypatch):
+    # Windows 11 on AC: Energy saver is standard (1), while the legacy flag is 0.
+    state = [1]
+    writes, registrations, releases = [], [], []
+    callback_type = ctypes.WINFUNCTYPE(wintypes.ULONG, ctypes.c_void_p, wintypes.ULONG, ctypes.c_void_p)
+    guid = UUID('550e8400-e29b-41d4-a716-446655440000').bytes_le
+
+    def legacy_status(output):
+        ctypes.cast(output, ctypes.POINTER(wintypes.BYTE))[3] = 0
+        return True
+
+    def register(setting, flags, subscription, handle):
+        assert ctypes.string_at(setting, 16) == guid
+        assert flags == 2
+        callback = callback_type(ctypes.cast(subscription, ctypes.POINTER(ctypes.c_void_p))[0])
+        payload = ctypes.create_string_buffer(guid + (4).to_bytes(4, 'little') + state[0].to_bytes(4, 'little'))
+        ctypes.cast(handle, ctypes.POINTER(wintypes.HANDLE))[0] = 123
+        registrations.append(123)
+        callback(None, 0x8013, ctypes.addressof(payload))
+        return 0
+
+    def unregister(handle):
+        releases.append(handle.value)
+        return 0
+
+    def publish(name, type_id, payload, size, scope):
+        value = ctypes.cast(payload, ctypes.POINTER(wintypes.DWORD)).contents.value
+        assert name == 0x41C6013DA3BC3075 and size == 4
+        assert value in (1, 2)
+        writes.append(value)
+        state[0] = 1 if value == 1 else 0
+        return 0
+
+    libraries = {
+        'kernel32': SimpleNamespace(GetSystemPowerStatus=legacy_status),
+        'powrprof': SimpleNamespace(PowerSettingRegisterNotification=register,
+                                   PowerSettingUnregisterNotification=unregister),
+        'ntdll': SimpleNamespace(RtlPublishWnfStateData=publish),
+    }
+    monkeypatch.setattr(system_modes.ctypes, 'WinDLL', lambda name, **kwargs: libraries[name])
+    driver = system_modes.WindowsModes()
+    assert driver.read('battery_saver') is True
+    driver.write('battery_saver', False)
+    assert driver.read('battery_saver') is False
+    driver.write('battery_saver', True)
+    assert driver.read('battery_saver') is True
+    assert writes == [2, 1]
+    assert len(registrations) == 3 and releases == registrations
 
 
 def wait_until(predicate, timeout=2000):

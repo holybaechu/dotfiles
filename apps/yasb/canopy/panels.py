@@ -205,7 +205,7 @@ class Quick(QWidget):
         box.addWidget(shortcuts)
         modes, modes_box = row()
         self.airplane = ModeCard('Airplane mode', 'plane', backend, 'airplane_mode', backend.set_airplane_mode, 'network-airplanemode')
-        self.battery_saver = ModeCard('Battery saver', 'leaf', backend, 'battery_saver', backend.set_battery_saver, 'batterysaver')
+        self.battery_saver = ModeCard('Energy saver', 'leaf', backend, 'battery_saver', backend.set_battery_saver, 'batterysaver')
         modes_box.addWidget(self.airplane, 1)
         modes_box.addWidget(self.battery_saver, 1)
         box.addWidget(modes)
