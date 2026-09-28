@@ -89,6 +89,8 @@ For development, the preview uses the real native controls with fixture data and
 .\apps\yasb\.venv\Scripts\python.exe apps/yasb/launch.py --snapshot apps/yasb/.artifacts/launcher.png --panel launcher
 ```
 
+Use the preview to check styling, spacing, and animations; snapshots capture a static view. The small regression suite checks launcher reliability, monitor targeting, Windows-setting failures, hotkey timeouts, and startup/shutdown. Windows-setting tests use fakes; verify real setting changes manually when changing their implementation.
+
 `upstream.json` pins YASB; `uv.lock` pins Python dependencies. To update YASB, intentionally update its checkout and pin together, regenerate the lockfile, and rerun the native tests. Bootstrap and sign-in startup use Canopy. The Windows bar configuration is ignored by chezmoi in WSL.
 
 ## Fresh setup

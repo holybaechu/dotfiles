@@ -8,8 +8,13 @@ This is a personal dotfiles repository. Optimize for simple configuration, reada
 - Prefer existing configuration options and direct code. Keep one-off logic local; introduce abstractions or dependencies only when the current task needs them.
 - Build for the environments this repository actually supports. Add portability, fallback behavior, and configurability only for a concrete requirement.
 - Keep tooling lightweight. Add automation or process only when requested or needed to solve a recurring problem.
-- For configuration and styling, prefer syntax checks, rendered diffs, and focused manual verification. Documentation-only edits need a diff review.
-- For scripts and application code, run relevant existing tests. Add tests only for meaningful behavior or recurring bugs; automated tests and coverage targets are not required for every change.
+
+## Validation
+
+- Default to syntax checks, rendered diffs, and focused manual verification for dotfiles and scripts. Use the preview for styling, layout, icons, and animations. Documentation-only edits need a diff review.
+- Keep Canopy's automated suite small and focused on costly regressions: launcher reliability and shutdown, correct monitor targeting, failed or denied Windows-setting changes, and hotkey timeouts.
+- Run the relevant retained tests when changing those behaviors. Add a test only for a concrete regression that is difficult to check manually; reuse existing fixtures and keep machine interactions mocked or isolated.
+- Prefer representative behavior checks over exhaustive combinations or assertions about implementation details. Coverage targets and a new test for every change are unnecessary.
 
 ## Commit messages and PR titles
 
