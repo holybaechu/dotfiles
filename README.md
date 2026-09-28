@@ -49,6 +49,15 @@ Reload whkd separately after editing its shortcuts. `chezmoi apply` does not run
 
 Alt+Enter opens WezTerm. Chezmoi manages its Windows configuration at `~/.config/wezterm/wezterm.lua` and ignores it on Linux. WezTerm runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. It uses the bundled JetBrains Mono font with programming ligatures enabled and hides the tab bar when there is only one tab.
 
+| Shortcut | Action |
+| --- | --- |
+| Alt+Enter | Open the default WSL distribution in WezTerm |
+| Ctrl+Alt+Enter | Open Windows PowerShell in WezTerm |
+| Ctrl+Alt+Shift+Enter | Open elevated Windows PowerShell in WezTerm (UAC prompt) |
+| Alt+Shift+Enter | Promote the focused komorebi window |
+
+The PowerShell shortcuts run `powershell.exe` in a separate WezTerm process so the elevated shortcut cannot reuse an unelevated terminal process. Komorebi's existing Alt+Shift+Enter promote binding is preserved.
+
 WSL and a distribution must already be installed. Check `wsl --list --verbose` to confirm the default distribution (marked `*`) uses version `2`. If needed, select one with `wsl --set-default <DistributionName>` and convert it with `wsl --set-version <DistributionName> 2`. The configuration follows WSL's default instead of hard-coding a distribution or Linux shell.
 
 On an existing setup, install the package and apply the configuration:
