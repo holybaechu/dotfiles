@@ -47,9 +47,9 @@ Reload whkd separately after editing its shortcuts. `chezmoi apply` does not run
 
 ### Terminal
 
-Alt+Enter opens WezTerm. Chezmoi manages its Windows configuration at `~/.config/wezterm/wezterm.lua` and ignores it on Linux. WezTerm runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. It uses the bundled JetBrains Mono font with programming ligatures enabled and hides the tab bar when there is only one tab.
+Alt+Enter opens WezTerm. Chezmoi manages its Windows configuration at `~/.config/wezterm/wezterm.lua` and ignores it on Linux. WezTerm runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. It uses the bundled JetBrains Mono font with programming ligatures enabled and disables the tab bar.
 
-The window has no title bar, keeps its resize border, and uses Windows Acrylic blur with a dark green tint matching Canopy's launcher. `window_background_opacity = 0.65` controls the tint strength. Closing a window, including with Alt+Q, skips WezTerm's confirmation dialog and terminates the programs inside; save and exit Neovim normally before closing its window.
+The window has no title bar, border, or window-control buttons; use komorebi to move, resize, minimize, and close it. Windows Acrylic blur and a dark green tint match Canopy's launcher. `window_background_opacity = 0.65` controls the tint strength. Closing a window, including with Alt+Q, skips WezTerm's confirmation dialog and terminates the programs inside; save and exit Neovim normally before closing its window.
 
 | Shortcut | Action |
 | --- | --- |

@@ -7,10 +7,11 @@ config.default_prog = { 'wsl.exe', '--cd', '~' }
 -- JetBrains Mono is bundled with WezTerm, including its programming ligatures.
 config.font = wezterm.font 'JetBrains Mono'
 config.harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' }
-config.hide_tab_bar_if_only_one_tab = true
+config.enable_tab_bar = false
 
--- Keep resizing available without a title bar; use a dark frosted backdrop.
-config.window_decorations = 'RESIZE'
+-- Komorebi handles the window; omit all title-bar, border, and tab controls.
+config.window_decorations = 'NONE'
+config.integrated_title_buttons = {}
 config.win32_system_backdrop = 'Acrylic'
 config.window_background_opacity = 0.65
 config.colors = { background = '#111a13' }
