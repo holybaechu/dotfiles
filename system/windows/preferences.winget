@@ -1,0 +1,49 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+
+resources:
+  - name: KomorebiConfigHome
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      getScript: |
+        $value = [Environment]::GetEnvironmentVariable('KOMOREBI_CONFIG_HOME', 'User')
+        $value
+      testScript: |
+        $expected = Join-Path $env:USERPROFILE '.config\komorebi'
+        [Environment]::GetEnvironmentVariable('KOMOREBI_CONFIG_HOME', 'User') -eq $expected
+      setScript: |
+        $expected = Join-Path $env:USERPROFILE '.config\komorebi'
+        [Environment]::SetEnvironmentVariable('KOMOREBI_CONFIG_HOME', $expected, 'User')
+
+  - name: WindowShadows
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      input:
+        enabled: false
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\WindowShadows.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        (& "${WinGetConfigRoot}\scripts\WindowShadows.ps1" -Operation Get) -eq $settings.enabled
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\WindowShadows.ps1" -Operation Set -Enabled $settings.enabled
+
+  - name: TaskbarAutoHide
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      input:
+        enabled: true
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\TaskbarAutoHide.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        (& "${WinGetConfigRoot}\scripts\TaskbarAutoHide.ps1" -Operation Get) -eq $settings.enabled
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\TaskbarAutoHide.ps1" -Operation Set -Enabled $settings.enabled

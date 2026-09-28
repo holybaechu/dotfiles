@@ -1,0 +1,39 @@
+watch_config: true
+watch_stylesheet: true
+update_check: false
+show_systray: true
+bars:
+  canopy:
+    enabled: true
+    screens: ["*"]
+    class_name: canopy-bar
+    style: bar
+    context_menu: false
+    alignment:
+      position: top
+      align: center
+    dimensions:
+      width: "100%"
+      height: 40
+    padding:
+      top: 0
+      left: 0
+      right: 0
+      bottom: 0
+    animation:
+      enabled: false
+    window_flags:
+      always_on_top: false
+      windows_app_bar: true
+    layouts:
+      left: {alignment: left, stretch: false}
+      center: {alignment: center, stretch: false}
+      right: {alignment: right, stretch: false}
+    widgets:
+      left: []
+      center: [canopy]
+      right: []
+widgets:
+  canopy:
+    type: canopy.CanopyWidget
+    options: {}

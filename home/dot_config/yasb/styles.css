@@ -1,0 +1,6 @@
+.canopy-bar, .container, .canopy-widget {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+}

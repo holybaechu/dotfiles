@@ -1,0 +1,47 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+
+resources:
+  - name: Komorebi
+    type: Microsoft.WinGet/Package
+    properties:
+      id: LGUG2Z.komorebi
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: Whkd
+    type: Microsoft.WinGet/Package
+    properties:
+      id: LGUG2Z.whkd
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: Git
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Git.Git
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: Uv
+    type: Microsoft.WinGet/Package
+    properties:
+      id: astral-sh.uv
+      source: winget
+      useLatest: false
+      acceptAgreements: true

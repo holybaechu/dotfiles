@@ -1,0 +1,12 @@
+Inter: https://github.com/rsms/inter (SIL Open Font License 1.1)
+Inter.ttf is converted from @fontsource-variable/inter's Latin variable WOFF2.
+See Inter-LICENSE.txt.
+
+Lucide: https://github.com/lucide-icons/lucide (ISC)
+SVG paths in icons.json come from @iconify-json/lucide.
+See Lucide-LICENSE.txt.
+
+Windows 10 icon: https://github.com/simple-icons/simple-icons (CC0 1.0)
+SVG path in icons.json comes from @iconify-json/simple-icons, windows10.
+See SimpleIcons-LICENSE.txt.
+Trademark rights remain with Microsoft.

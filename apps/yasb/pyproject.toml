@@ -1,0 +1,17 @@
+[project]
+name = "canopy-yasb"
+version = "0.1.0"
+requires-python = ">=3.14,<3.15"
+dependencies = ["yasb"]
+
+[dependency-groups]
+dev = ["pytest>=9", "fonttools[woff]>=4.60"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+yasb = { path = ".upstream", editable = true }
+
+[tool.pytest.ini_options]
+cache_dir = ".pytest_cache"

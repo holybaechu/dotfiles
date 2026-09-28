@@ -1,0 +1,44 @@
+$schema: https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.json
+type: Dotfiles.Windows/WindowShadows
+version: 1.0.0
+description: Read and manage the current user's Windows drop-shadow preference.
+
+get:
+  executable: powershell.exe
+  args:
+    - -NoLogo
+    - -NoProfile
+    - -NonInteractive
+    - -ExecutionPolicy
+    - Bypass
+    - -File
+    - WindowShadows.ps1
+    - -Operation
+    - Get
+  input: stdin
+
+set:
+  executable: powershell.exe
+  args:
+    - -NoLogo
+    - -NoProfile
+    - -NonInteractive
+    - -ExecutionPolicy
+    - Bypass
+    - -File
+    - WindowShadows.ps1
+    - -Operation
+    - Set
+  input: stdin
+  implementsPretest: true
+  return: state
+
+schema: !embedded
+  $schema: https://json-schema.org/draft/2020-12/schema
+  type: object
+  properties:
+    enabled:
+      type: boolean
+      description: Whether the Windows drop-shadow preference is enabled.
+  required: [enabled]
+  additionalProperties: false
