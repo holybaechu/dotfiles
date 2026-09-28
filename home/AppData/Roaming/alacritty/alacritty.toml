@@ -1,0 +1,4 @@
+# Use the default WSL distribution's login shell, starting in its home directory.
+[terminal.shell]
+program = "wsl.exe"
+args = ["--cd", "~"]

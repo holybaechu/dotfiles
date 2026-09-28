@@ -5,6 +5,17 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: Alacritty
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Alacritty.Alacritty
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: Komorebi
     type: Microsoft.WinGet/Package
     properties:
