@@ -5,6 +5,17 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: WezTerm
+    type: Microsoft.WinGet/Package
+    properties:
+      id: wez.wezterm
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: Komorebi
     type: Microsoft.WinGet/Package
     properties:

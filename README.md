@@ -8,7 +8,7 @@ home/                         # Chezmoi source state, selected by .chezmoiroot
 apps/yasb/                    # Native PyQt6 Canopy widget, hosted by YASB
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: komorebi, whkd, Git, uv
+  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, uv
   preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -44,6 +44,23 @@ komorebic reload-configuration
 ```
 
 Reload whkd separately after editing its shortcuts. `chezmoi apply` does not run DSC. Keep chezmoi special files and hooks inside `home/`, and give each setting a single owner.
+
+### Terminal
+
+Alt+Enter opens WezTerm. Chezmoi manages its Windows configuration at `~/.config/wezterm/wezterm.lua` and ignores it on Linux. WezTerm runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. It uses the bundled JetBrains Mono font with programming ligatures enabled and hides the tab bar when there is only one tab.
+
+WSL and a distribution must already be installed. Check `wsl --list --verbose` to confirm the default distribution (marked `*`) uses version `2`. If needed, select one with `wsl --set-default <DistributionName>` and convert it with `wsl --set-version <DistributionName> 2`. The configuration follows WSL's default instead of hard-coding a distribution or Linux shell.
+
+On an existing setup, install the package and apply the configuration:
+
+```powershell
+.\system\windows\Configure.ps1 -Action Apply -Module packages
+chezmoi apply ~/.config/wezterm/wezterm.lua ~/.config/whkdrc
+```
+
+Restart whkd after installation so it picks up WezTerm's PATH entry and the new shortcut. Sign out and back in if the current desktop session still has the old PATH.
+
+WezTerm does not yet support Windows' system-wide **Default terminal application** setting ([upstream issue](https://github.com/wezterm/wezterm/issues/7534)). This setup launches it through Alt+Enter or its Start menu entry.
 
 ## Canopy / YASB
 
