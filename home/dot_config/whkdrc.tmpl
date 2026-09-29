@@ -1,7 +1,7 @@
 .shell powershell
 
-# Canopy launcher (send a command to the running bar without a console window)
-alt + space             : & '{{ joinPath (dir .chezmoi.sourceDir) "apps" "yasb" "ToggleLauncher.ps1" | replace "'" "''" }}'
+# Canopy launcher (allow local scripts in this PowerShell process only)
+alt + space             : Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force; & '{{ joinPath (dir .chezmoi.sourceDir) "apps" "yasb" "ToggleLauncher.ps1" | replace "'" "''" }}'
 
 # Reload whkd configuration
 # alt + o                 : taskkill /f /im whkd.exe && start /b whkd # if shell is cmd

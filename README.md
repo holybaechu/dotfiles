@@ -47,9 +47,9 @@ Reload whkd separately after editing its shortcuts. `chezmoi apply` does not run
 
 ### Terminal
 
-Alt+Enter opens WezTerm. Chezmoi manages its Windows configuration at `~/.config/wezterm/wezterm.lua` and ignores it on Linux. WezTerm runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. It uses the bundled JetBrains Mono font with programming ligatures enabled and disables the tab bar.
+Alt+Enter opens WezTerm. Chezmoi manages its Windows configuration at `~/.config/wezterm/wezterm.lua` and ignores it on Linux. WezTerm runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. It uses the bundled JetBrains Mono font with programming ligatures enabled and shows the tab bar only when there is more than one tab.
 
-The window has no title bar, border, or window-control buttons; use komorebi to move, resize, minimize, and close it. Windows Acrylic blur and a dark green tint match Canopy's launcher. `window_background_opacity = 0.65` controls the tint strength. Closing a window, including with Alt+Q, skips WezTerm's confirmation dialog and terminates the programs inside; save and exit Neovim normally before closing its window.
+The window has no title bar or window-control buttons. It keeps the native resize frame for komorebi management and Windows rounded corners; use komorebi to move, resize, minimize, and close it. WezTerm applies native Windows Acrylic blur as the window opens. A short-lived Windows appearance helper removes native caption buttons and preserves rounded corners without changing the blur. Windows controls Acrylic's unfocused appearance. The background uses Canopy's dark launcher tint (`#060c08` at `178 / 255` opacity). Windows controls the blur radius, so it is not identical to Canopy's custom Gaussian blur. Closing a window, including with Alt+Q, skips WezTerm's confirmation dialog and terminates the programs inside; save and exit Neovim normally before closing its window.
 
 | Shortcut | Action |
 | --- | --- |
