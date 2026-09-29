@@ -52,7 +52,7 @@ def paint_shadow(painter, rect, left, right):
 
 def panel_geometry(source, screen, width, height):
     width = min(max(width, source.width()), screen.width())
-    height = min(height, t.dp(560), screen.bottom() - source.top())
+    height = min(height, screen.bottom() - source.top())
     edge = 'left' if source.left() <= screen.left() + 1 else 'right' if source.right() >= screen.right() - 1 else 'center'
     left = screen.left() if edge == 'left' else screen.right() - width if edge == 'right' else max(screen.left(), min(screen.right() - width, source.center().x() - width / 2))
     return QRectF(left, source.top(), width, height), edge
