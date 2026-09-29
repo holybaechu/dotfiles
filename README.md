@@ -78,9 +78,9 @@ WezTerm does not yet support Windows' system-wide **Default terminal application
 
 ### GitHub CLI
 
-Bootstrap installs `GitHub.cli` on Windows and `github-cli` through yay in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol https --web`, then run `gh auth setup-git --hostname github.com` to let Git use that login.
+Bootstrap installs `GitHub.cli` on Windows and `github-cli` through yay in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol ssh --web` and register an SSH authentication key for that OS. Git over SSH uses the SSH key/agent; GitHub CLI API requests use the CLI login. The initial public bootstrap clone still uses HTTPS so it can run before SSH keys are configured.
 
-Chezmoi renders one shared set of defaults from `home/.chezmoitemplates/gh-config.yml` to `%APPDATA%\GitHub CLI\config.yml` on Windows and `~/.config/gh/config.yml` on Linux. These use GitHub CLI's standard configuration locations; no `GH_CONFIG_DIR` override is needed. The defaults include HTTPS Git, enabled prompts, and the CLI's standard browser, editor, pager, and display behavior.
+Chezmoi renders one shared set of defaults from `home/.chezmoitemplates/gh-config.yml` to `%APPDATA%\GitHub CLI\config.yml` on Windows and `~/.config/gh/config.yml` on Linux. These use GitHub CLI's standard configuration locations; no `GH_CONFIG_DIR` override is needed. The defaults include SSH Git, enabled prompts, and the CLI's standard browser, editor, pager, and display behavior.
 
 Windows and native Linux `gh` use separate system credential stores. Their `hosts.yml` authentication files are excluded from chezmoi. WSL can invoke Windows `gh.exe` to reuse its Windows login; native Linux `gh` is preferable for commands that operate on Linux repository paths. Bootstrap installs the CLI without automating account authentication or copying tokens into dotfiles. See the [authentication](https://cli.github.com/manual/gh_auth_login) and [configuration environment](https://cli.github.com/manual/gh_help_environment) documentation.
 
