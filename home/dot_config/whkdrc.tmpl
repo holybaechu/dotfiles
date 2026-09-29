@@ -12,9 +12,9 @@ alt + i                 : komorebic toggle-shortcuts
 
 # App shortcuts - these require shell to be pwsh / powershell
 # Terminal shortcuts (WSL, Windows PowerShell, elevated Windows PowerShell)
-alt + return            : Start-Process wezterm-gui.exe
-ctrl + alt + return     : Start-Process wezterm-gui.exe -ArgumentList 'start --always-new-process -- powershell.exe'
-ctrl + alt + shift + return : Start-Process wezterm-gui.exe -ArgumentList 'start --always-new-process -- powershell.exe' -Verb RunAs
+alt + return            : Start-Process wt.exe -ArgumentList '-w new'
+ctrl + alt + return     : Start-Process wt.exe -ArgumentList '-w new new-tab -p "Windows PowerShell"'
+ctrl + alt + shift + return : Start-Process wt.exe -ArgumentList '-w new new-tab -p "Windows PowerShell"' -Verb RunAs
 
 # The apps will be focused if open, or launched if not open
 # alt + f                 : if ($wshell.AppActivate('Firefox') -eq $False) { start firefox }

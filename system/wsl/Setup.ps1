@@ -64,4 +64,4 @@ wsl.exe --manage archlinux --set-default-user $LinuxUser
 Assert-WslSuccess 'Selecting the default Arch user'
 wsl.exe --set-default archlinux
 Assert-WslSuccess 'Selecting the default WSL distribution'
-Write-Host "Arch Linux is ready on WSL2 as $LinuxUser. Alt+Enter will open it in WezTerm."
+Write-Host "Arch Linux is ready on WSL2 as $LinuxUser. Alt+Enter will open it in Windows Terminal."

@@ -13,10 +13,18 @@ resources:
       useLatest: false
       acceptAgreements: true
 
-  - name: WezTerm
+  - name: WindowsTerminal
     type: Microsoft.WinGet/Package
     properties:
-      id: wez.wezterm
+      id: Microsoft.WindowsTerminal
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: JetBrainsMonoNerdFont
+    type: Microsoft.WinGet/Package
+    properties:
+      id: DEVCOM.JetBrainsMonoNerdFont
       source: winget
       useLatest: false
       acceptAgreements: true
