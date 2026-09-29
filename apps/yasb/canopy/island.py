@@ -297,7 +297,7 @@ class Panel(QWidget):
     def _check_blur(self):
         if self.closing or self.preview_parent:
             return
-        if time.monotonic() < self.focus_grace or time.monotonic() < self.native_menu_until or menu_active():
+        if time.monotonic() < self.focus_grace or time.monotonic() < self.native_menu_until or menu_active() or QApplication.activePopupWidget():
             self.blur_timer.start(100)
         elif not self.isActiveWindow():
             self.close_panel()
@@ -310,6 +310,9 @@ class Panel(QWidget):
             return False
         if self.closing:
             return event.type() == QEvent.Type.KeyPress and isinstance(obj, QWidget) and self.isAncestorOf(obj)
+        popup = QApplication.activePopupWidget()
+        if popup and self.isAncestorOf(popup.parentWidget()):
+            return False
         if event.type() == QEvent.Type.KeyPress and event.key() == Qt.Key.Key_Escape:
             if self.kind == 'tray' and menu_active(): return False
             self.close_panel()

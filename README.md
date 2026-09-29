@@ -13,7 +13,7 @@ system/wsl/
   yay.yml                     # Build yay as the Linux user; install its package as root
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: Windows Terminal, fonts, komorebi, whkd, Git, 1Password, Everything, GitHub CLI, uv
+  packages.winget             # YAML: Windows Terminal, fonts, Starship, komorebi, whkd, Git, 1Password, Everything, GitHub CLI, uv
   preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -80,6 +80,14 @@ chezmoi apply --parent-dirs "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTermina
 
 Press Alt+O to reload whkd after changing shortcuts. Open a new Terminal window to use focus mode. If `wt.exe` is unavailable, enable Windows Terminal's app execution alias in Windows Settings and ensure `%LOCALAPPDATA%\Microsoft\WindowsApps` is on PATH.
 
+### Starship
+
+Windows DSC installs `Starship.Starship` through WinGet; Arch provisioning installs `starship` through pacman. Chezmoi enables the prompt in Arch's `~/.bashrc` and in the Windows PowerShell and PowerShell 7 console profiles under `~/Documents/WindowsPowerShell` and `~/Documents/PowerShell`. Modify templates maintain a marked Starship block while preserving the rest of each file. Initialization is skipped until the executable is available.
+
+Starship uses its default appearance and any existing `~/.config/starship.toml` customization. Windows Terminal already uses a Nerd Font. The package names and shell initialization commands follow the [Starship guide](https://starship.rs/guide/).
+
+On an existing Windows setup, run `system\windows\Configure.ps1 -Action Apply -Module packages`, then `chezmoi apply`. In Arch, rerun provisioning or run `sudo pacman -Syu --needed starship`, then `chezmoi apply` from the updated Linux checkout. Open a new terminal after installation to pick up PATH changes and the prompt.
+
 ### GitHub CLI
 
 Bootstrap installs `GitHub.cli` on Windows and `github-cli` through pacman in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key`. The CLI login authorizes GitHub API operations; Git authentication and commit signing use the SSH key in 1Password. The initial public bootstrap clone still uses HTTPS so it can run before 1Password is configured.
@@ -112,7 +120,7 @@ Canopy builds its application list at startup and refreshes it in the background
 
 The launcher uses a compact 480 × 420 logical-pixel panel (960 × 840 physical pixels at 200% scaling) with its scrollbar at the right edge. Its frosted backdrop is captured and blurred in memory when opened, preserving the rounded corners and shadow while keeping text sharp. Search results stay visible until the next query finishes.
 
-Quick controls include Wi-Fi, Bluetooth, Airplane mode, and Energy saver. Click a card to toggle its mode; click its separate arrow to open Windows Settings. Cards turn green only after Windows confirms the change, and show pending or failure feedback when necessary. Energy saver reads Windows 11's current saver status, including standard savings while plugged in. Airplane mode and Energy saver use private Windows interfaces for toggling, with system-state readback to catch unsupported behavior.
+Quick controls include Wi-Fi, Bluetooth, Airplane mode, and Energy saver. The footer shows a battery icon beside its percentage and a power button with Lock, Sign out, Sleep, Hibernate, Restart, and Shut down actions. Power actions are disabled in the preview. Click a card to toggle its mode; click its separate arrow to open Windows Settings. Cards turn green only after Windows confirms the change, and show pending or failure feedback when necessary. Energy saver reads Windows 11's current saver status, including standard savings while plugged in. Airplane mode and Energy saver use private Windows interfaces for toggling, with system-state readback to catch unsupported behavior.
 
 YASB services provide Komorebi events, Windows media artwork and playback, audio, battery, network status, brightness, and tray callbacks. Playback time is interpolated between Windows timeline updates. Brightness controls identify each connected display independently; external displays need DDC/CI support. Unsupported or ambiguous mirrored displays stay read-only.
 

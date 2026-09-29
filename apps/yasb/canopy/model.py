@@ -120,6 +120,10 @@ class PreviewBackend(QObject):
     def open_settings(self, page):
         pass
 
+    def power_action(self, action):
+        # Preview controls must never change the desktop session or power state.
+        pass
+
     def set_airplane_mode(self, enabled):
         self.state.airplane_mode = enabled
         self.changed.emit('status')

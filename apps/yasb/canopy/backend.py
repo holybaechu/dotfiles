@@ -266,6 +266,15 @@ class Backend(QObject):
         except OSError as error:
             self._fail('Could not open Windows settings.', error)
 
+    def power_action(self, action):
+        from .power import perform_power_action
+        self.state.error = ''
+        try:
+            perform_power_action(action)
+            self.changed.emit('error')
+        except Exception as error:
+            self._fail(f'Could not {action}. Windows may not support or allow this action.', error)
+
     def _modes_changed(self, values):
         for name, value in values.items():
             setattr(self.state, name, value)

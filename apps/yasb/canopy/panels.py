@@ -264,7 +264,6 @@ class Quick(QWidget):
             self.bluetooth.sync()
             self.airplane.sync()
             self.battery_saver.sync()
-            self.battery.setVisible(state.battery is not None)
             self.battery.update()
         self.update()
 
