@@ -3,9 +3,10 @@
 Chezmoi manages application configuration in `home/`. DSC manages Windows packages and preferences in `system/windows/`.
 
 ```text
-bootstrap.ps1                 # Install chezmoi, provision Windows, apply dotfiles
+bootstrap.ps1                 # Provision Windows and Arch WSL2; apply chezmoi in both
 home/                         # Chezmoi source state, selected by .chezmoiroot
 apps/yasb/                    # Native PyQt6 Canopy widget, hosted by YASB
+system/wsl/                   # Install official Arch WSL2, user, packages, and chezmoi
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
   packages.winget             # YAML: WezTerm, komorebi, whkd, Git, uv
@@ -27,7 +28,7 @@ From the repository:
 .\system\windows\Configure.ps1 -Action Apply -Module preferences
 ```
 
-The runner only loops over `.winget` files in filename order. Each module also works directly with `winget configure test -f <file>` or `winget configure -f <file>`. Add a module by creating another `.winget` YAML file; no registration is needed. Test exit code `1` means some settings are out of state.
+The runner only loops over `.winget` files in filename order. It accepts configuration agreements and disables interactive WinGet prompts. Each module also works directly with `winget configure test -f <file>` or `winget configure -f <file>`. Add a module by creating another `.winget` YAML file; no registration is needed. Test exit code `1` means some settings are out of state.
 
 Packages use `useLatest: false` to preserve installed versions. In `preferences.winget`, change `WindowShadows.properties.input.enabled` to `true` to restore Windows shadows. Apps that draw their own shadows may behave differently.
 
@@ -62,7 +63,7 @@ The window has no title bar or window-control buttons. It keeps the native resiz
 
 The PowerShell shortcuts run `powershell.exe` in a separate WezTerm process so the elevated shortcut cannot reuse an unelevated terminal process. Komorebi's existing Alt+Shift+Enter promote binding is preserved.
 
-WSL and a distribution must already be installed. Check `wsl --list --verbose` to confirm the default distribution (marked `*`) uses version `2`. If needed, select one with `wsl --set-default <DistributionName>` and convert it with `wsl --set-version <DistributionName> 2`. The configuration follows WSL's default instead of hard-coding a distribution or Linux shell.
+Bootstrap installs the official `archlinux` distribution on WSL2 and makes it the default. Check `wsl --list --verbose` to confirm. The terminal configuration follows WSL's default instead of hard-coding a distribution or Linux shell.
 
 On an existing setup, install the package and apply the configuration:
 
@@ -131,6 +132,16 @@ After committing and pushing this setup, download `bootstrap.ps1` and run:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1
 ```
 
-The bootstrap uses chezmoi's built-in Git for the initial clone, installs Windows packages, prepares Canopy with uv, applies dotfiles, and configures preferences and startup. Python 3.14 is managed by uv. On an existing setup it uses the current checkout; pull remote changes and rerun `apps\yasb\Setup.ps1` when dependencies change. Open a new terminal for persistent environment changes.
+The bootstrap uses chezmoi's built-in Git for the initial clone, installs Windows packages, prepares Canopy with uv, applies dotfiles, and configures preferences and startup. Python 3.14 is managed by uv. It then installs or updates WSL, installs the [official Arch Linux image](https://archlinux.org/download/), and selects WSL2. An existing `archlinux` installation is reused. Setup checks Windows' pending component restart state before and after WSL commands, because enabling Virtual Machine Platform can return success while still requiring a reboot. It stops with exit code `3010` and restart instructions; bootstrap does not reboot automatically.
 
-Initialize the same repository with Linux chezmoi separately in WSL. Windows DSC runs on Windows; Linux provisioning is not defined yet.
+After restarting, rerun bootstrap or resume only the remaining Arch setup from your normal PowerShell (pass the same `-LinuxUser` and `-Repository` overrides if you used them):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.local\share\chezmoi\system\wsl\Setup.ps1"
+```
+
+Arch setup creates the `holybaechu` Linux account with Bash and installs [yay from its AUR source package](https://github.com/Jguer/yay#installation) before the application packages. Pacman is used only for the initial signing-key refresh and the Git, `base-devel`, and sudo prerequisites when yay is missing. Yay is built and run as the Linux user, then handles signing-key updates, system upgrades, and package installation, including chezmoi. Reruns reuse yay and skip the pacman bootstrap. Override the account name with `-WslUser <name>`. Initial account setup asks for a Linux password; existing passwords are retained, and sudo may ask for that password during package installation. Arch becomes the default WSL distribution and the account becomes its default user.
+
+Linux chezmoi initializes the same `-Repository` URL into its own Linux home and applies it as the Linux user. Existing source checkouts are reused without pulling or discarding local edits. Windows-only files are excluded by `.chezmoiignore.tmpl`; this repository currently has no Linux application dotfiles, so the Linux apply prepares chezmoi for future additions. Windows DSC stays on Windows.
+
+Routine package and configuration confirmations are accepted automatically, including makepkg/yay confirmations and chezmoi overwriting managed targets. Windows UAC, initial Linux password setup, and sudo authentication still require input. On an existing setup, pull remote changes before rerunning bootstrap. To rerun only Arch provisioning, use `system\wsl\Setup.ps1 -LinuxUser holybaechu`. Open a new terminal for persistent environment changes.

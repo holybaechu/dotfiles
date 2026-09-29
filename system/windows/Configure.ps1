@@ -16,8 +16,7 @@ foreach ($configuration in $modules) {
     Write-Host "$Action $($configuration.BaseName)"
     $arguments = @('configure')
     if ($Action -eq 'Test') { $arguments += 'test' }
-    $arguments += @('--file', $configuration.FullName)
-1
+    $arguments += @('--file', $configuration.FullName, '--accept-configuration-agreements', '--disable-interactivity')
     & winget.exe @arguments
     if ($LASTEXITCODE -eq 1 -and $Action -eq 'Test') {
         $result = 1
