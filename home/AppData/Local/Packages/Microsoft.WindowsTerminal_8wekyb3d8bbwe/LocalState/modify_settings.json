@@ -1,0 +1,80 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $settings := .chezmoi.stdin | default "{}" | fromJsonc -}}
+{{- $wslGuid := "{2daa9215-ee59-401c-b5d2-77bb27f873d0}" -}}
+{{- $schemeName := "Canopy" -}}
+
+{{- /* Canopy's dark tint and terminal palette; preserve unrelated schemes. */ -}}
+{{- $scheme := dict
+    "name" $schemeName
+    "background" "#060c08" "foreground" "#b2b2b2"
+    "cursorColor" "#52ad70" "selectionBackground" "#433950"
+    "black" "#000000" "red" "#cc5555" "green" "#55cc55" "yellow" "#cdcd55"
+    "blue" "#5455cb" "purple" "#cc55cc" "cyan" "#7acaca" "white" "#cccccc"
+    "brightBlack" "#555555" "brightRed" "#ff5555" "brightGreen" "#55ff55" "brightYellow" "#ffff55"
+    "brightBlue" "#5555ff" "brightPurple" "#ff55ff" "brightCyan" "#55ffff" "brightWhite" "#ffffff"
+-}}
+{{- $schemes := list -}}
+{{- range (get $settings "schemes" | default (list)) -}}
+    {{- if ne (get . "name") $schemeName -}}
+        {{- $schemes = append $schemes . -}}
+    {{- end -}}
+{{- end -}}
+{{- $settings = setValueAtPath "schemes" (append $schemes $scheme) $settings -}}
+
+{{- /* Defaults apply to all profiles, including profiles added by Terminal. */ -}}
+{{- $profiles := get $settings "profiles" | default (dict) -}}
+{{- $defaults := mergeOverwrite (get $profiles "defaults" | default (dict)) (dict
+    "colorScheme" $schemeName
+    "useAcrylic" true "opacity" 70
+    "unfocusedAppearance" (dict "colorScheme" $schemeName "background" "#060c08"
+        "useAcrylic" true "opacity" 70)
+    "cursorShape" "filledBox" "scrollbarState" "hidden"
+    "font" (dict "face" "JetBrainsMono Nerd Font Mono" "size" 12
+        "features" (dict "calt" 1 "clig" 1 "liga" 1))
+) -}}
+{{- $settings = setValueAtPath "profiles.defaults" $defaults $settings -}}
+
+{{- /* Use WSL's default distro, while keeping existing and dynamic profiles. */ -}}
+{{- $wsl := dict "guid" $wslGuid "name" "WSL" "commandline" "wsl.exe --cd ~" "hidden" false -}}
+{{- $profileList := list -}}
+{{- $found := false -}}
+{{- range (get $profiles "list" | default (list)) -}}
+    {{- if eq (get . "guid" | default "" | lower) $wslGuid -}}
+        {{- $profileList = append $profileList (mergeOverwrite . $wsl) -}}
+        {{- $found = true -}}
+    {{- else -}}
+        {{- $profileList = append $profileList . -}}
+    {{- end -}}
+{{- end -}}
+{{- if not $found -}}{{- $profileList = append $profileList $wsl -}}{{- end -}}
+{{- $settings = setValueAtPath "profiles.list" $profileList $settings -}}
+
+{{- /* Focus mode hides tabs; unbind their default creation/navigation shortcuts. */ -}}
+{{- $tabKeys := list "ctrl+shift+t" "ctrl+shift+d" "ctrl+shift+space"
+    "ctrl+tab" "ctrl+shift+tab"
+    "ctrl+shift+1" "ctrl+shift+2" "ctrl+shift+3" "ctrl+shift+4" "ctrl+shift+5"
+    "ctrl+shift+6" "ctrl+shift+7" "ctrl+shift+8" "ctrl+shift+9"
+    "ctrl+alt+1" "ctrl+alt+2" "ctrl+alt+3" "ctrl+alt+4" "ctrl+alt+5"
+    "ctrl+alt+6" "ctrl+alt+7" "ctrl+alt+8" "ctrl+alt+9"
+-}}
+{{- $keybindings := list -}}
+{{- range (get $settings "keybindings" | default (list)) -}}
+    {{- if not (has (get . "keys") $tabKeys) -}}
+        {{- $keybindings = append $keybindings . -}}
+    {{- end -}}
+{{- end -}}
+{{- range $tabKeys -}}
+    {{- $keybindings = append $keybindings (dict "keys" . "id" "unbound") -}}
+{{- end -}}
+{{- $settings = setValueAtPath "keybindings" $keybindings $settings -}}
+{{- $settings = unset $settings "confirmCloseAllTabs" -}}
+
+{{- $settings = $settings
+    | setValueAtPath "defaultProfile" $wslGuid
+    | setValueAtPath "theme" "dark"
+    | setValueAtPath "launchMode" "focus"
+    | setValueAtPath "windowingBehavior" "useNew"
+    | setValueAtPath (list "warning.confirmCloseAllTabs") false
+    | setValueAtPath (list "compatibility.enableUnfocusedAcrylic") true
+-}}
+{{ $settings | toPrettyJson }}

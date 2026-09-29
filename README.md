@@ -9,7 +9,7 @@ apps/yasb/                    # Native PyQt6 Canopy widget, hosted by YASB
 system/wsl/                   # Install official Arch WSL2, user, packages, and chezmoi
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, 1Password, GitHub CLI, uv
+  packages.winget             # YAML: Windows Terminal, fonts, komorebi, whkd, Git, 1Password, GitHub CLI, uv
   preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -50,31 +50,31 @@ Reload whkd separately after editing its shortcuts. `chezmoi apply` does not run
 
 ### Terminal
 
-Alt+Enter opens WezTerm. Chezmoi manages its Windows configuration at `~/.config/wezterm/wezterm.lua` and ignores it on Linux. WezTerm runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. It uses the bundled JetBrains Mono font with programming ligatures enabled and shows the tab bar only when there is more than one tab.
+Alt+Enter opens Windows Terminal. Chezmoi adds a default `WSL` profile that runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. DSC installs Windows Terminal and JetBrainsMono Nerd Font Mono. Terminal uses the font at 12 pt with programming ligatures, the Canopy color scheme, a block cursor, and no scrollbar. Its dark green background (`#060c08`) uses 70% Acrylic opacity, including when unfocused, subject to Windows transparency and power settings.
 
-The window has no title bar or window-control buttons. It keeps the native resize frame for komorebi management and Windows rounded corners; use komorebi to move, resize, minimize, and close it. WezTerm applies native Windows Acrylic blur as the window opens. A short-lived Windows appearance helper removes native caption buttons and preserves rounded corners without changing the blur. Windows controls Acrylic's unfocused appearance. The background uses Canopy's dark launcher tint (`#060c08` at `178 / 255` opacity). Windows controls the blur radius, so it is not identical to Canopy's custom Gaussian blur. Closing a window, including with Alt+Q, skips WezTerm's confirmation dialog and terminates the programs inside; save and exit Neovim normally before closing its window.
+Terminal opens new windows in focus mode, hiding both the title bar and tabs. Use komorebi to move, resize, minimize, and close windows. The default shortcuts for creating, duplicating, selecting, and switching tabs, plus the new-tab dropdown shortcut, are unbound. Ctrl+Shift+N still opens a separate window; copy/paste and pane shortcuts remain available. Terminal can still create tabs through explicit command-palette or command-line actions. Closing a window skips the close-all-tabs confirmation and terminates its programs; save and exit Neovim normally before closing its window.
 
 | Shortcut | Action |
 | --- | --- |
-| Alt+Enter | Open the default WSL distribution in WezTerm |
-| Ctrl+Alt+Enter | Open Windows PowerShell in WezTerm |
-| Ctrl+Alt+Shift+Enter | Open elevated Windows PowerShell in WezTerm (UAC prompt) |
+| Alt+Enter | Open the default WSL distribution in Windows Terminal |
+| Ctrl+Alt+Enter | Open Windows PowerShell in Windows Terminal |
+| Ctrl+Alt+Shift+Enter | Open elevated Windows PowerShell in Windows Terminal (UAC prompt) |
 | Alt+Shift+Enter | Promote the focused komorebi window |
 
-The PowerShell shortcuts run `powershell.exe` in a separate WezTerm process so the elevated shortcut cannot reuse an unelevated terminal process. Komorebi's existing Alt+Shift+Enter promote binding is preserved.
+Each terminal shortcut requests a new window with `wt.exe -w new`; the PowerShell shortcuts select the built-in Windows PowerShell profile, and the elevated shortcut requests UAC elevation. Komorebi's existing Alt+Shift+Enter promote binding is preserved.
 
 Bootstrap installs the official `archlinux` distribution on WSL2 and makes it the default. Check `wsl --list --verbose` to confirm. The terminal configuration follows WSL's default instead of hard-coding a distribution or Linux shell.
 
-On an existing setup, install the package and apply the configuration:
+Chezmoi updates the stable Windows Terminal settings at `%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json` using a modify template. It preserves existing profiles, unrelated shortcuts and settings, themes, and color schemes while updating managed appearance defaults and tab shortcut overrides. JSONC comments and formatting are normalized to JSON. The configuration is ignored on Linux.
+
+On an existing setup, install the packages and apply the configuration:
 
 ```powershell
 .\system\windows\Configure.ps1 -Action Apply -Module packages
-chezmoi apply ~/.config/wezterm/wezterm.lua ~/.config/whkdrc
+chezmoi apply --parent-dirs "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json" ~/.config/whkdrc
 ```
 
-Restart whkd after installation so it picks up WezTerm's PATH entry and the new shortcut. Sign out and back in if the current desktop session still has the old PATH.
-
-WezTerm does not yet support Windows' system-wide **Default terminal application** setting ([upstream issue](https://github.com/wezterm/wezterm/issues/7534)). This setup launches it through Alt+Enter or its Start menu entry.
+Press Alt+O to reload whkd after changing shortcuts. Open a new Terminal window to use focus mode. If `wt.exe` is unavailable, enable Windows Terminal's app execution alias in Windows Settings and ensure `%LOCALAPPDATA%\Microsoft\WindowsApps` is on PATH.
 
 ### GitHub CLI
 
