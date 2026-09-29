@@ -1,3 +1,5 @@
+#requires -Version 7.0
+
 [CmdletBinding()]
 param(
     [string]$PipeName = 'yasb_pipe_cli',

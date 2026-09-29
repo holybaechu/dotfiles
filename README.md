@@ -13,7 +13,7 @@ system/wsl/
   yay.yml                     # Build yay as the Linux user; install its package as root
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: Windows Terminal, fonts, Starship, komorebi, whkd, Git, 1Password, Everything, GitHub CLI, uv
+  packages.winget             # YAML: Windows Terminal, PowerShell 7, fonts, Starship, komorebi, whkd, Git, 1Password, Everything, GitHub CLI, uv
   preferences.winget          # YAML: indexing disabled, config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -23,7 +23,7 @@ system/windows/
 
 Requires WinGet 1.11+ and DSC v3. WinGet installs the DSC processor if missing. If the Store installation stalls, use the signed Windows MSIX bundle from the [official DSC releases](https://github.com/PowerShell/DSC/releases). Run as your regular Windows user; package installation requests elevation when needed.
 
-From the repository:
+From PowerShell 7 in the repository (run bootstrap first if PowerShell 7 is not installed):
 
 ```powershell
 .\system\windows\Configure.ps1                         # Test all modules
@@ -34,7 +34,9 @@ From the repository:
 
 The runner only loops over `.winget` files in filename order. It accepts configuration agreements and disables interactive WinGet prompts. Each module also works directly with `winget configure test -f <file>` or `winget configure -f <file>`. Add a module by creating another `.winget` YAML file; no registration is needed. Test exit code `1` means some settings are out of state.
 
-Packages use `useLatest: false` to preserve installed versions. In `preferences.winget`, change `WindowShadows.properties.input.enabled` to `true` to restore Windows shadows. Apps that draw their own shadows may behave differently.
+Packages use `useLatest: false` to preserve installed versions, except PowerShell: `Microsoft.PowerShell` uses `useLatest: true` to install or upgrade to the latest stable release whenever packages are applied. Preview releases are a separate package and are not installed. In `preferences.winget`, change `WindowShadows.properties.input.enabled` to `true` to restore Windows shadows. Apps that draw their own shadows may behave differently.
+
+Use PowerShell 7 (`pwsh.exe`) for interactive shells and repository automation. When started in Windows PowerShell 5.1 (`powershell.exe`), bootstrap installs PowerShell 7 if missing, then restarts itself under `pwsh` with the same arguments and returns its exit code. The packages module keeps PowerShell up to date. DSC uses `Microsoft.DSC.Transitional/PowerShellScript`, whkd uses `.shell pwsh`, and the remaining PowerShell scripts require PowerShell 7. Windows PowerShell 5.1 stays installed as the fresh-machine entry point and for Windows compatibility. Microsoft's [installation guide](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows) describes the supported side-by-side setup.
 
 `preferences.winget` also enables Windows' built-in taskbar auto-hide. To turn it off, set `TaskbarAutoHide.properties.input.enabled` to `false` and run `Configure.ps1 -Action Apply -Module preferences`.
 
@@ -76,11 +78,11 @@ Terminal opens new windows in focus mode, hiding both the title bar and tabs. Us
 | Shortcut | Action |
 | --- | --- |
 | Alt+Enter | Open the default WSL distribution in Windows Terminal |
-| Ctrl+Alt+Enter | Open Windows PowerShell in Windows Terminal |
-| Ctrl+Alt+Shift+Enter | Open elevated Windows PowerShell in Windows Terminal (UAC prompt) |
+| Ctrl+Alt+Enter | Open PowerShell 7 in Windows Terminal |
+| Ctrl+Alt+Shift+Enter | Open elevated PowerShell 7 in Windows Terminal (UAC prompt) |
 | Alt+Shift+Enter | Promote the focused komorebi window |
 
-Each terminal shortcut requests a new window with `wt.exe -w new`; the PowerShell shortcuts select the built-in Windows PowerShell profile, and the elevated shortcut requests UAC elevation. Komorebi's existing Alt+Shift+Enter promote binding is preserved.
+Each terminal shortcut requests a new window with `wt.exe -w new`; the PowerShell shortcuts select chezmoi's `PowerShell 7` profile, which runs `pwsh.exe -NoLogo`, and the elevated shortcut requests UAC elevation. WSL remains Terminal's default profile. Komorebi's existing Alt+Shift+Enter promote binding is preserved.
 
 Bootstrap installs the official `archlinux` distribution on WSL2 and makes it the default. Check `wsl --list --verbose` to confirm. The terminal configuration follows WSL's default instead of hard-coding a distribution or Linux shell.
 
@@ -98,6 +100,8 @@ Press Alt+O to reload whkd after changing shortcuts. Open a new Terminal window 
 ### Starship
 
 Windows DSC installs `Starship.Starship` through WinGet; Arch provisioning installs `starship` through pacman. Chezmoi enables the prompt in Arch's `~/.bashrc` and in the Windows PowerShell and PowerShell 7 console profiles under `~/Documents/WindowsPowerShell` and `~/Documents/PowerShell`. Modify templates maintain a marked Starship block while preserving the rest of each file. Initialization is skipped until the executable is available.
+
+`preferences.winget` sets PowerShell's `CurrentUser` execution policy to `RemoteSigned`, allowing the local Starship profiles to load. Bootstrap applies this preference automatically. To apply it on an existing machine where scripts are blocked, run `pwsh.exe -NoProfile -ExecutionPolicy Bypass -File .\system\windows\Configure.ps1 -Action Apply -Module preferences` from the repository, then open a new PowerShell window. `Bypass` applies only to that setup process; the saved user policy is `RemoteSigned`. Group Policy and explicit process policies still take precedence; see [PowerShell execution policies](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies).
 
 Starship uses its default appearance and any existing `~/.config/starship.toml` customization. Windows Terminal already uses a Nerd Font. The package names and shell initialization commands follow the [Starship guide](https://starship.rs/guide/).
 
@@ -186,7 +190,7 @@ The bootstrap uses chezmoi's built-in Git for the initial clone, installs Window
 After restarting, rerun bootstrap or resume only the remaining Arch setup from your normal PowerShell (pass the same `-LinuxUser` and `-Repository` overrides if you used them):
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.local\share\chezmoi\system\wsl\Setup.ps1"
+pwsh.exe -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.local\share\chezmoi\system\wsl\Setup.ps1"
 ```
 
 The small shell bootstrap initializes the signing keyring and installs Arch's `ansible` package, including Python and the `community.general` collection, if it is missing. Ansible then runs locally as root inside Arch; no SSH server is needed. Its playbook refreshes signing keys, performs a full system upgrade, installs official packages through pacman, creates or updates the Linux account with Bash and wheel membership, validates password-required sudo access, and maintains the WSL interop service override. The override reloads systemd and restarts the service only when its contents change.

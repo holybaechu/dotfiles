@@ -45,7 +45,7 @@ def test_sender_ack_and_timeout_leave_whkd_shell_available(acknowledge):
     # Same long-lived, line-oriented shell mode used by whkd.
     commands = (f"& '{sender}' -PipeName '{name}' -TimeoutMilliseconds 100\n"
                 "Write-Output 'NEXT_SHORTCUT_RAN'\n")
-    result = subprocess.run(['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', '-'],
+    result = subprocess.run(['pwsh.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', '-'],
                             input=commands, text=True, capture_output=True, timeout=5)
     worker.join(1)
     assert not worker.is_alive()

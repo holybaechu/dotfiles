@@ -1,6 +1,7 @@
 {{- /* chezmoi:modify-template */ -}}
 {{- $settings := .chezmoi.stdin | default "{}" | fromJsonc -}}
 {{- $wslGuid := "{2daa9215-ee59-401c-b5d2-77bb27f873d0}" -}}
+{{- $powerShellGuid := "{773a475f-cc7c-4bf6-a0a4-987f2adcb069}" -}}
 {{- $schemeName := "Canopy" -}}
 
 {{- /* Canopy's dark tint and terminal palette; preserve unrelated schemes. */ -}}
@@ -34,19 +35,25 @@
 ) -}}
 {{- $settings = setValueAtPath "profiles.defaults" $defaults $settings -}}
 
-{{- /* Use WSL's default distro, while keeping existing and dynamic profiles. */ -}}
+{{- /* Manage the WSL and PowerShell 7 entries, preserving other profiles. */ -}}
 {{- $wsl := dict "guid" $wslGuid "name" "WSL" "commandline" "wsl.exe --cd ~" "hidden" false -}}
-{{- $profileList := list -}}
-{{- $found := false -}}
-{{- range (get $profiles "list" | default (list)) -}}
-    {{- if eq (get . "guid" | default "" | lower) $wslGuid -}}
-        {{- $profileList = append $profileList (mergeOverwrite . $wsl) -}}
-        {{- $found = true -}}
-    {{- else -}}
-        {{- $profileList = append $profileList . -}}
+{{- $powerShell := dict "guid" $powerShellGuid "name" "PowerShell 7" "commandline" "pwsh.exe -NoLogo" "hidden" false -}}
+{{- $profileList := get $profiles "list" | default (list) -}}
+{{- range (list $wsl $powerShell) -}}
+    {{- $managed := . -}}
+    {{- $updated := list -}}
+    {{- $found := false -}}
+    {{- range $profileList -}}
+        {{- if eq (get . "guid" | default "" | lower) (get $managed "guid") -}}
+            {{- $updated = append $updated (mergeOverwrite . $managed) -}}
+            {{- $found = true -}}
+        {{- else -}}
+            {{- $updated = append $updated . -}}
+        {{- end -}}
     {{- end -}}
+    {{- if not $found -}}{{- $updated = append $updated $managed -}}{{- end -}}
+    {{- $profileList = $updated -}}
 {{- end -}}
-{{- if not $found -}}{{- $profileList = append $profileList $wsl -}}{{- end -}}
 {{- $settings = setValueAtPath "profiles.list" $profileList $settings -}}
 
 {{- /* Focus mode hides tabs; unbind their default creation/navigation shortcuts. */ -}}

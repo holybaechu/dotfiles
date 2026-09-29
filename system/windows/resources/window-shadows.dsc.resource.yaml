@@ -4,7 +4,7 @@ version: 1.0.0
 description: Read and manage the current user's Windows drop-shadow preference.
 
 get:
-  executable: powershell.exe
+  executable: pwsh.exe
   args:
     - -NoLogo
     - -NoProfile
@@ -18,7 +18,7 @@ get:
   input: stdin
 
 set:
-  executable: powershell.exe
+  executable: pwsh.exe
   args:
     - -NoLogo
     - -NoProfile

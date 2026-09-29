@@ -1,3 +1,5 @@
+#requires -Version 7.0
+
 [CmdletBinding()]
 param([ValidateSet('Get', 'Test', 'Set')][string]$Operation = 'Test')
 

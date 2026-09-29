@@ -53,6 +53,7 @@
           - git
           - github-cli
           - openssh
+          - starship
           - sudo
         state: present
 

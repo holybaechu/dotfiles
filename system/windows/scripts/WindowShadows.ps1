@@ -1,3 +1,5 @@
+#requires -Version 7.0
+
 param(
     [ValidateSet('Get', 'Set')][string]$Operation = 'Get',
     [bool]$Enabled = $false

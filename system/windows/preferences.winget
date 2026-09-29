@@ -5,8 +5,27 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: PowerShellExecutionPolicy
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        (Get-ExecutionPolicy -Scope CurrentUser).ToString()
+      testScript: |
+        (Get-ExecutionPolicy -Scope CurrentUser).ToString() -eq 'RemoteSigned'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        try {
+          Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+        } catch {
+          # Setup may use a process policy that overrides the saved user policy.
+          if ($_.FullyQualifiedErrorId -notlike 'ExecutionPolicyOverride,*') { throw }
+        }
+        if ((Get-ExecutionPolicy -Scope CurrentUser).ToString() -ne 'RemoteSigned') {
+          throw 'PowerShell did not retain the current-user RemoteSigned execution policy.'
+        }
+
   - name: WindowsSearchIndexing
-    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       getScript: |
         Get-Service -Name WSearch -ErrorAction Stop | Select-Object Status, StartType
@@ -22,7 +41,7 @@ resources:
         securityContext: elevated
 
   - name: OnePasswordSshAgentPipe
-    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       getScript: |
         Get-Service -Name ssh-agent | Select-Object Status, StartType
@@ -39,7 +58,7 @@ resources:
         securityContext: elevated
 
   - name: ExplorerPreferences
-    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       input:
         hideDesktopIcons: true
@@ -59,7 +78,7 @@ resources:
         & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Set -HideDesktopIcons $settings.hideDesktopIcons -ShowHiddenFiles $settings.showHiddenFiles -ShowFileExtensions $settings.showFileExtensions
 
   - name: KomorebiConfigHome
-    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       getScript: |
         $value = [Environment]::GetEnvironmentVariable('KOMOREBI_CONFIG_HOME', 'User')
@@ -72,7 +91,7 @@ resources:
         [Environment]::SetEnvironmentVariable('KOMOREBI_CONFIG_HOME', $expected, 'User')
 
   - name: WindowShadows
-    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       input:
         enabled: false
@@ -87,7 +106,7 @@ resources:
         & "${WinGetConfigRoot}\scripts\WindowShadows.ps1" -Operation Set -Enabled $settings.enabled
 
   - name: TaskbarAutoHide
-    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       input:
         enabled: true

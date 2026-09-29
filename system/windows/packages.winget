@@ -32,10 +32,29 @@ resources:
       useLatest: false
       acceptAgreements: true
 
+  - name: PowerShell
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Microsoft.PowerShell
+      source: winget
+      useLatest: true
+      acceptAgreements: true
+
   - name: JetBrainsMonoNerdFont
     type: Microsoft.WinGet/Package
     properties:
       id: DEVCOM.JetBrainsMonoNerdFont
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: Starship
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Starship.Starship
       source: winget
       useLatest: false
       acceptAgreements: true

@@ -6,7 +6,7 @@ metadata:
 
 resources:
   - name: KomorebiAndWhkd
-    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       getScript: |
         $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'komorebi.lnk'
@@ -22,7 +22,7 @@ resources:
         if ($LASTEXITCODE -ne 0) { throw 'Enabling komorebi and whkd startup failed.' }
 
   - name: Canopy
-    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       getScript: |
         & "${WinGetConfigRoot}\scripts\CanopyStartup.ps1" -Operation Get

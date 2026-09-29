@@ -17,6 +17,20 @@ function Update-SessionPath {
 }
 
 Update-SessionPath
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    # Windows PowerShell is the entry point on a fresh Windows installation.
+    if (-not (Get-Command pwsh.exe -CommandType Application -ErrorAction SilentlyContinue)) {
+        winget.exe install --id Microsoft.PowerShell --exact --source winget --accept-source-agreements --accept-package-agreements --disable-interactivity
+        if ($LASTEXITCODE -ne 0) {
+            throw "Installing PowerShell 7 failed with exit code $LASTEXITCODE."
+        }
+        Update-SessionPath
+    }
+    $powerShell = (Get-Command pwsh.exe -CommandType Application -ErrorAction Stop).Source
+    & $powerShell -NoLogo -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath -Repository $Repository -WslUser $WslUser
+    exit $LASTEXITCODE
+}
+
 if (-not (Get-Command chezmoi.exe -ErrorAction SilentlyContinue)) {
     winget.exe install --id twpayne.chezmoi --exact --source winget --accept-source-agreements --accept-package-agreements --disable-interactivity
     if ($LASTEXITCODE -ne 0) {

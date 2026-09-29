@@ -1,4 +1,4 @@
-.shell powershell
+.shell pwsh
 
 # Canopy launcher (allow local scripts in this PowerShell process only)
 alt + space             : Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force; & '{{ joinPath (dir .chezmoi.sourceDir) "apps" "yasb" "ToggleLauncher.ps1" | replace "'" "''" }}'
@@ -11,10 +11,10 @@ alt + shift + o         : komorebic reload-configuration
 alt + i                 : komorebic toggle-shortcuts
 
 # App shortcuts - these require shell to be pwsh / powershell
-# Terminal shortcuts (WSL, Windows PowerShell, elevated Windows PowerShell)
+# Terminal shortcuts (WSL, PowerShell 7, elevated PowerShell 7)
 alt + return            : Start-Process wt.exe -ArgumentList '-w new'
-ctrl + alt + return     : Start-Process wt.exe -ArgumentList '-w new new-tab -p "Windows PowerShell"'
-ctrl + alt + shift + return : Start-Process wt.exe -ArgumentList '-w new new-tab -p "Windows PowerShell"' -Verb RunAs
+ctrl + alt + return     : Start-Process wt.exe -ArgumentList '-w new new-tab -p "PowerShell 7"'
+ctrl + alt + shift + return : Start-Process wt.exe -ArgumentList '-w new new-tab -p "PowerShell 7"' -Verb RunAs
 
 # Everyday apps (browser follows the current Windows default)
 alt + e                 : Start-Process explorer.exe
