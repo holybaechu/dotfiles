@@ -5,6 +5,22 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: WindowsSearchIndexing
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      getScript: |
+        Get-Service -Name WSearch -ErrorAction Stop | Select-Object Status, StartType
+      testScript: |
+        $service = Get-Service -Name WSearch -ErrorAction Stop
+        $service.Status -eq 'Stopped' -and $service.StartType -eq 'Disabled'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        Set-Service -Name WSearch -StartupType Disabled
+        Stop-Service -Name WSearch
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: OnePasswordSshAgentPipe
     type: Microsoft.DSC.Transitional/WindowsPowerShellScript
     properties:

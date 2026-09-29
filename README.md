@@ -14,7 +14,7 @@ system/wsl/
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
   packages.winget             # YAML: Windows Terminal, fonts, Starship, komorebi, whkd, Git, 1Password, Everything, GitHub CLI, uv
-  preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
+  preferences.winget          # YAML: indexing disabled, config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
 ```
@@ -37,6 +37,8 @@ The runner only loops over `.winget` files in filename order. It accepts configu
 Packages use `useLatest: false` to preserve installed versions. In `preferences.winget`, change `WindowShadows.properties.input.enabled` to `true` to restore Windows shadows. Apps that draw their own shadows may behave differently.
 
 `preferences.winget` also enables Windows' built-in taskbar auto-hide. To turn it off, set `TaskbarAutoHide.properties.input.enabled` to `false` and run `Configure.ps1 -Action Apply -Module preferences`.
+
+The `WindowsSearchIndexing` resource stops the Windows Search (`WSearch`) service and disables its startup. Bootstrap applies this preference automatically, with elevation requested by WinGet. To apply it on an existing setup, run `system\windows\Configure.ps1 -Action Apply -Module preferences`. Windows Search indexing stays disabled across reboots; Everything continues to provide Canopy's file search.
 
 The `ExplorerPreferences` resource hides desktop icons, shows hidden files and folders, and shows file extensions. Its three input switches can be changed independently. The helper updates Windows Shell settings and notifies Explorer without restarting it.
 
