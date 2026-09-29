@@ -13,7 +13,7 @@ system/wsl/
   yay.yml                     # Build yay as the Linux user; install its package as root
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: Windows Terminal, fonts, komorebi, whkd, Git, 1Password, GitHub CLI, uv
+  packages.winget             # YAML: Windows Terminal, fonts, komorebi, whkd, Git, 1Password, Everything, GitHub CLI, uv
   preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -107,6 +107,8 @@ Canopy is a native PyQt6 widget hosted by [YASB v2.0.7](https://github.com/amnwe
 The bar uses Inter, Lucide icons, the Simple Icons Windows 10 logo, Tailwind Neutral surfaces, and Catppuccin Mocha Green on pure black. Three sections reserve 40 logical pixels, with 4px logical edge insets and transparent gaps. Qt applies each monitor's native Windows scaling to all design dimensions: the bar is 40 physical pixels at 100%, 50 at 125%, 60 at 150%, and 80 at 200%. Windows receives physical monitor coordinates when reserving bar space. Media, brightness/volume, calendar, and tray panels expand as separate native windows with animated squircle corners, blur/fade transitions, shadows, and outside-click dismissal.
 
 Click the Windows-logo button or press Alt+Space to open Canopy's centered app launcher on the active display. Search apps and Control Panel items together, or prefix the query with `file ` (for example, `file report.pdf`) to search files. whkd owns the shortcut in `~/.config/whkdrc`; chezmoi renders the repository path from `home/dot_config/whkdrc.tmpl`. `ToggleLauncher.ps1` sends the command directly from whkd's persistent PowerShell session, with bounded waits so an unavailable bar cannot hold up other shortcuts. Reload whkd after changing its bindings.
+
+Canopy builds its application list at startup and refreshes it in the background every minute and whenever the launcher opens. Cached items remain searchable and launchable during refresh; the open list updates silently while preserving your selection and scroll position. Press Ctrl+R to request a background refresh. Bootstrap installs Everything through `packages.winget`; Everything must be running for file searches.
 
 The launcher uses a compact 480 × 420 logical-pixel panel (960 × 840 physical pixels at 200% scaling) with its scrollbar at the right edge. Its frosted backdrop is captured and blurred in memory when opened, preserving the rounded corners and shadow while keeping text sharp. Search results stay visible until the next query finishes.
 

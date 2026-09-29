@@ -9,7 +9,7 @@ from queue import Queue
 from threading import Event
 from types import SimpleNamespace
 
-from PyQt6.QtCore import QObject, QThread, Qt, pyqtSignal
+from PyQt6.QtCore import QObject, QThread, QTimer, Qt, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
 from core.widgets.services.quick_launch.base_provider import ProviderResult
@@ -19,25 +19,25 @@ class WindowsLauncherProvider:
     """Reuse the pinned YASB index/ranking without configuring its global service."""
 
     def discover(self):
+        # Build a separate snapshot; searches keep using the previous catalog.
         from core.utils.win32.app_loader import AppListLoader
+
+        apps = []
+        loader = AppListLoader()
+        loader.apps_loaded.connect(apps.extend, Qt.ConnectionType.DirectConnection)
+        loader.clear_cache()
+        loader.run()
+        return apps
+
+    def set_catalog(self, apps):
         from core.widgets.services.quick_launch.providers.apps import AppsProvider
         from core.widgets.services.quick_launch.providers.file_search import _EverythingBackend
         from core.widgets.services.quick_launch.providers.settings import SettingsProvider
 
-        self.apps = []
-        loader = AppListLoader()
-        loader.apps_loaded.connect(self._set_apps, Qt.ConnectionType.DirectConnection)
-        # Run in our existing worker; do not start a second, unowned QThread.
-        loader.clear_cache()
-        loader.run()
         self._apps = AppsProvider({'show_recent': True, 'show_description': False})
-        self._apps._service = SimpleNamespace(apps=self.apps, icon_paths={})
+        self._apps._service = SimpleNamespace(apps=apps, icon_paths={})
         self._settings = SettingsProvider()
         self._everything = _EverythingBackend()
-        return self.apps
-
-    def _set_apps(self, apps):
-        self.apps = apps
 
     def search(self, text, limit, icons):
         from core.widgets.services.quick_launch.fuzzy import _split_camel, fuzzy_score
@@ -140,17 +140,20 @@ class PreviewLauncherProvider:
         self.launched = []
 
     def discover(self):
-        self.items = [
+        items = [
             ProviderResult(title=name, description='Application', provider='apps', id=name,
                            action_data={'name': name, 'path': f'C:\\Preview\\{name}.lnk'})
             for name in ('Arc', 'Calculator', 'Codex', 'Everything', 'File Explorer',
                          'Microsoft Edge', 'Notepad', 'Spotify', 'Visual Studio Code', 'Windows Terminal')
         ]
-        self.items += [ProviderResult(title='Sound', description='Control Panel', provider='apps',
+        items += [ProviderResult(title='Sound', description='Control Panel', provider='apps',
                                       id='control-sound', action_data={'path': 'CPL::Microsoft.Sound'}),
                        ProviderResult(title='Display', description='System > Display', provider='settings',
                                       id='ms-settings:display', action_data={'uri': 'ms-settings:display'})]
-        return []
+        return items
+
+    def set_catalog(self, items):
+        self.items = items
 
     def search(self, text, limit, icons):
         from core.widgets.services.quick_launch.fuzzy import fuzzy_score
@@ -168,6 +171,30 @@ class PreviewLauncherProvider:
         self.launched.append(result.id)
 
 
+class _CatalogWorker(QThread):
+    catalog_ready = pyqtSignal(list)
+    failed = pyqtSignal(str)
+
+    def __init__(self, provider):
+        super().__init__()
+        self.provider = provider
+
+    def run(self):
+        import pythoncom
+
+        pythoncom.CoInitialize()
+        try:
+            apps = self.provider.discover()
+            if not self.isInterruptionRequested():
+                self.catalog_ready.emit(apps)
+        except Exception as error:
+            logging.exception('Canopy application discovery failed')
+            if not self.isInterruptionRequested():
+                self.failed.emit(str(error))
+        finally:
+            pythoncom.CoUninitialize()
+
+
 class _LauncherWorker(QThread):
     catalog_ready = pyqtSignal(list)
     results_ready = pyqtSignal(str, list)
@@ -181,13 +208,14 @@ class _LauncherWorker(QThread):
         self.stopping = Event()
         self.latest = ''
         self.known = {}
+        self.catalog = None
+        self.query = None
 
     def run(self):
         import pythoncom
 
         pythoncom.CoInitialize()
         try:
-            self._discover()
             while not self.stopping.is_set():
                 command = self.commands.get()
                 if command is None:
@@ -195,16 +223,19 @@ class _LauncherWorker(QThread):
                 kind, payload = command
                 request = ''
                 try:
-                    if kind == 'refresh':
-                        self._discover()
+                    if kind == 'catalog':
+                        request = 'catalog'
+                        if payload != self.catalog:
+                            self.provider.set_catalog(payload)
+                            self.catalog = payload
+                        self.catalog_ready.emit(payload)
+                        # Reuse the request ID so this updates the open list silently.
+                        request = self.query[0] if self.query else ''
+                        self._search()
                     elif kind == 'search':
-                        request, text, limit, icons = payload
-                        if request != self.latest:
-                            continue
-                        results = self.provider.search(text, limit, icons)
-                        if request == self.latest and not self.stopping.is_set():
-                            self.known = {r.id: copy.deepcopy(r) for r in results if r.id}
-                            self.results_ready.emit(request, results)
+                        request = payload[0]
+                        self.query = payload
+                        self._search()
                     elif kind == 'launch':
                         result = self.known.get(payload)
                         if result is None:
@@ -219,15 +250,16 @@ class _LauncherWorker(QThread):
         finally:
             pythoncom.CoUninitialize()
 
-    def _discover(self):
-        try:
-            apps = self.provider.discover()
-            if not self.stopping.is_set():
-                self.catalog_ready.emit(apps)
-        except Exception as error:
-            logging.exception('Canopy application discovery failed')
-            if not self.stopping.is_set():
-                self.failed.emit('discovery', str(error))
+    def _search(self):
+        if self.catalog is None or self.query is None:
+            return
+        request, text, limit, icons = self.query
+        if request != self.latest or self.stopping.is_set():
+            return
+        results = self.provider.search(text, limit, icons)
+        if request == self.latest and not self.stopping.is_set():
+            self.known = {r.id: copy.deepcopy(r) for r in results if r.id}
+            self.results_ready.emit(request, results)
 
 
 class LauncherService(QObject):
@@ -248,6 +280,7 @@ class LauncherService(QObject):
     def __init__(self, parent=None, *, preview=False, provider=None):
         super().__init__(parent)
         self.loading = True
+        self.refreshing = False
         self.error_message = ''
         self._closed = False
         self._counter = 0
@@ -255,6 +288,8 @@ class LauncherService(QObject):
         self._icons = {}
         self._results = {}
         self._icon_worker = None
+        self._catalog_worker = None
+        self._catalog = None
         self._preview = preview or provider is not None
         self._worker = _LauncherWorker(provider or (PreviewLauncherProvider() if preview else WindowsLauncherProvider()))
         self._worker.catalog_ready.connect(self._on_catalog)
@@ -265,6 +300,11 @@ class LauncherService(QObject):
         if app:
             app.aboutToQuit.connect(self.shutdown)
         self._worker.start()
+        self._refresh_timer = QTimer(self)
+        self._refresh_timer.setInterval(60_000)
+        self._refresh_timer.timeout.connect(self.refresh)
+        self._refresh_timer.start()
+        self.refresh()
 
     def search(self, text, limit=24):
         self._counter += 1
@@ -283,25 +323,49 @@ class LauncherService(QObject):
         return True
 
     def refresh(self):
-        if not self._closed:
-            self.loading = True
+        if not self._closed and not self.refreshing:
+            self.refreshing = True
+            self.loading = self._catalog is None
             self.error_message = ''
-            self.state_changed.emit('loading')
-            self._worker.commands.put(('refresh', None))
+            if self.loading:
+                self.state_changed.emit('loading')
+            if self._catalog_worker:
+                self._retire(self._catalog_worker)
+            self._catalog_worker = _CatalogWorker(self._worker.provider)
+            self._catalog_worker.catalog_ready.connect(self._accept_catalog)
+            self._catalog_worker.failed.connect(self._on_discovery_error)
+            self._catalog_worker.start()
+
+    def _accept_catalog(self, apps):
+        if not self._closed:
+            self._worker.commands.put(('catalog', apps))
+
+    def _on_discovery_error(self, message):
+        if self._closed:
+            return
+        self.refreshing = False
+        # Keep a usable catalog and the visible list when a background scan fails.
+        if self._catalog is None:
+            self._on_error('discovery', message)
 
     def _on_catalog(self, apps):
         if self._closed:
             return
         self.loading = False
+        self.refreshing = False
         self.error_message = ''
         self.state_changed.emit('ready')
-        if self._preview or not apps:
+        changed = apps != self._catalog
+        self._catalog = apps
+        if self._preview or not changed:
             return
         from core.widgets.services.quick_launch.icon_resolver import IconResolverWorker, compute_extraction_size
 
         if self._icon_worker and self._icon_worker.isRunning():
             self._icon_worker.stop()
             self._retire(self._icon_worker)
+        if not apps:
+            return
         icons_dir = os.path.join(tempfile.gettempdir(), 'yasb_quick_launch_icons')
         os.makedirs(icons_dir, exist_ok=True)
         screen = QApplication.primaryScreen()
@@ -317,10 +381,15 @@ class LauncherService(QObject):
 
     def _on_results(self, request, results):
         if not self._closed and request == self._latest:
+            for result in results:
+                result.icon_path = self._icons.get(result.id, result.icon_path)
             self._results = {r.id: r for r in results if r.id}
             self.results_ready.emit(request, results)
 
     def _on_error(self, request, message):
+        if request == 'catalog':
+            self._on_discovery_error(message)
+            return
         if self._closed or (request not in ('', 'discovery', self._latest)):
             return
         self.loading = False
@@ -340,8 +409,13 @@ class LauncherService(QObject):
         if self._closed:
             return
         self._closed = True
+        self._refresh_timer.stop()
         self._worker.stopping.set()
         self._worker.commands.put(None)
+        if self._catalog_worker:
+            self._catalog_worker.requestInterruption()
+            if not self._catalog_worker.wait(2000):
+                self._retire(self._catalog_worker)
         if self._icon_worker:
             self._icon_worker.stop()
             if not self._icon_worker.wait(2000):

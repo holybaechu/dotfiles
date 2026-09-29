@@ -241,6 +241,8 @@ class Launcher(QWidget):
             from core.utils.win32.window_actions import force_foreground_focus
             force_foreground_focus(int(self.winId()))
         self.search.setFocus(Qt.FocusReason.OtherFocusReason)
+        # The shared service outlives each popup; pick up installed/removed apps.
+        self.service.refresh()
         self.submit_query()
         if not reduced_motion() and self.preview_parent is None:
             self.set_opacity(0.)
@@ -294,21 +296,35 @@ class Launcher(QWidget):
     def receive_results(self, request_id, results):
         if self.closing or request_id != self.query_id:
             return
+        preserve_position = not self.query_pending
+        current = self.results.currentItem()
+        selected_id = current.data(Qt.ItemDataRole.UserRole).id if current else None
+        previous_row = self.results.currentRow()
+        scroll = self.results.verticalScrollBar().value()
         self.query_pending = False
-        self.results.clear()
-        for result in results:
-            if result.is_separator:
-                continue
-            item = QListWidgetItem(result.title)
-            item.setData(Qt.ItemDataRole.UserRole, result)
-            item.setToolTip(f'{result.title}\n{result.description}')
-            if result.is_loading or not result.action_data or not result.id:
-                item.setFlags(Qt.ItemFlag.NoItemFlags)
-            self.results.addItem(item)
+        results = [result for result in results if not result.is_separator]
+        previous = [self.results.item(i).data(Qt.ItemDataRole.UserRole) for i in range(self.results.count())]
+        if results != previous:
+            self.results.setUpdatesEnabled(False)
+            self.results.clear()
+            for result in results:
+                item = QListWidgetItem(result.title)
+                item.setData(Qt.ItemDataRole.UserRole, result)
+                item.setToolTip(f'{result.title}\n{result.description}')
+                if result.is_loading or not result.action_data or not result.id:
+                    item.setFlags(Qt.ItemFlag.NoItemFlags)
+                self.results.addItem(item)
+            self.results.setUpdatesEnabled(True)
         self.results.setVisible(bool(self.results.count()))
         self.message.setVisible(not self.results.count())
         if self.results.count():
-            self.results.setCurrentRow(0)
+            row = 0
+            if preserve_position:
+                row = next((i for i, result in enumerate(results) if result.id == selected_id),
+                           max(0, min(previous_row, len(results) - 1)))
+            self.results.setCurrentRow(row)
+            if preserve_position:
+                self.results.verticalScrollBar().setValue(scroll)
         else:
             self.message.setText('No matches. Try another name.' if self.search.text().strip() else 'No applications found. Press Ctrl+R to refresh.')
         self.status.setText('Files · Everything' if self.search.text().lstrip().lower().startswith('file ') else 'Applications, settings & files')
@@ -410,7 +426,6 @@ class Launcher(QWidget):
                 return True
             if key == Qt.Key.Key_R and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
                 self.service.refresh()
-                self.submit_query()
                 return True
         if event.type() == QEvent.Type.WindowDeactivate and obj is self:
             self.blur_timer.start(140)

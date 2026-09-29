@@ -70,6 +70,7 @@ def start():
     import main
     from core.widgets.canopy.host import install_host_fixes
     from core.widgets.canopy.launcher_commands import LauncherCommands, start_cli_server
+    from core.widgets.canopy.launcher_service import LauncherService
     from core.widgets.canopy.theme import install_theme
     install_host_fixes()
     original = main.YASBApplication
@@ -79,6 +80,7 @@ def start():
             super().__init__(args)
             install_theme(self)
             self.canopy_commands = LauncherCommands(self)
+            LauncherService.instance()
 
     main.YASBApplication = Application
     main.start_cli_server = start_cli_server

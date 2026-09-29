@@ -13,6 +13,17 @@ resources:
       useLatest: false
       acceptAgreements: true
 
+  - name: Everything
+    type: Microsoft.WinGet/Package
+    properties:
+      id: voidtools.Everything
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: WindowsTerminal
     type: Microsoft.WinGet/Package
     properties:
