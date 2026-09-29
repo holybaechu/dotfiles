@@ -2,11 +2,17 @@
 [user]
     name = holybaechu
     email = holybaechu@gmail.com
+    signingkey = {{ include "dot_config/git/github.pub" | trim | quote }}
 [gpg]
-    format = openpgp
+    format = ssh
+[gpg "ssh"]
 {{ if eq .chezmoi.os "windows" }}
-    program = {{ joinPath (env "ProgramFiles") "GnuPG" "bin" "gpg.exe" | replace "\\" "/" | quote }}
+    program = {{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WindowsApps" "op-ssh-sign.exe" | replace "\\" "/" | quote }}
+{{ else }}
+{{ $signer := lookPath "op-ssh-sign-wsl.exe" }}{{ if not $signer }}{{ fail "Install 1Password for Windows and enable its WSL signer before applying this Git config." }}{{ end }}
+    program = {{ $signer | quote }}
 {{ end }}
+    allowedSignersFile = ~/.config/git/allowed_signers
 [commit]
     gpgSign = true
 [tag]
@@ -14,4 +20,7 @@
 {{ if eq .chezmoi.os "windows" }}
 [core]
     sshCommand = {{ joinPath (env "WINDIR") "System32" "OpenSSH" "ssh.exe" | replace "\\" "/" | quote }}
+{{ else }}
+[core]
+    sshCommand = /mnt/c/Windows/System32/OpenSSH/ssh.exe
 {{ end }}

@@ -1,6 +1,4 @@
-# Sourced by interactive Bash shells; keychain reuses one agent across terminals.
+# WSL uses the Windows 1Password agent and the Windows SSH configuration.
 [[ $- == *i* ]] || return
-export GPG_TTY="$(tty)"
-if command -v keychain >/dev/null 2>&1 && [[ -f "$HOME/.ssh/id_ed25519" ]]; then
-    eval "$(keychain --eval --quiet id_ed25519)"
-fi
+alias ssh='/mnt/c/Windows/System32/OpenSSH/ssh.exe'
+alias ssh-add='/mnt/c/Windows/System32/OpenSSH/ssh-add.exe'
