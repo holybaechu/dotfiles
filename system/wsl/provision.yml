@@ -1,0 +1,166 @@
+---
+- name: Provision Arch Linux on WSL
+  hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+    linux_user: "{{ lookup('ansible.builtin.env', 'DOTFILES_LINUX_USER') | default('holybaechu', true) }}"
+    repository: "{{ lookup('ansible.builtin.env', 'DOTFILES_REPOSITORY') | default('https://github.com/holybaechu/dotfiles.git', true) }}"
+
+  pre_tasks:
+    - name: Require root in Arch WSL and a non-root Linux username
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['user_uid'] == 0
+          - ansible_facts['distribution'] == 'Archlinux'
+          - "'microsoft' in (ansible_facts['kernel'] | lower)"
+          - linux_user is match('^[a-z_][a-z0-9_-]{0,31}$')
+          - linux_user != 'root'
+
+    - name: Read the existing Linux account
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ linux_user }}"
+        fail_key: false
+
+    - name: Reject an existing account with UID zero
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['getent_passwd'][linux_user] is none or (ansible_facts['getent_passwd'][linux_user][1] | int) != 0
+
+    - name: Preserve the existing home directory
+      ansible.builtin.set_fact:
+        linux_home: "{{ ansible_facts['getent_passwd'][linux_user][4] if ansible_facts['getent_passwd'][linux_user] else '/home/' ~ linux_user }}"
+
+  tasks:
+    # Refresh signing keys before upgrading an older image. Keep the database
+    # refresh and full upgrade together to avoid an Arch partial upgrade.
+    - name: Refresh the Arch signing keys
+      community.general.pacman:
+        name: archlinux-keyring
+        state: latest
+        update_cache: true
+
+    - name: Upgrade the Arch system
+      community.general.pacman:
+        upgrade: true
+
+    - name: Install official repository packages
+      community.general.pacman:
+        name:
+          - base-devel
+          - chezmoi
+          - git
+          - github-cli
+          - openssh
+          - sudo
+        state: present
+
+    - name: Create the Linux account and ensure wheel membership
+      ansible.builtin.user:
+        name: "{{ linux_user }}"
+        home: "{{ linux_home }}"
+        create_home: true
+        groups: wheel
+        append: true
+        shell: /bin/bash
+
+    - name: Allow sudo with the Linux password
+      ansible.builtin.copy:
+        content: "{{ linux_user }} ALL=(ALL:ALL) ALL\n"
+        dest: "/etc/sudoers.d/90-dotfiles-{{ linux_user }}"
+        owner: root
+        group: root
+        mode: '0440'
+        validate: /usr/bin/visudo --check --file %s
+
+    - name: Create the WSL interop service override directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/systemd-binfmt.service.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Keep WSL executable registration active with empty binfmt.d directories
+      ansible.builtin.copy:
+        src: 10-wsl-interop.conf
+        dest: /etc/systemd/system/systemd-binfmt.service.d/10-wsl-interop.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload systemd and restart WSL interop
+
+    # Chezmoi's Linux templates use Windows executables via WSL interop.
+    - name: Apply the interop override before applying dotfiles
+      ansible.builtin.meta: flush_handlers
+
+    - name: Ensure WSL executable registration is running
+      ansible.builtin.systemd_service:
+        name: systemd-binfmt.service
+        state: started
+
+    - name: Check whether yay is installed
+      ansible.builtin.stat:
+        path: /usr/bin/yay
+      register: yay_binary
+
+    - name: Bootstrap yay for AUR use
+      ansible.builtin.include_tasks: yay.yml
+      when: not yay_binary.stat.exists
+
+    - name: Configure the Linux user's dotfiles
+      become: true
+      become_user: "{{ linux_user }}"
+      become_method: su
+      environment:
+        HOME: "{{ linux_home }}"
+        GIT_TERMINAL_PROMPT: '0'
+      # A dry run cannot execute commands as an account it has not created.
+      when: not ansible_check_mode or ansible_facts['getent_passwd'][linux_user] is not none
+      block:
+        - name: Check for an existing Linux chezmoi checkout
+          ansible.builtin.stat:
+            path: "{{ linux_home }}/.local/share/chezmoi/.git"
+          register: chezmoi_checkout
+
+        - name: Initialize chezmoi without pulling or replacing an existing checkout
+          ansible.builtin.command:
+            argv:
+              - chezmoi
+              - init
+              - --force
+              - --no-tty
+              - "{{ repository }}"
+            chdir: "{{ linux_home }}"
+            creates: "{{ linux_home }}/.local/share/chezmoi/.git"
+
+        - name: Preview pending dotfile changes
+          ansible.builtin.command:
+            argv: [chezmoi, diff, --no-tty]
+            chdir: "{{ linux_home }}"
+          register: chezmoi_diff
+          changed_when: false
+          check_mode: false
+          when: not ansible_check_mode or chezmoi_checkout.stat.exists
+
+        - name: Apply pending dotfile changes as the Linux user
+          ansible.builtin.command:
+            argv: [chezmoi, apply, --force, --no-tty]
+            chdir: "{{ linux_home }}"
+          when: chezmoi_diff.stdout | default('') | length > 0
+          changed_when: true
+
+        - name: Add the managed shell hook without replacing Bash configuration
+          ansible.builtin.lineinfile:
+            path: "{{ linux_home }}/.bashrc"
+            line: '[[ -r "$HOME/.config/shell/agents.sh" ]] && source "$HOME/.config/shell/agents.sh"'
+            create: true
+            mode: '0644'
+
+  handlers:
+    - name: Reload systemd and restart WSL interop
+      ansible.builtin.systemd_service:
+        name: systemd-binfmt.service
+        daemon_reload: true
+        state: restarted

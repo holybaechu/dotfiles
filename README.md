@@ -1,12 +1,16 @@
 # Dotfiles
 
-Chezmoi manages application configuration in `home/`. DSC manages Windows packages and preferences in `system/windows/`.
+Chezmoi manages application configuration in `home/`. DSC manages Windows packages and preferences in `system/windows/`. Ansible manages the Arch Linux environment in WSL.
 
 ```text
 bootstrap.ps1                 # Provision Windows and Arch WSL2; apply chezmoi in both
 home/                         # Chezmoi source state, selected by .chezmoiroot
 apps/yasb/                    # Native PyQt6 Canopy widget, hosted by YASB
-system/wsl/                   # Install official Arch WSL2, user, packages, and chezmoi
+system/wsl/
+  Setup.ps1                   # Install/update WSL2 and select the Arch user
+  provision.sh                # Bootstrap Ansible and prompt for an initial password
+  provision.yml               # Ansible: Arch packages, user, system configuration, chezmoi
+  yay.yml                     # Build yay as the Linux user; install its package as root
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
   packages.winget             # YAML: Windows Terminal, fonts, komorebi, whkd, Git, 1Password, GitHub CLI, uv
@@ -78,7 +82,7 @@ Press Alt+O to reload whkd after changing shortcuts. Open a new Terminal window 
 
 ### GitHub CLI
 
-Bootstrap installs `GitHub.cli` on Windows and `github-cli` through yay in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key`. The CLI login authorizes GitHub API operations; Git authentication and commit signing use the SSH key in 1Password. The initial public bootstrap clone still uses HTTPS so it can run before 1Password is configured.
+Bootstrap installs `GitHub.cli` on Windows and `github-cli` through pacman in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key`. The CLI login authorizes GitHub API operations; Git authentication and commit signing use the SSH key in 1Password. The initial public bootstrap clone still uses HTTPS so it can run before 1Password is configured.
 
 Chezmoi renders shared CLI defaults from `home/.chezmoitemplates/gh-config.yml` to `%APPDATA%\GitHub CLI\config.yml` on Windows and `~/.config/gh/config.yml` on Linux. Native CLI logins remain separate and their `hosts.yml` authentication files are excluded from chezmoi.
 
@@ -160,8 +164,22 @@ After restarting, rerun bootstrap or resume only the remaining Arch setup from y
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.local\share\chezmoi\system\wsl\Setup.ps1"
 ```
 
-Arch setup creates the `holybaechu` Linux account with Bash and installs [yay from its AUR source package](https://github.com/Jguer/yay#installation) before the application packages. Pacman is used only for the initial signing-key refresh and the Git, `base-devel`, and sudo prerequisites when yay is missing. Yay is built and run as the Linux user, then handles signing-key updates, system upgrades, and package installation, including chezmoi. Reruns reuse yay and skip the pacman bootstrap. Override the account name with `-WslUser <name>`. Initial account setup asks for a Linux password; existing passwords are retained, and sudo may ask for that password during package installation. Arch becomes the default WSL distribution and the account becomes its default user.
+The small shell bootstrap initializes the signing keyring and installs Arch's `ansible` package, including Python and the `community.general` collection, if it is missing. Ansible then runs locally as root inside Arch; no SSH server is needed. Its playbook refreshes signing keys, performs a full system upgrade, installs official packages through pacman, creates or updates the Linux account with Bash and wheel membership, validates password-required sudo access, and maintains the WSL interop service override. The override reloads systemd and restarts the service only when its contents change.
 
-Linux chezmoi initializes the same `-Repository` URL into its own Linux home and applies it as the Linux user, including the shared Git and GitHub CLI defaults. Existing source checkouts are reused without pulling or discarding local edits. Windows-only files are excluded by `.chezmoiignore.tmpl`. Windows DSC stays on Windows.
+Ansible also installs [yay from its AUR source package](https://github.com/Jguer/yay#installation) when `/usr/bin/yay` is missing. It installs Go for the build, runs Git and makepkg as the Linux user in a temporary directory, then installs the resulting package as root and removes the build directory even on failure. This avoids sudo prompts during package builds. Yay remains available for AUR use; provisioning uses pacman for official packages and system upgrades. It does not update existing AUR packages. The [Ansible pacman module](https://docs.ansible.com/projects/ansible/latest/collections/community/general/pacman_module.html) documents incompatibilities with yay, so the playbook does not use yay as its package backend.
 
-Routine package and configuration confirmations are accepted automatically, including makepkg/yay confirmations and chezmoi overwriting managed targets. Windows UAC, initial Linux password setup, and sudo authentication still require input. On an existing setup, pull remote changes before rerunning bootstrap. To rerun only Arch provisioning, use `system\wsl\Setup.ps1 -LinuxUser holybaechu`. Open a new terminal for persistent environment changes.
+The default Linux account is `holybaechu`; override it with `-WslUser <name>` on `bootstrap.ps1` or `-LinuxUser <name>` on `system/wsl/Setup.ps1`. After Ansible finishes, the shell bootstrap prompts for a password only if the account has no usable password. Existing passwords are retained. Arch becomes the default WSL distribution and the account becomes its default user.
+
+Ansible initializes Linux chezmoi from the same `-Repository` URL into its own Linux home and applies pending dotfile changes as the Linux user, including the shared Git and GitHub CLI defaults. Existing source checkouts are reused without pulling or discarding local edits. It also adds the managed shell hook to `.bashrc` without replacing existing shell configuration. Windows-only files are excluded by `.chezmoiignore.tmpl`. Windows DSC stays on Windows, and `chezmoi apply` does not invoke Ansible.
+
+Routine package and configuration confirmations are accepted automatically, including makepkg confirmations and chezmoi overwriting managed targets. Windows UAC and initial Linux password setup still require input. On an existing setup, pull remote changes before rerunning bootstrap. To rerun only Arch provisioning, use `system\wsl\Setup.ps1 -LinuxUser holybaechu`. Open a new terminal for persistent environment changes.
+
+Once Ansible is installed, preview or apply Linux provisioning directly from the Linux checkout:
+
+```bash
+cd ~/.local/share/chezmoi
+sudo env LC_ALL=C.UTF-8 ansible-playbook -i localhost, system/wsl/provision.yml --check --diff
+sudo env LC_ALL=C.UTF-8 ansible-playbook -i localhost, system/wsl/provision.yml
+```
+
+Pass `-e linux_user=<name>` and `-e repository=<url>` for overrides. Check mode previews supported system changes; it skips building yay, applying dotfiles, and commands that depend on a new account or checkout. It does not install Ansible or set an initial password; use `Setup.ps1` for first-time setup. Each apply includes an Arch system upgrade, so treat this as an explicit maintenance command separate from routine `chezmoi apply`.
