@@ -54,6 +54,19 @@ komorebic reload-configuration
 
 Reload whkd separately after editing its shortcuts. `chezmoi apply` does not run DSC. Keep chezmoi special files and hooks inside `home/`, and give each setting a single owner.
 
+### App shortcuts
+
+whkd provides these global shortcuts:
+
+| Shortcut | Action |
+| --- | --- |
+| Alt+E | Open File Explorer |
+| Alt+B | Open the Windows default browser |
+
+`OpenDefaultBrowser.ps1` uses Windows' [association lookup](https://learn.microsoft.com/en-us/windows/win32/api/shlwapi/nf-shlwapi-assocquerystringw) to find the current HTTPS browser and launches it without a URL, leaving startup pages and session restore to the browser's settings. App shortcuts launch asynchronously so whkd stays responsive; each app decides whether to reuse an existing window.
+
+After editing, run `chezmoi apply ~/.config/whkdrc`, then press Alt+O to reload whkd.
+
 ### Terminal
 
 Alt+Enter opens Windows Terminal. Chezmoi adds a default `WSL` profile that runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. DSC installs Windows Terminal and JetBrainsMono Nerd Font Mono. Terminal uses the font at 12 pt with programming ligatures, the Canopy color scheme, a block cursor, and no scrollbar. Its dark green background (`#060c08`) uses 70% Acrylic opacity, including when unfocused, subject to Windows transparency and power settings.

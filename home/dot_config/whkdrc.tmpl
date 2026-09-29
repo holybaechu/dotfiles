@@ -16,9 +16,9 @@ alt + return            : Start-Process wt.exe -ArgumentList '-w new'
 ctrl + alt + return     : Start-Process wt.exe -ArgumentList '-w new new-tab -p "Windows PowerShell"'
 ctrl + alt + shift + return : Start-Process wt.exe -ArgumentList '-w new new-tab -p "Windows PowerShell"' -Verb RunAs
 
-# The apps will be focused if open, or launched if not open
-# alt + f                 : if ($wshell.AppActivate('Firefox') -eq $False) { start firefox }
-# alt + b                 : if ($wshell.AppActivate('Chrome') -eq $False) { start chrome }
+# Everyday apps (browser follows the current Windows default)
+alt + e                 : Start-Process explorer.exe
+alt + b                 : Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force; & '{{ joinPath (dir .chezmoi.sourceDir) "system" "windows" "scripts" "OpenDefaultBrowser.ps1" | replace "'" "''" }}'
 
 alt + q                 : komorebic close
 alt + m                 : komorebic minimize
