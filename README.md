@@ -33,6 +33,8 @@ Packages use `useLatest: false` to preserve installed versions. In `preferences.
 
 `preferences.winget` also enables Windows' built-in taskbar auto-hide. To turn it off, set `TaskbarAutoHide.properties.input.enabled` to `false` and run `Configure.ps1 -Action Apply -Module preferences`.
 
+The `ExplorerPreferences` resource hides desktop icons, shows hidden files and folders, and shows file extensions. Its three input switches can be changed independently. The helper updates Windows Shell settings and notifies Explorer without restarting it.
+
 `startup.winget` creates two Windows Startup shortcuts: komorebi's native `enable-autostart --whkd` command creates one for komorebi and whkd; DSC creates `Canopy.lnk` for the native bar and removes the old Zebar shortcut. Apply it separately with `Configure.ps1 -Action Apply -Module startup`. Applying startup does not launch or restart apps. On a fresh setup, apply `packages` and run `apps\yasb\Setup.ps1` before applying startup.
 
 Apply application configuration separately:

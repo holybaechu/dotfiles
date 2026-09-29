@@ -5,6 +5,26 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: ExplorerPreferences
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      input:
+        hideDesktopIcons: true
+        showHiddenFiles: true
+        showFileExtensions: true
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        $current = & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Get
+        $current.HideDesktopIcons -eq $settings.hideDesktopIcons -and
+          $current.ShowHiddenFiles -eq $settings.showHiddenFiles -and
+          $current.ShowFileExtensions -eq $settings.showFileExtensions
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Set -HideDesktopIcons $settings.hideDesktopIcons -ShowHiddenFiles $settings.showHiddenFiles -ShowFileExtensions $settings.showFileExtensions
+
   - name: KomorebiConfigHome
     type: Microsoft.DSC.Transitional/WindowsPowerShellScript
     properties:
