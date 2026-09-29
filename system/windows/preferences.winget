@@ -5,6 +5,22 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: SshAgent
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      getScript: |
+        Get-Service -Name ssh-agent | Select-Object Status, StartType
+      testScript: |
+        $agent = Get-Service -Name ssh-agent
+        $agent.Status -eq 'Running' -and $agent.StartType -eq 'Automatic'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        Set-Service -Name ssh-agent -StartupType Automatic
+        Start-Service -Name ssh-agent
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: ExplorerPreferences
     type: Microsoft.DSC.Transitional/WindowsPowerShellScript
     properties:

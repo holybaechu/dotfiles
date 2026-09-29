@@ -50,6 +50,14 @@ fi
 
 # Refresh signing keys before the full upgrade, including on an older image.
 runuser --user "$linux_user" -- yay -Sy --needed --noconfirm archlinux-keyring
-runuser --user "$linux_user" -- yay -Su --needed --noconfirm --sudoloop chezmoi git github-cli sudo base-devel
+runuser --user "$linux_user" -- yay -Su --needed --noconfirm --sudoloop chezmoi git github-cli openssh keychain sudo base-devel
 runuser --user "$linux_user" -- env GIT_TERMINAL_PROMPT=0 chezmoi init --force --no-tty "$repository"
 runuser --user "$linux_user" -- chezmoi apply --force --no-tty
+
+# Keep the user's existing Bash configuration, adding the managed agent hook once.
+bashrc="$linux_home/.bashrc"
+agent_hook='[[ -r "$HOME/.config/shell/agents.sh" ]] && source "$HOME/.config/shell/agents.sh"'
+runuser --user "$linux_user" -- touch "$bashrc"
+if ! grep -Fxq "$agent_hook" "$bashrc"; then
+    printf '\n%s\n' "$agent_hook" | runuser --user "$linux_user" -- tee -a "$bashrc" >/dev/null
+fi

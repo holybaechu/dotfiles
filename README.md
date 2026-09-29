@@ -9,7 +9,7 @@ apps/yasb/                    # Native PyQt6 Canopy widget, hosted by YASB
 system/wsl/                   # Install official Arch WSL2, user, packages, and chezmoi
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, GitHub CLI, uv
+  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, GnuPG, GitHub CLI, uv
   preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -84,6 +84,32 @@ Chezmoi renders one shared set of defaults from `home/.chezmoitemplates/gh-confi
 
 Windows and native Linux `gh` use separate system credential stores. Their `hosts.yml` authentication files are excluded from chezmoi. WSL can invoke Windows `gh.exe` to reuse its Windows login; native Linux `gh` is preferable for commands that operate on Linux repository paths. Bootstrap installs the CLI without automating account authentication or copying tokens into dotfiles. See the [authentication](https://cli.github.com/manual/gh_auth_login) and [configuration environment](https://cli.github.com/manual/gh_help_environment) documentation.
 
+### Git identity, signing, and agents
+
+Chezmoi manages `~/.config/git/config` on Windows and Linux with the shared author identity and OpenPGP commit/tag signing enabled. Git reads the machine-local `~/.gitconfig` afterward, so local settings override the shared defaults. Chezmoi creates that local file only if missing and preserves existing content. Store each OS's signing-key fingerprint there after creating its key:
+
+```bash
+git config --file ~/.gitconfig user.signingkey YOUR_GPG_FINGERPRINT
+```
+
+Windows DSC installs `GnuPG.GnuPG`; Arch uses its preinstalled GnuPG and installs `openssh` and `keychain` through yay. The Windows Git template selects the native GnuPG executable installed by DSC. Private keys, passphrases, and agent sockets are not managed by chezmoi. Signing will require a usable local key before commits can be created.
+
+GPG's agent caches passphrases automatically (by default, ten minutes idle and two hours maximum). In Arch Bash, set `export GPG_TTY="$(tty)"` so pinentry uses the current terminal. For a one-hour idle timeout and eight-hour maximum, configure the local agent and reload it:
+
+```bash
+printf 'default-cache-ttl:0:3600\nmax-cache-ttl:0:28800\n' | gpgconf --change-options gpg-agent
+gpgconf --reload gpg-agent
+```
+
+Arch bootstrap adds a single source line to the existing `~/.bashrc` for the managed `~/.config/shell/agents.sh`. That hook sets `GPG_TTY` and uses keychain to reuse one SSH agent across interactive terminals when `~/.ssh/id_ed25519` exists. Open a new terminal to use it, or initialize the current terminal with:
+
+```bash
+export GPG_TTY="$(tty)"
+eval "$(keychain --eval --quiet id_ed25519)"
+```
+
+Windows DSC enables and starts the native OpenSSH agent, and the shared Git template selects Windows OpenSSH to use that agent. After creating a key, run `ssh-add "$env:USERPROFILE\.ssh\id_ed25519"` from normal PowerShell to unlock it. See the [GPG cache options](https://www.gnupg.org/documentation/manuals/gnupg/Agent-Options.html) and [keychain documentation](https://www.funtoo.org/Keychain).
+
 ## Canopy / YASB
 
 Canopy is a native PyQt6 widget hosted by [YASB v2.0.7](https://github.com/amnweb/yasb/releases/tag/v2.0.7). The pinned upstream checkout stays unmodified in `apps/yasb/.upstream`; `launch.py` loads the custom widget from `canopy/`. Start through this launcher, because a stock YASB executable cannot import the custom widget.
@@ -150,6 +176,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.local
 
 Arch setup creates the `holybaechu` Linux account with Bash and installs [yay from its AUR source package](https://github.com/Jguer/yay#installation) before the application packages. Pacman is used only for the initial signing-key refresh and the Git, `base-devel`, and sudo prerequisites when yay is missing. Yay is built and run as the Linux user, then handles signing-key updates, system upgrades, and package installation, including chezmoi. Reruns reuse yay and skip the pacman bootstrap. Override the account name with `-WslUser <name>`. Initial account setup asks for a Linux password; existing passwords are retained, and sudo may ask for that password during package installation. Arch becomes the default WSL distribution and the account becomes its default user.
 
-Linux chezmoi initializes the same `-Repository` URL into its own Linux home and applies it as the Linux user, including the shared GitHub CLI defaults. Existing source checkouts are reused without pulling or discarding local edits. Windows-only files are excluded by `.chezmoiignore.tmpl`. Windows DSC stays on Windows.
+Linux chezmoi initializes the same `-Repository` URL into its own Linux home and applies it as the Linux user, including the shared Git and GitHub CLI defaults. Existing source checkouts are reused without pulling or discarding local edits. Windows-only files are excluded by `.chezmoiignore.tmpl`. Windows DSC stays on Windows.
 
 Routine package and configuration confirmations are accepted automatically, including makepkg/yay confirmations and chezmoi overwriting managed targets. Windows UAC, initial Linux password setup, and sudo authentication still require input. On an existing setup, pull remote changes before rerunning bootstrap. To rerun only Arch provisioning, use `system\wsl\Setup.ps1 -LinuxUser holybaechu`. Open a new terminal for persistent environment changes.

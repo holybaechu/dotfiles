@@ -1,0 +1,17 @@
+# Shared Git defaults. Keep per-machine overrides in ~/.gitconfig.
+[user]
+    name = holybaechu
+    email = holybaechu@gmail.com
+[gpg]
+    format = openpgp
+{{ if eq .chezmoi.os "windows" }}
+    program = {{ joinPath (env "ProgramFiles") "GnuPG" "bin" "gpg.exe" | replace "\\" "/" | quote }}
+{{ end }}
+[commit]
+    gpgSign = true
+[tag]
+    gpgSign = true
+{{ if eq .chezmoi.os "windows" }}
+[core]
+    sshCommand = {{ joinPath (env "WINDIR") "System32" "OpenSSH" "ssh.exe" | replace "\\" "/" | quote }}
+{{ end }}
