@@ -9,7 +9,7 @@ apps/yasb/                    # Native PyQt6 Canopy widget, hosted by YASB
 system/wsl/                   # Install official Arch WSL2, user, packages, and chezmoi
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, GnuPG, GitHub CLI, uv
+  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, 1Password, GitHub CLI, uv
   preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -78,37 +78,23 @@ WezTerm does not yet support Windows' system-wide **Default terminal application
 
 ### GitHub CLI
 
-Bootstrap installs `GitHub.cli` on Windows and `github-cli` through yay in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol ssh --web` and register an SSH authentication key for that OS. Git over SSH uses the SSH key/agent; GitHub CLI API requests use the CLI login. The initial public bootstrap clone still uses HTTPS so it can run before SSH keys are configured.
+Bootstrap installs `GitHub.cli` on Windows and `github-cli` through yay in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key`. The CLI login authorizes GitHub API operations; Git authentication and commit signing use the SSH key in 1Password. The initial public bootstrap clone still uses HTTPS so it can run before 1Password is configured.
 
-Chezmoi renders one shared set of defaults from `home/.chezmoitemplates/gh-config.yml` to `%APPDATA%\GitHub CLI\config.yml` on Windows and `~/.config/gh/config.yml` on Linux. These use GitHub CLI's standard configuration locations; no `GH_CONFIG_DIR` override is needed. The defaults include SSH Git, enabled prompts, and the CLI's standard browser, editor, pager, and display behavior.
+Chezmoi renders shared CLI defaults from `home/.chezmoitemplates/gh-config.yml` to `%APPDATA%\GitHub CLI\config.yml` on Windows and `~/.config/gh/config.yml` on Linux. Native CLI logins remain separate and their `hosts.yml` authentication files are excluded from chezmoi.
 
-Windows and native Linux `gh` use separate system credential stores. Their `hosts.yml` authentication files are excluded from chezmoi. WSL can invoke Windows `gh.exe` to reuse its Windows login; native Linux `gh` is preferable for commands that operate on Linux repository paths. Bootstrap installs the CLI without automating account authentication or copying tokens into dotfiles. See the [authentication](https://cli.github.com/manual/gh_auth_login) and [configuration environment](https://cli.github.com/manual/gh_help_environment) documentation.
+### Git signing and SSH with 1Password
 
-### Git identity, signing, and agents
+Windows DSC installs 1Password and disables the Windows OpenSSH Authentication Agent service so 1Password can own the OpenSSH named pipe. Sign in to 1Password, turn on Settings > Developer > Use the SSH Agent, and keep the app running in the notification area. Account sign-in, vault unlock, and key-use approvals remain manual. Use 1Password 8.11.18 or later for the current Windows/WSL signer paths.
 
-Chezmoi manages `~/.config/git/config` on Windows and Linux with the shared author identity and OpenPGP commit/tag signing enabled. Git reads the machine-local `~/.gitconfig` afterward, so local settings override the shared defaults. Chezmoi creates that local file only if missing and preserves existing content. Store each OS's signing-key fingerprint there after creating its key:
+Chezmoi configures `~/.config/git/config` to sign commits and tags with SSH. The public key in `home/dot_config/git/github.pub` selects the matching private key in 1Password. That public key also supplies the local allowed-signers file and Windows SSH's GitHub identity selection. Register it on GitHub as both an Authentication key and a Signing key; a single key can serve both roles. Private keys and 1Password credentials are never stored in the dotfiles.
 
-```bash
-git config --file ~/.gitconfig user.signingkey YOUR_GPG_FINGERPRINT
-```
+Windows uses `op-ssh-sign.exe` and Windows OpenSSH. Arch WSL uses the Windows `op-ssh-sign-wsl.exe` and `ssh.exe` through WSL interoperability; 1Password does not need to be installed inside Arch. The managed Bash hook aliases interactive `ssh` and `ssh-add` to their Windows executables. SSH host configuration for these commands lives in Windows `~/.ssh/config`. Native Linux programs that directly invoke Linux SSH do not automatically use this Windows bridge. Arch provisioning also keeps WSL's Windows-executable registration active when its `binfmt.d` directories are empty, so the Windows SSH and signer executables can launch.
 
-Windows DSC installs `GnuPG.GnuPG`; Arch uses its preinstalled GnuPG and installs `openssh` and `keychain` through yay. The Windows Git template selects the native GnuPG executable installed by DSC. Private keys, passphrases, and agent sockets are not managed by chezmoi. Signing will require a usable local key before commits can be created.
+1Password controls key authorization and how long approvals are remembered. The bootstrap no longer starts keychain or a separate SSH agent, and does not install standalone Windows GnuPG. Arch's preinstalled GnuPG remains an operating-system dependency of pacman/gpgme, not the Git signer.
 
-GPG's agent caches passphrases automatically (by default, ten minutes idle and two hours maximum). In Arch Bash, set `export GPG_TTY="$(tty)"` so pinentry uses the current terminal. For a one-hour idle timeout and eight-hour maximum, configure the local agent and reload it:
+Git reads machine-local `~/.gitconfig` after the shared config. Chezmoi creates it only when missing and preserves existing settings. When migrating from the previous OpenPGP setup, remove legacy `gpg.format`, `gpg.program`, and hexadecimal `user.signingkey` overrides from that local file after backing it up. Keep any intentional per-repository overrides separate. Existing GPG key files and historical GitHub public-key registrations are preserved.
 
-```bash
-printf 'default-cache-ttl:0:3600\nmax-cache-ttl:0:28800\n' | gpgconf --change-options gpg-agent
-gpgconf --reload gpg-agent
-```
-
-Arch bootstrap adds a single source line to the existing `~/.bashrc` for the managed `~/.config/shell/agents.sh`. That hook sets `GPG_TTY` and uses keychain to reuse one SSH agent across interactive terminals when `~/.ssh/id_ed25519` exists. Open a new terminal to use it, or initialize the current terminal with:
-
-```bash
-export GPG_TTY="$(tty)"
-eval "$(keychain --eval --quiet id_ed25519)"
-```
-
-Windows DSC enables and starts the native OpenSSH agent, and the shared Git template selects Windows OpenSSH to use that agent. After creating a key, run `ssh-add "$env:USERPROFILE\.ssh\id_ed25519"` from normal PowerShell to unlock it. See the [GPG cache options](https://www.gnupg.org/documentation/manuals/gnupg/Agent-Options.html) and [keychain documentation](https://www.funtoo.org/Keychain).
+See 1Password's [SSH setup](https://www.1password.dev/ssh/get-started), [Git signing](https://www.1password.dev/ssh/git-commit-signing), and [WSL integration](https://www.1password.dev/ssh/integrations/wsl) documentation.
 
 ## Canopy / YASB
 

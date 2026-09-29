@@ -1,3 +1,3 @@
-# Machine-local Git settings; chezmoi creates this file only when it is missing.
-# Shared defaults are in ~/.config/git/config and are read before this file.
-# Set this machine's key with: git config --file ~/.gitconfig user.signingkey FINGERPRINT
+# Machine-local Git overrides; chezmoi creates this file only when missing.
+# Shared defaults and the 1Password public signing key are in ~/.config/git/config.
+# Private keys remain in 1Password, outside this repository.

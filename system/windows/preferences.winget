@@ -5,18 +5,19 @@ metadata:
       identifier: dscv3
 
 resources:
-  - name: SshAgent
+  - name: OnePasswordSshAgentPipe
     type: Microsoft.DSC.Transitional/WindowsPowerShellScript
     properties:
       getScript: |
         Get-Service -Name ssh-agent | Select-Object Status, StartType
       testScript: |
         $agent = Get-Service -Name ssh-agent
-        $agent.Status -eq 'Running' -and $agent.StartType -eq 'Automatic'
+        $agent.Status -eq 'Stopped' -and $agent.StartType -eq 'Disabled'
       setScript: |
         $ErrorActionPreference = 'Stop'
-        Set-Service -Name ssh-agent -StartupType Automatic
-        Start-Service -Name ssh-agent
+        # 1Password owns the OpenSSH pipe; the Windows service must not compete.
+        Stop-Service -Name ssh-agent
+        Set-Service -Name ssh-agent -StartupType Disabled
     metadata:
       winget:
         securityContext: elevated
