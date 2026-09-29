@@ -1,11 +1,19 @@
 {{ if ne .chezmoi.os "windows" }}
+AppData
 .config/komorebi
+.config/wezterm
 .config/whkdrc
 .config/yasb
 .chezmoiscripts/windows/**
 {{ end }}
 
 {{ if ne .chezmoi.os "linux" }}
+.config/gh
 .config/nvim
+.config/shell
 .chezmoiscripts/linux/**
 {{ end }}
+
+# Authentication stays local to each OS, outside the managed defaults.
+.config/gh/hosts.yml
+AppData/Roaming/GitHub CLI/hosts.yml

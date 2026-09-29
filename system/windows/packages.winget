@@ -5,6 +5,17 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: WezTerm
+    type: Microsoft.WinGet/Package
+    properties:
+      id: wez.wezterm
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: Komorebi
     type: Microsoft.WinGet/Package
     properties:
@@ -31,6 +42,28 @@ resources:
     type: Microsoft.WinGet/Package
     properties:
       id: Git.Git
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: GnuPG
+    type: Microsoft.WinGet/Package
+    properties:
+      id: GnuPG.GnuPG
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: GitHubCli
+    type: Microsoft.WinGet/Package
+    properties:
+      id: GitHub.cli
       source: winget
       useLatest: false
       acceptAgreements: true

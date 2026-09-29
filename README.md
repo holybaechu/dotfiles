@@ -3,12 +3,13 @@
 Chezmoi manages application configuration in `home/`. DSC manages Windows packages and preferences in `system/windows/`.
 
 ```text
-bootstrap.ps1                 # Install chezmoi, provision Windows, apply dotfiles
+bootstrap.ps1                 # Provision Windows and Arch WSL2; apply chezmoi in both
 home/                         # Chezmoi source state, selected by .chezmoiroot
 apps/yasb/                    # Native PyQt6 Canopy widget, hosted by YASB
+system/wsl/                   # Install official Arch WSL2, user, packages, and chezmoi
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: komorebi, whkd, Git, uv
+  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, GnuPG, GitHub CLI, uv
   preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -27,11 +28,13 @@ From the repository:
 .\system\windows\Configure.ps1 -Action Apply -Module preferences
 ```
 
-The runner only loops over `.winget` files in filename order. Each module also works directly with `winget configure test -f <file>` or `winget configure -f <file>`. Add a module by creating another `.winget` YAML file; no registration is needed. Test exit code `1` means some settings are out of state.
+The runner only loops over `.winget` files in filename order. It accepts configuration agreements and disables interactive WinGet prompts. Each module also works directly with `winget configure test -f <file>` or `winget configure -f <file>`. Add a module by creating another `.winget` YAML file; no registration is needed. Test exit code `1` means some settings are out of state.
 
 Packages use `useLatest: false` to preserve installed versions. In `preferences.winget`, change `WindowShadows.properties.input.enabled` to `true` to restore Windows shadows. Apps that draw their own shadows may behave differently.
 
 `preferences.winget` also enables Windows' built-in taskbar auto-hide. To turn it off, set `TaskbarAutoHide.properties.input.enabled` to `false` and run `Configure.ps1 -Action Apply -Module preferences`.
+
+The `ExplorerPreferences` resource hides desktop icons, shows hidden files and folders, and shows file extensions. Its three input switches can be changed independently. The helper updates Windows Shell settings and notifies Explorer without restarting it.
 
 `startup.winget` creates two Windows Startup shortcuts: komorebi's native `enable-autostart --whkd` command creates one for komorebi and whkd; DSC creates `Canopy.lnk` for the native bar and removes the old Zebar shortcut. Apply it separately with `Configure.ps1 -Action Apply -Module startup`. Applying startup does not launch or restart apps. On a fresh setup, apply `packages` and run `apps\yasb\Setup.ps1` before applying startup.
 
@@ -44,6 +47,68 @@ komorebic reload-configuration
 ```
 
 Reload whkd separately after editing its shortcuts. `chezmoi apply` does not run DSC. Keep chezmoi special files and hooks inside `home/`, and give each setting a single owner.
+
+### Terminal
+
+Alt+Enter opens WezTerm. Chezmoi manages its Windows configuration at `~/.config/wezterm/wezterm.lua` and ignores it on Linux. WezTerm runs `wsl.exe --cd ~` to open the default WSL distribution's shell in its Linux home directory. It uses the bundled JetBrains Mono font with programming ligatures enabled and shows the tab bar only when there is more than one tab.
+
+The window has no title bar or window-control buttons. It keeps the native resize frame for komorebi management and Windows rounded corners; use komorebi to move, resize, minimize, and close it. WezTerm applies native Windows Acrylic blur as the window opens. A short-lived Windows appearance helper removes native caption buttons and preserves rounded corners without changing the blur. Windows controls Acrylic's unfocused appearance. The background uses Canopy's dark launcher tint (`#060c08` at `178 / 255` opacity). Windows controls the blur radius, so it is not identical to Canopy's custom Gaussian blur. Closing a window, including with Alt+Q, skips WezTerm's confirmation dialog and terminates the programs inside; save and exit Neovim normally before closing its window.
+
+| Shortcut | Action |
+| --- | --- |
+| Alt+Enter | Open the default WSL distribution in WezTerm |
+| Ctrl+Alt+Enter | Open Windows PowerShell in WezTerm |
+| Ctrl+Alt+Shift+Enter | Open elevated Windows PowerShell in WezTerm (UAC prompt) |
+| Alt+Shift+Enter | Promote the focused komorebi window |
+
+The PowerShell shortcuts run `powershell.exe` in a separate WezTerm process so the elevated shortcut cannot reuse an unelevated terminal process. Komorebi's existing Alt+Shift+Enter promote binding is preserved.
+
+Bootstrap installs the official `archlinux` distribution on WSL2 and makes it the default. Check `wsl --list --verbose` to confirm. The terminal configuration follows WSL's default instead of hard-coding a distribution or Linux shell.
+
+On an existing setup, install the package and apply the configuration:
+
+```powershell
+.\system\windows\Configure.ps1 -Action Apply -Module packages
+chezmoi apply ~/.config/wezterm/wezterm.lua ~/.config/whkdrc
+```
+
+Restart whkd after installation so it picks up WezTerm's PATH entry and the new shortcut. Sign out and back in if the current desktop session still has the old PATH.
+
+WezTerm does not yet support Windows' system-wide **Default terminal application** setting ([upstream issue](https://github.com/wezterm/wezterm/issues/7534)). This setup launches it through Alt+Enter or its Start menu entry.
+
+### GitHub CLI
+
+Bootstrap installs `GitHub.cli` on Windows and `github-cli` through yay in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol ssh --web` and register an SSH authentication key for that OS. Git over SSH uses the SSH key/agent; GitHub CLI API requests use the CLI login. The initial public bootstrap clone still uses HTTPS so it can run before SSH keys are configured.
+
+Chezmoi renders one shared set of defaults from `home/.chezmoitemplates/gh-config.yml` to `%APPDATA%\GitHub CLI\config.yml` on Windows and `~/.config/gh/config.yml` on Linux. These use GitHub CLI's standard configuration locations; no `GH_CONFIG_DIR` override is needed. The defaults include SSH Git, enabled prompts, and the CLI's standard browser, editor, pager, and display behavior.
+
+Windows and native Linux `gh` use separate system credential stores. Their `hosts.yml` authentication files are excluded from chezmoi. WSL can invoke Windows `gh.exe` to reuse its Windows login; native Linux `gh` is preferable for commands that operate on Linux repository paths. Bootstrap installs the CLI without automating account authentication or copying tokens into dotfiles. See the [authentication](https://cli.github.com/manual/gh_auth_login) and [configuration environment](https://cli.github.com/manual/gh_help_environment) documentation.
+
+### Git identity, signing, and agents
+
+Chezmoi manages `~/.config/git/config` on Windows and Linux with the shared author identity and OpenPGP commit/tag signing enabled. Git reads the machine-local `~/.gitconfig` afterward, so local settings override the shared defaults. Chezmoi creates that local file only if missing and preserves existing content. Store each OS's signing-key fingerprint there after creating its key:
+
+```bash
+git config --file ~/.gitconfig user.signingkey YOUR_GPG_FINGERPRINT
+```
+
+Windows DSC installs `GnuPG.GnuPG`; Arch uses its preinstalled GnuPG and installs `openssh` and `keychain` through yay. The Windows Git template selects the native GnuPG executable installed by DSC. Private keys, passphrases, and agent sockets are not managed by chezmoi. Signing will require a usable local key before commits can be created.
+
+GPG's agent caches passphrases automatically (by default, ten minutes idle and two hours maximum). In Arch Bash, set `export GPG_TTY="$(tty)"` so pinentry uses the current terminal. For a one-hour idle timeout and eight-hour maximum, configure the local agent and reload it:
+
+```bash
+printf 'default-cache-ttl:0:3600\nmax-cache-ttl:0:28800\n' | gpgconf --change-options gpg-agent
+gpgconf --reload gpg-agent
+```
+
+Arch bootstrap adds a single source line to the existing `~/.bashrc` for the managed `~/.config/shell/agents.sh`. That hook sets `GPG_TTY` and uses keychain to reuse one SSH agent across interactive terminals when `~/.ssh/id_ed25519` exists. Open a new terminal to use it, or initialize the current terminal with:
+
+```bash
+export GPG_TTY="$(tty)"
+eval "$(keychain --eval --quiet id_ed25519)"
+```
+
+Windows DSC enables and starts the native OpenSSH agent, and the shared Git template selects Windows OpenSSH to use that agent. After creating a key, run `ssh-add "$env:USERPROFILE\.ssh\id_ed25519"` from normal PowerShell to unlock it. See the [GPG cache options](https://www.gnupg.org/documentation/manuals/gnupg/Agent-Options.html) and [keychain documentation](https://www.funtoo.org/Keychain).
 
 ## Canopy / YASB
 
@@ -101,6 +166,16 @@ After committing and pushing this setup, download `bootstrap.ps1` and run:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\bootstrap.ps1
 ```
 
-The bootstrap uses chezmoi's built-in Git for the initial clone, installs Windows packages, prepares Canopy with uv, applies dotfiles, and configures preferences and startup. Python 3.14 is managed by uv. On an existing setup it uses the current checkout; pull remote changes and rerun `apps\yasb\Setup.ps1` when dependencies change. Open a new terminal for persistent environment changes.
+The bootstrap uses chezmoi's built-in Git for the initial clone, installs Windows packages, prepares Canopy with uv, applies dotfiles, and configures preferences and startup. Python 3.14 is managed by uv. It then installs or updates WSL, installs the [official Arch Linux image](https://archlinux.org/download/), and selects WSL2. An existing `archlinux` installation is reused. Setup checks Windows' pending component restart state before and after WSL commands, because enabling Virtual Machine Platform can return success while still requiring a reboot. It stops with exit code `3010` and restart instructions; bootstrap does not reboot automatically.
 
-Initialize the same repository with Linux chezmoi separately in WSL. Windows DSC runs on Windows; Linux provisioning is not defined yet.
+After restarting, rerun bootstrap or resume only the remaining Arch setup from your normal PowerShell (pass the same `-LinuxUser` and `-Repository` overrides if you used them):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.local\share\chezmoi\system\wsl\Setup.ps1"
+```
+
+Arch setup creates the `holybaechu` Linux account with Bash and installs [yay from its AUR source package](https://github.com/Jguer/yay#installation) before the application packages. Pacman is used only for the initial signing-key refresh and the Git, `base-devel`, and sudo prerequisites when yay is missing. Yay is built and run as the Linux user, then handles signing-key updates, system upgrades, and package installation, including chezmoi. Reruns reuse yay and skip the pacman bootstrap. Override the account name with `-WslUser <name>`. Initial account setup asks for a Linux password; existing passwords are retained, and sudo may ask for that password during package installation. Arch becomes the default WSL distribution and the account becomes its default user.
+
+Linux chezmoi initializes the same `-Repository` URL into its own Linux home and applies it as the Linux user, including the shared Git and GitHub CLI defaults. Existing source checkouts are reused without pulling or discarding local edits. Windows-only files are excluded by `.chezmoiignore.tmpl`. Windows DSC stays on Windows.
+
+Routine package and configuration confirmations are accepted automatically, including makepkg/yay confirmations and chezmoi overwriting managed targets. Windows UAC, initial Linux password setup, and sudo authentication still require input. On an existing setup, pull remote changes before rerunning bootstrap. To rerun only Arch provisioning, use `system\wsl\Setup.ps1 -LinuxUser holybaechu`. Open a new terminal for persistent environment changes.

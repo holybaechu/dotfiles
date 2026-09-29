@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$Repository = 'https://github.com/holybaechu/dotfiles.git'
+    [string]$Repository = 'https://github.com/holybaechu/dotfiles.git',
+    [ValidatePattern('^[a-z_][a-z0-9_-]{0,31}$')]
+    [string]$WslUser = 'holybaechu'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,7 +25,7 @@ if (-not (Get-Command chezmoi.exe -ErrorAction SilentlyContinue)) {
     Update-SessionPath
 }
 
-chezmoi.exe init --use-builtin-git=true $Repository
+chezmoi.exe init --force --no-tty --use-builtin-git=true $Repository
 if ($LASTEXITCODE -ne 0) { throw 'chezmoi init failed.' }
 
 $repositoryRoot = (chezmoi.exe execute-template '{{ .chezmoi.workingTree }}').Trim()
@@ -35,7 +37,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Installing Windows packages failed.' }
 Update-SessionPath
 & (Join-Path $repositoryRoot 'apps\yasb\Setup.ps1')
 
-chezmoi.exe apply
+chezmoi.exe apply --force --no-tty
 if ($LASTEXITCODE -ne 0) { throw 'chezmoi apply failed.' }
 
 & $configure -Action Apply -Module preferences
@@ -43,6 +45,13 @@ if ($LASTEXITCODE -ne 0) { throw 'Applying Windows preferences failed.' }
 & $configure -Action Apply -Module startup
 if ($LASTEXITCODE -ne 0) { throw 'Configuring Windows startup failed.' }
 
-Write-Host 'Windows provisioning and dotfile application are complete.'
+& (Join-Path $repositoryRoot 'system\wsl\Setup.ps1') -Repository $Repository -LinuxUser $WslUser
+if ($LASTEXITCODE -eq 3010) {
+    Write-Host 'Windows provisioning is complete. Arch Linux setup will continue after you restart and rerun setup.'
+    exit 3010
+}
+if ($LASTEXITCODE -ne 0) { throw 'Configuring Arch Linux on WSL failed.' }
+
+Write-Host 'Windows and Arch WSL provisioning and dotfile application are complete.'
 Write-Host 'Open a new terminal to pick up persistent environment changes.'
 Write-Host 'Start the bar with apps\yasb\Start.ps1, or sign out and back in.'

@@ -5,6 +5,42 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: SshAgent
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      getScript: |
+        Get-Service -Name ssh-agent | Select-Object Status, StartType
+      testScript: |
+        $agent = Get-Service -Name ssh-agent
+        $agent.Status -eq 'Running' -and $agent.StartType -eq 'Automatic'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        Set-Service -Name ssh-agent -StartupType Automatic
+        Start-Service -Name ssh-agent
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: ExplorerPreferences
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      input:
+        hideDesktopIcons: true
+        showHiddenFiles: true
+        showFileExtensions: true
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        $current = & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Get
+        $current.HideDesktopIcons -eq $settings.hideDesktopIcons -and
+          $current.ShowHiddenFiles -eq $settings.showHiddenFiles -and
+          $current.ShowFileExtensions -eq $settings.showFileExtensions
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Set -HideDesktopIcons $settings.hideDesktopIcons -ShowHiddenFiles $settings.showHiddenFiles -ShowFileExtensions $settings.showFileExtensions
+
   - name: KomorebiConfigHome
     type: Microsoft.DSC.Transitional/WindowsPowerShellScript
     properties:

@@ -1,7 +1,7 @@
 .shell powershell
 
-# Canopy launcher (send a command to the running bar without a console window)
-alt + space             : & '{{ joinPath (dir .chezmoi.sourceDir) "apps" "yasb" "ToggleLauncher.ps1" | replace "'" "''" }}'
+# Canopy launcher (allow local scripts in this PowerShell process only)
+alt + space             : Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force; & '{{ joinPath (dir .chezmoi.sourceDir) "apps" "yasb" "ToggleLauncher.ps1" | replace "'" "''" }}'
 
 # Reload whkd configuration
 # alt + o                 : taskkill /f /im whkd.exe && start /b whkd # if shell is cmd
@@ -11,6 +11,11 @@ alt + shift + o         : komorebic reload-configuration
 alt + i                 : komorebic toggle-shortcuts
 
 # App shortcuts - these require shell to be pwsh / powershell
+# Terminal shortcuts (WSL, Windows PowerShell, elevated Windows PowerShell)
+alt + return            : Start-Process wezterm-gui.exe
+ctrl + alt + return     : Start-Process wezterm-gui.exe -ArgumentList 'start --always-new-process -- powershell.exe'
+ctrl + alt + shift + return : Start-Process wezterm-gui.exe -ArgumentList 'start --always-new-process -- powershell.exe' -Verb RunAs
+
 # The apps will be focused if open, or launched if not open
 # alt + f                 : if ($wshell.AppActivate('Firefox') -eq $False) { start firefox }
 # alt + b                 : if ($wshell.AppActivate('Chrome') -eq $False) { start chrome }
