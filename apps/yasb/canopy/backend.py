@@ -44,6 +44,9 @@ class Backend(QObject):
         self._modes.changed.connect(self._modes_changed)
         self._modes.pending_changed.connect(self._mode_pending)
         self._modes.failed.connect(self._mode_failed)
+        from .taskbar import TaskbarController
+        self._taskbar = TaskbarController(self)
+        self._taskbar.changed.connect(self._taskbar_changed)
         self._events = EventService()
         self._komorebi = KomorebiClient()
         self._listener = KomorebiEventListener('canopy')
@@ -295,9 +298,16 @@ class Backend(QObject):
         self.state.error = message
         self.changed.emit('error')
 
-    def set_airplane_mode(self, enabled):
-        self.state.error = ''
-        self._modes.set_mode('airplane_mode', enabled)
+    def _taskbar_changed(self, enabled, error):
+        self.state.taskbar_enabled = enabled
+        if error:
+            self.state.error = f'Could not change Windows Taskbar. {error}'
+        elif self.state.error.startswith('Could not change Windows Taskbar.'):
+            self.state.error = ''
+        self.changed.emit('status')
+
+    def set_taskbar_enabled(self, enabled):
+        self._taskbar.set_enabled(enabled)
 
     def set_battery_saver(self, enabled):
         self.state.error = ''
@@ -350,6 +360,7 @@ class Backend(QObject):
         self.changed.emit('tray')
 
     def shutdown(self):
+        self._taskbar.shutdown()
         self._modes.shutdown()
         self._listener.stop()
         self._listener.wait(1200)

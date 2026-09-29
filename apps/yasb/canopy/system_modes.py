@@ -13,7 +13,7 @@ from PyQt6.QtCore import QObject, QThread, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
 MODE_NAMES = {'wifi_enabled': 'Wi-Fi', 'bluetooth_enabled': 'Bluetooth',
-              'airplane_mode': 'Airplane mode', 'battery_saver': 'Energy saver'}
+              'battery_saver': 'Energy saver'}
 
 
 _PowerSettingCallback = ctypes.WINFUNCTYPE(wintypes.ULONG, ctypes.c_void_p, wintypes.ULONG, ctypes.c_void_p)
@@ -67,50 +67,17 @@ def battery_saver_enabled() -> bool | None:
         return None
 
 
-def _radio_manager():
-    # The same native interface used by Windows' radio management UI.
-    # https://github.com/fafalone/RadioMan
-    from comtypes import GUID, IUnknown, COMMETHOD, HRESULT, CoCreateInstance
-
-    class IRadioManager(IUnknown):
-        _iid_ = GUID('{DB3AFBFB-08E6-46C6-AA70-BF9A34C30AB7}')
-        _methods_ = [
-            COMMETHOD([], HRESULT, 'IsRMSupported', (['out'], ctypes.POINTER(wintypes.DWORD), 'supported')),
-            COMMETHOD([], HRESULT, 'GetUIRadioInstances', (['out'], ctypes.POINTER(ctypes.c_void_p), 'instances')),
-            COMMETHOD([], HRESULT, 'GetSystemRadioState',
-                      (['out'], ctypes.POINTER(wintypes.BOOL), 'enabled'),
-                      (['out'], ctypes.POINTER(wintypes.BOOL), 'hardware'),
-                      (['out'], ctypes.POINTER(wintypes.DWORD), 'reason')),
-            COMMETHOD([], HRESULT, 'SetSystemRadioState', (['in'], wintypes.BOOL, 'enabled')),
-        ]
-
-    return CoCreateInstance(GUID('{581333F6-28DB-41BE-BC7A-FF201F12F3F6}'),
-                            interface=IRadioManager, clsctx=4)
-
-
 class WindowsModes:
     def read(self, mode):
         if mode in ('wifi_enabled', 'bluetooth_enabled'):
             return asyncio.run(_radio_state(mode))
         if mode == 'battery_saver':
             return battery_saver_enabled()
-        if mode != 'airplane_mode':
-            raise ValueError('Unknown system mode.')
-        radio = _radio_manager()
-        if not radio.IsRMSupported():
-            return None
-        enabled, _, _ = radio.GetSystemRadioState()
-        return not bool(enabled) if enabled in (0, 1) else None
+        raise ValueError('Unknown system mode.')
 
     def write(self, mode, enabled):
         if mode in ('wifi_enabled', 'bluetooth_enabled'):
             asyncio.run(_set_radio_state(mode, enabled))
-        elif mode == 'airplane_mode':
-            radio = _radio_manager()
-            if not radio.IsRMSupported():
-                raise OSError('Airplane mode is unavailable on this device.')
-            # This API controls radio enablement, the inverse of Airplane mode.
-            radio.SetSystemRadioState(int(not enabled))
         elif mode == 'battery_saver':
             _set_battery_saver(enabled)
         else:

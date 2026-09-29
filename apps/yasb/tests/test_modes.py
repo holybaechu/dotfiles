@@ -97,15 +97,15 @@ def test_native_writes_run_off_ui_thread_and_confirm_readback(app):
     service.pending_changed.connect(lambda mode, value: pending.append((mode, value)))
     try:
         wait_until(lambda: snapshots)
-        assert service.set_mode('airplane_mode', True)
-        assert not service.set_mode('airplane_mode', False)
+        assert service.set_mode('battery_saver', True)
+        assert not service.set_mode('battery_saver', False)
         wait_until(started.is_set)
-        assert pending == [('airplane_mode', True)]
-        assert snapshots[-1]['airplane_mode'] is False
+        assert pending == [('battery_saver', True)]
+        assert snapshots[-1]['battery_saver'] is False
         release.set()
         wait_until(lambda: len(pending) == 2)
-        assert snapshots[-1]['airplane_mode'] is True
-        assert pending[-1] == ('airplane_mode', False)
+        assert snapshots[-1]['battery_saver'] is True
+        assert pending[-1] == ('battery_saver', False)
     finally:
         release.set()
         service.shutdown()

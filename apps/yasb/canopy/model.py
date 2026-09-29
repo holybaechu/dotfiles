@@ -31,7 +31,7 @@ class State:
     charging: bool = False
     power_plugged: bool = False
     battery_saver: bool | None = None
-    airplane_mode: bool | None = None
+    taskbar_enabled: bool | None = None
     wifi_enabled: bool | None = None
     bluetooth_enabled: bool | None = None
     pending_modes: set[str] = field(default_factory=set)
@@ -53,7 +53,7 @@ class PreviewBackend(QObject):
 
     def __init__(self, displays=2):
         super().__init__()
-        self.state = State(track=Track('Preview track 1', 'Sample artist', 'Sample album', True, 42, 240), volume=50, audio_available=True, audio_device='Speakers', connected=True, network='Wi-Fi', battery=84, battery_saver=False, airplane_mode=False, wifi_enabled=True, bluetooth_enabled=True)
+        self.state = State(track=Track('Preview track 1', 'Sample artist', 'Sample album', True, 42, 240), volume=50, audio_available=True, audio_device='Speakers', connected=True, network='Wi-Fi', battery=84, battery_saver=False, taskbar_enabled=False, wifi_enabled=True, bluetooth_enabled=True)
         art = QImage(100, 100, QImage.Format.Format_RGB32)
         from . import theme
         art.fill(QColor(theme.SURFACE))
@@ -124,8 +124,8 @@ class PreviewBackend(QObject):
         # Preview controls must never change the desktop session or power state.
         pass
 
-    def set_airplane_mode(self, enabled):
-        self.state.airplane_mode = enabled
+    def set_taskbar_enabled(self, enabled):
+        self.state.taskbar_enabled = enabled
         self.changed.emit('status')
 
     def set_battery_saver(self, enabled):
