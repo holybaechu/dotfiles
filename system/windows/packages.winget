@@ -49,6 +49,17 @@ resources:
       winget:
         securityContext: elevated
 
+  - name: GitHubCli
+    type: Microsoft.WinGet/Package
+    properties:
+      id: GitHub.cli
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: Uv
     type: Microsoft.WinGet/Package
     properties:

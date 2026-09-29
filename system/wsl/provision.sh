@@ -50,6 +50,6 @@ fi
 
 # Refresh signing keys before the full upgrade, including on an older image.
 runuser --user "$linux_user" -- yay -Sy --needed --noconfirm archlinux-keyring
-runuser --user "$linux_user" -- yay -Su --needed --noconfirm --sudoloop chezmoi git sudo base-devel
+runuser --user "$linux_user" -- yay -Su --needed --noconfirm --sudoloop chezmoi git github-cli sudo base-devel
 runuser --user "$linux_user" -- env GIT_TERMINAL_PROMPT=0 chezmoi init --force --no-tty "$repository"
 runuser --user "$linux_user" -- chezmoi apply --force --no-tty

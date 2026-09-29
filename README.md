@@ -9,7 +9,7 @@ apps/yasb/                    # Native PyQt6 Canopy widget, hosted by YASB
 system/wsl/                   # Install official Arch WSL2, user, packages, and chezmoi
 system/windows/
   Configure.ps1               # Test or apply all modules, or select one
-  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, uv
+  packages.winget             # YAML: WezTerm, komorebi, whkd, Git, GitHub CLI, uv
   preferences.winget          # YAML: config directory, shadows, taskbar auto-hide
   startup.winget              # YAML: start komorebi, whkd, and Canopy at sign-in
   scripts/                   # Small Windows API helpers
@@ -75,6 +75,12 @@ chezmoi apply ~/.config/wezterm/wezterm.lua ~/.config/whkdrc
 Restart whkd after installation so it picks up WezTerm's PATH entry and the new shortcut. Sign out and back in if the current desktop session still has the old PATH.
 
 WezTerm does not yet support Windows' system-wide **Default terminal application** setting ([upstream issue](https://github.com/wezterm/wezterm/issues/7534)). This setup launches it through Alt+Enter or its Start menu entry.
+
+### GitHub CLI
+
+Bootstrap installs `GitHub.cli` on Windows and `github-cli` through yay in Arch. Authenticate each native installation once with `gh auth login --hostname github.com --git-protocol https --web`, then run `gh auth setup-git --hostname github.com` to let Git use that login.
+
+Windows and native Linux `gh` use separate system credential stores. Non-secret settings can be managed on both sides with chezmoi, but sharing the configuration directory alone does not share credentials. WSL can invoke Windows `gh.exe` to reuse its Windows login; native Linux `gh` is preferable for commands that operate on Linux repository paths. Bootstrap installs the CLI without automating account authentication or copying tokens into dotfiles. See the [authentication](https://cli.github.com/manual/gh_auth_login) and [configuration environment](https://cli.github.com/manual/gh_help_environment) documentation.
 
 ## Canopy / YASB
 
