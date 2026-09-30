@@ -10,32 +10,22 @@ param(
 $ErrorActionPreference = 'Stop'
 if ($LinuxUser -eq 'root') { throw 'Choose a non-root Linux user.' }
 
-function Stop-IfWslRestartPending {
-    param([int]$ExitCode = 0)
-    # Enabling VirtualMachinePlatform can return 0 even when a reboot is required.
-    $pending = Test-Path -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
-    if ($ExitCode -in @(3010, 1641) -or $pending) {
+function Assert-WslSuccess {
+    param([string]$Operation)
+    # A pending Windows update does not mean a working WSL needs a restart.
+    if ($LASTEXITCODE -in @(3010, 1641)) {
         Write-Host 'Arch Linux setup is waiting for a Windows restart.'
         Write-Host 'Restart Windows, then rerun system\wsl\Setup.ps1 with the same arguments, or rerun bootstrap.ps1.'
         exit 3010
     }
-}
-
-function Assert-WslSuccess {
-    param([string]$Operation)
-    Stop-IfWslRestartPending -ExitCode $LASTEXITCODE
     if ($LASTEXITCODE -ne 0) {
         throw "$Operation failed with exit code $LASTEXITCODE. Resolve the WSL error above, then rerun bootstrap.ps1."
     }
 }
 
 # Install the platform without also installing Ubuntu. WSL may request elevation.
-Stop-IfWslRestartPending
 wsl.exe --install --no-distribution --web-download
 Assert-WslSuccess 'Installing WSL'
-# The official Arch image and --manage require a recent WSL release.
-wsl.exe --update --web-download
-Assert-WslSuccess 'Updating WSL'
 wsl.exe --set-default-version 2
 Assert-WslSuccess 'Selecting WSL2'
 

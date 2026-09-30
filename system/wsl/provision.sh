@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Fresh Arch images may name a locale that has not been generated yet.
+export LANG=C.UTF-8 LC_ALL=C.UTF-8
+
 linux_user=${1:?Linux username is required}
 repository=${2:?Dotfiles repository is required}
 if [[ $EUID -ne 0 || ! $linux_user =~ ^[a-z_][a-z0-9_-]{0,31}$ || $linux_user == root ]]; then

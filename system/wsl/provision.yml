@@ -52,14 +52,19 @@
         name:
           - base-devel
           - chezmoi
+          - curl
           - fastfetch
           - fish
           - git
           - github-cli
           - less
+          - neovim
           - openssh
+          - ripgrep
           - starship
           - sudo
+          - tree-sitter-cli
+          - unzip
           - util-linux # provides more
         state: present
 

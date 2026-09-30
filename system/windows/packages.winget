@@ -113,6 +113,52 @@ resources:
       useLatest: false
       acceptAgreements: true
 
+  - name: Neovim
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Neovim.Neovim
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: Ripgrep
+    type: Microsoft.WinGet/Package
+    properties:
+      id: BurntSushi.ripgrep.MSVC
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: TreeSitterCli
+    type: Microsoft.WinGet/Package
+    properties:
+      id: tree-sitter.tree-sitter-cli
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: LlvmMingw
+    type: Microsoft.WinGet/Package
+    properties:
+      id: MartinStorsjo.LLVM-MinGW.UCRT
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: Bandizip
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Bandisoft.Bandizip
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: Komorebi
     type: Microsoft.WinGet/Package
     properties:
