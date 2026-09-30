@@ -30,3 +30,29 @@ resources:
         & "${WinGetConfigRoot}\scripts\CanopyStartup.ps1" -Operation Test
       setScript: |
         & "${WinGetConfigRoot}\scripts\CanopyStartup.ps1" -Operation Set
+
+  - name: AltSnap
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'AltSnap.lnk'
+        $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        @{ target = $shortcut.TargetPath; arguments = $shortcut.Arguments }
+      testScript: |
+        $executable = Join-Path $env:APPDATA 'AltSnap\AltSnap.exe'
+        $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'AltSnap.lnk'
+        $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        (Test-Path -LiteralPath $executable) -and
+        $shortcut.TargetPath -eq $executable -and
+        $shortcut.Arguments -eq '' -and
+        $shortcut.WorkingDirectory -eq (Split-Path $executable)
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        $executable = Join-Path $env:APPDATA 'AltSnap\AltSnap.exe'
+        if (-not (Test-Path -LiteralPath $executable)) { throw 'Install AltSnap before applying startup.' }
+        $path = Join-Path ([Environment]::GetFolderPath('Startup')) 'AltSnap.lnk'
+        $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut($path)
+        $shortcut.TargetPath = $executable
+        $shortcut.Arguments = ''
+        $shortcut.WorkingDirectory = Split-Path $executable
+        $shortcut.Save()

@@ -124,6 +124,14 @@ resources:
       winget:
         securityContext: elevated
 
+  - name: AltSnap
+    type: Microsoft.WinGet/Package
+    properties:
+      id: AltSnap.AltSnap
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
   - name: Whkd
     type: Microsoft.WinGet/Package
     properties:

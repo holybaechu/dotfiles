@@ -13,7 +13,7 @@
   "default_workspace_padding": 6,
   "default_container_padding": 6,
   "animation": {
-    "enabled": true,
+    "enabled": false,
     "duration": 200,
     "fps": 120,
     "style": "EaseOutCubic"
