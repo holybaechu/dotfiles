@@ -152,6 +152,7 @@ Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On W
 | Theme | Standalone Canopy High Contrast colorscheme |
 | File search and browser | MiniPick and MiniFiles; ripgrep for project search |
 | Completion | nvim-cmp with LSP, file-path, and current-buffer sources; native snippet expansion |
+| AI suggestions | copilot.lua and copilot-cmp, integrated into the completion menu |
 | Language support | Native LSP and nvim-lspconfig; Mason installs Lua Language Server |
 | Formatting | Conform and StyLua, installed through Mason |
 | Git | Gitsigns |
@@ -160,7 +161,9 @@ Bootstrap installs the editor and ripgrep on both platforms, curl and unzip on A
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
 
-Completion prioritizes LSP and file-path suggestions, with current-buffer words as a fallback. Snippets returned by a language server expand through Neovim's built-in snippet engine. Signature help is available on request with `Ctrl+s` in Insert mode.
+Completion offers LSP, file-path, and Copilot suggestions together, with current-buffer words as a fallback. Each item shows its source, including `[Copilot]` for AI suggestions. Snippets returned by a language server expand through Neovim's built-in snippet engine. Signature help is available on request with `Ctrl+s` in Insert mode.
+
+GitHub Copilot uses [copilot.lua](https://github.com/zbirenbaum/copilot.lua)'s native server, downloaded and checksum-verified on first use (about 75–110 MB per OS); Node.js is not required on Windows or Arch WSL. Open a code file and run `:Copilot auth` to sign in with a GitHub account that has Copilot access. Authenticate separately in Windows and WSL; credentials remain local and are excluded from chezmoi. Copilot suggestions use the same explicit selection and acceptance keys as other completions. Use `:Copilot disable` / `:Copilot enable` to turn them off / on for the session. Its separate inline suggestions and panel are disabled because completion is handled by cmp.
 
 The standalone `canopy` colorscheme defines its own editor, syntax, Tree-sitter, semantic-token, and plugin highlights. It uses Canopy's forest-green surfaces, mint interface accents, and warm-white text. Syntax roles are separated: lavender keywords, blue functions, mint strings, teal types, and amber numbers. Errors are red, warnings amber, information blue, and hints green; diagnostic signs and messages also identify severity.
 

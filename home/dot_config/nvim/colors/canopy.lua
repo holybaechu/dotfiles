@@ -303,6 +303,7 @@ for kind, target in pairs({
   Enum = "Type",
   Keyword = "Keyword",
   Snippet = "String",
+  Copilot = "String",
   Color = "Special",
   File = "Identifier",
   Reference = "Underlined",

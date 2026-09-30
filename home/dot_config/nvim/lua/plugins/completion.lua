@@ -19,6 +19,13 @@ end
 
 cmp.setup({
   preselect = cmp.PreselectMode.None,
+  formatting = {
+    format = function(entry, item)
+      local labels = { nvim_lsp = "LSP", path = "Path", copilot = "Copilot", buffer = "Buffer" }
+      item.menu = "[" .. (labels[entry.source.name] or entry.source.name) .. "]"
+      return item
+    end,
+  },
   snippet = {
     expand = function(args)
       vim.snippet.expand(args.body)
@@ -47,6 +54,7 @@ cmp.setup({
   sources = cmp.config.sources({
     { name = "nvim_lsp" },
     { name = "path", option = { trailing_slash = true } },
+    { name = "copilot" },
   }, {
     { name = "buffer" },
   }),
