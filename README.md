@@ -149,7 +149,7 @@ Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On W
 
 | Feature | Configuration |
 | --- | --- |
-| Theme | Tokyo Night (night) |
+| Theme | Canopy High Contrast, using Tokyo Night's syntax and plugin highlights |
 | File search and browser | MiniPick and MiniFiles; ripgrep for project search |
 | Completion | MiniCompletion, with native snippet support |
 | Language support | Native LSP and nvim-lspconfig; Mason installs Lua Language Server |
@@ -159,6 +159,8 @@ Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On W
 Bootstrap installs the editor and ripgrep on both platforms, curl and unzip on Arch, and Bandizip as the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, then Mason installs Lua Language Server and StyLua. Check `:Mason` for installation progress. Lua is the initial supported language; add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
+
+The `canopy` colorscheme uses Canopy's black background, forest-green surfaces, mint accents, and warm-white text. Comments and line numbers stay readable, while selections, search matches, completion menus, and diagnostics have explicit high-contrast colors. Its palette and overrides live in [colors/canopy.lua](home/dot_config/nvim/colors/canopy.lua); reload it with `:colorscheme canopy` after editing.
 
 | Shortcut | Action |
 | --- | --- |
