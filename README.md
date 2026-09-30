@@ -151,17 +151,25 @@ Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On W
 | --- | --- |
 | Theme | Standalone Canopy High Contrast colorscheme |
 | File search and browser | MiniPick and MiniFiles; ripgrep for project search |
-| Completion | nvim-cmp with LSP, file-path, and current-buffer sources; native snippet expansion |
+| Completion | nvim-cmp with LSP, file-path, LuaSnip, and current-buffer sources |
+| Snippets | LuaSnip and friendly-snippets, with cmp_luasnip for completion |
+| Editing | MiniSurround, MiniAi text objects, and MiniPairs automatic pairs |
+| Keybinding help | WhichKey with Canopy styling and leader-key groups |
+| Syntax and folding | nvim-treesitter parsers and native Tree-sitter highlighting/folds |
 | AI suggestions | copilot.lua with automatic inline suggestions |
 | Language support | Native LSP and nvim-lspconfig; Mason installs Lua Language Server |
 | Formatting | Conform and StyLua, installed through Mason |
 | Git | Gitsigns |
 
-Bootstrap installs the editor and ripgrep on both platforms, curl and unzip on Arch, and Bandizip as the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, then Mason installs Lua Language Server and StyLua. Check `:Mason` for installation progress. Lua is the initial supported language; add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
+Bootstrap installs the editor, ripgrep, and Tree-sitter CLI on both platforms. Windows also gets LLVM MinGW for the C compiler and make; Arch uses the existing base-devel tools, curl, and unzip. Bandizip is the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Restart the terminal after installing tools so Neovim inherits the updated PATH. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, builds LuaSnip's regex support and missing Tree-sitter parsers, then Mason installs Lua Language Server and StyLua. Check `:Mason` for language-tool installation progress. Lua is the initial language with LSP and formatting support; add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
 
-Completion offers LSP and file-path suggestions, with current-buffer words as a fallback. Each menu item shows its source. Snippets returned by a language server expand through Neovim's built-in snippet engine. Signature help is available on request with `Ctrl+s` in Insert mode.
+Completion offers LSP, file-path, and friendly-snippets suggestions, with current-buffer words as a fallback. Each menu item shows its source; `[Snippet]` entries are templates loaded for the current language. LuaSnip expands both templates and language-server snippets. After accepting a snippet, use Tab / Shift+Tab to move between its fields; Tab otherwise retains its normal behavior. Signature help is available on request with `Ctrl+s` in Insert mode.
+
+Tree-sitter installs parsers for Bash, Fish, JSON (including JSONC), Lua, Markdown, PowerShell, Python, TOML, Vim, Vim help, and queries. Highlighting and folding start when a supported buffer's parser is available; folds start open, and `za` toggles one. Add languages in `lua/plugins/treesitter.lua`. Parser updates follow nvim-treesitter plugin updates automatically; use `:TSUpdate` to retry manually. These parsers provide syntax support independently of language servers.
+
+MiniSurround uses `sa` to add, `sd` to delete, and `sr` to replace surroundings: `saiw"` quotes a word, `sd"` removes its quotes, and `sr"'` changes double quotes to single quotes. MiniAi adds argument and function-call text objects; for example, `cia` changes an argument and `vif` selects the inside of a function call. Its next/previous-object shortcuts are disabled to preserve Neovim 0.12's native incremental selection. MiniPairs closes brackets and quotes, removes empty pairs with Backspace, and handles newlines inside pairs through cmp's Enter fallback.
 
 GitHub Copilot uses [copilot.lua](https://github.com/zbirenbaum/copilot.lua)'s native server, downloaded and checksum-verified on first use (about 75–110 MB per OS); Node.js is not required on Windows or Arch WSL. Open a code file and run `:Copilot auth` to sign in with a GitHub account that has Copilot access. Authenticate separately in Windows and WSL; credentials remain local and are excluded from chezmoi. Suggestions appear automatically as italic teal inline text and hide while the cmp menu is open. Accept them with the dedicated shortcuts below; Enter and Tab keep their existing behavior. Use `:Copilot disable` / `:Copilot enable` to turn Copilot off / on for the session. The separate suggestion panel is disabled.
 
@@ -175,11 +183,15 @@ The main editor canvas is transparent so the managed Windows Terminal profile's 
 | `Space fb` / `Space fh` | Find buffers / search help |
 | `Space e` | Browse files; press `g?` for browser help |
 | `Space w` | Save the current buffer |
+| `Space` then pause / `Space ?` | Show leader shortcuts / buffer-local shortcuts |
 | `Ctrl+h/j/k/l` | Move between split windows |
 | `Ctrl+n` / `Ctrl+p` | Select the next / previous completion |
 | `Ctrl+y` / `Enter` | Accept an explicitly selected completion; Enter otherwise inserts a newline |
 | `Ctrl+Space` / `Ctrl+e` | Open / dismiss completion |
 | `Ctrl+b` / `Ctrl+f` | Scroll completion documentation |
+| `Tab` / `Shift+Tab` (Insert or Select mode) | Next / previous field in the active LuaSnip snippet |
+| `sa` / `sd` / `sr` | Add / delete / replace surroundings |
+| `za` / `zo` / `zc` | Toggle / open / close a fold |
 | `Alt+a` / `Alt+w` / `Alt+s` (Insert mode) | Accept the Copilot suggestion / next word / next line |
 | `Alt+.` / `Alt+,` (Insert mode) | Next / previous Copilot suggestion |
 | `Ctrl+]` (Insert mode) | Dismiss the Copilot suggestion |
@@ -192,4 +204,4 @@ The main editor canvas is transparent so the managed Windows Terminal profile's 
 
 Use `:PackUpdate` to review plugin updates, then `:write` in the review buffer to apply them. Keep the generated lockfile in version control. Update it from WSL and capture it with `chezmoi re-add ~/.config/nvim/nvim-pack-lock.json`, then commit the source change. After applying that lockfile on another installation, use `:PackRestore` to review and synchronize existing plugins to its revisions. Mason's external tools are managed separately from the plugin lockfile.
 
-Use `:checkhealth vim.pack`, `:checkhealth vim.lsp`, `:CmpStatus`, `:Mason`, and `:ConformInfo` to inspect the setup.
+Use `:checkhealth vim.pack`, `:checkhealth vim.lsp`, `:checkhealth nvim-treesitter`, `:checkhealth which-key`, `:checkhealth luasnip`, `:CmpStatus`, `:Mason`, and `:ConformInfo` to inspect the setup.

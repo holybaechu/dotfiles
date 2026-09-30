@@ -63,6 +63,7 @@
           - ripgrep
           - starship
           - sudo
+          - tree-sitter-cli
           - unzip
           - util-linux # provides more
         state: present

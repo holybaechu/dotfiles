@@ -89,6 +89,22 @@ resources:
       useLatest: false
       acceptAgreements: true
 
+  - name: TreeSitterCli
+    type: Microsoft.WinGet/Package
+    properties:
+      id: tree-sitter.tree-sitter-cli
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: LlvmMingw
+    type: Microsoft.WinGet/Package
+    properties:
+      id: MartinStorsjo.LLVM-MinGW.UCRT
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
   - name: Bandizip
     type: Microsoft.WinGet/Package
     properties:

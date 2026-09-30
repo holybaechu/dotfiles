@@ -3,9 +3,11 @@ vim.pack.add({
   "https://github.com/hrsh7th/cmp-nvim-lsp",
   "https://github.com/hrsh7th/cmp-path",
   "https://github.com/hrsh7th/cmp-buffer",
+  "https://github.com/saadparwaiz1/cmp_luasnip",
 }, { confirm = false })
 
 local cmp = require("cmp")
+local luasnip = require("luasnip")
 -- cmp-path mistakes punctuation in a partial basename for part of the directory.
 -- Pass only the directory prefix to its parser; keep the original completion context.
 local path_source = require("cmp_path")
@@ -21,14 +23,14 @@ cmp.setup({
   preselect = cmp.PreselectMode.None,
   formatting = {
     format = function(entry, item)
-      local labels = { nvim_lsp = "LSP", path = "Path", buffer = "Buffer" }
+      local labels = { nvim_lsp = "LSP", path = "Path", luasnip = "Snippet", buffer = "Buffer" }
       item.menu = "[" .. (labels[entry.source.name] or entry.source.name) .. "]"
       return item
     end,
   },
   snippet = {
     expand = function(args)
-      vim.snippet.expand(args.body)
+      luasnip.lsp_expand(args.body)
     end,
   },
   window = {
@@ -50,10 +52,25 @@ cmp.setup({
     ["<C-e>"] = cmp.mapping.abort(),
     ["<C-b>"] = cmp.mapping.scroll_docs(-4),
     ["<C-f>"] = cmp.mapping.scroll_docs(4),
+    ["<Tab>"] = cmp.mapping(function(fallback)
+      if luasnip.locally_jumpable(1) then
+        luasnip.jump(1)
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
+    ["<S-Tab>"] = cmp.mapping(function(fallback)
+      if luasnip.locally_jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end, { "i", "s" }),
   },
   sources = cmp.config.sources({
     { name = "nvim_lsp" },
     { name = "path", option = { trailing_slash = true } },
+    { name = "luasnip" },
   }, {
     { name = "buffer" },
   }),
