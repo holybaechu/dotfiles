@@ -26,9 +26,6 @@ function Assert-WslSuccess {
 # Install the platform without also installing Ubuntu. WSL may request elevation.
 wsl.exe --install --no-distribution --web-download
 Assert-WslSuccess 'Installing WSL'
-# The official Arch image and --manage require a recent WSL release.
-wsl.exe --update --web-download
-Assert-WslSuccess 'Updating WSL'
 wsl.exe --set-default-version 2
 Assert-WslSuccess 'Selecting WSL2'
 

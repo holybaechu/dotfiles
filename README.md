@@ -138,6 +138,8 @@ System setup is separate from `chezmoi apply`. From the repository root in Power
 
 Use `-Module packages` or `-Module startup` to apply those Windows settings separately. Replace `holybaechu` with your Linux username if customized.
 
+Setup installs WSL when needed and uses the existing version on configured machines. Update WSL separately with `wsl --update --web-download`; wait for any other Windows installations to finish first.
+
 ## Neovim
 
 Bootstrap installs Neovim on Windows and Arch WSL; run `nvim` to open it. Editor settings, plugins, and keybindings remain to be configured.
