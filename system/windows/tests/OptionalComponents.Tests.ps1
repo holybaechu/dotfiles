@@ -32,8 +32,8 @@ function Get-WindowsCapability { [CmdletBinding()]param([switch]$Online) $global
 function Get-AppxPackage { [CmdletBinding()]param([switch]$AllUsers,[string]$Name) if ($Name -eq 'MicrosoftWindows.Client.CoreAI' -and $global:ComponentFixture.ProtectedAI) { @{Name='MicrosoftWindows.Client.CoreAI';NonRemovable=$true} } }
 function winget.exe { $global:LASTEXITCODE = if ($global:ComponentFixture.PotPlayer) { 0 } else { -1978335212 } }
 function Remove-WindowsCapability {
-    [CmdletBinding()]param([switch]$Online,[string]$Name,[switch]$NoRestart)
-    Assert $NoRestart 'Never restart automatically.'
+    # Match the real cmdlet: NoRestart is only valid for feature servicing.
+    [CmdletBinding()]param([switch]$Online,[string]$Name)
     $global:ComponentFixture.Calls += $Name
     if (-not $global:ComponentFixture.Noop) { ($global:ComponentFixture.Capabilities | Where-Object Name -eq $Name).State = 'NotPresent' }
     @{ RestartNeeded=$global:ComponentFixture.Restart }

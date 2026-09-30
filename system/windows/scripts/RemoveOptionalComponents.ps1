@@ -67,7 +67,8 @@ switch ($Operation) {
         foreach ($capability in $state.Capabilities | Where-Object { $_.State -ne 'NotPresent' }) {
             try {
                 if ($capability.State -match 'Pending') { $restart = $true; continue }
-                $result = Remove-WindowsCapability -Online -Name $capability.Name -NoRestart -ErrorAction Stop
+                # This cmdlet reports RestartNeeded and has no NoRestart parameter.
+                $result = Remove-WindowsCapability -Online -Name $capability.Name -ErrorAction Stop
                 $restart = $restart -or $result.RestartNeeded
             } catch { $failures.Add("$($capability.Name): $($_.Exception.Message)") }
         }

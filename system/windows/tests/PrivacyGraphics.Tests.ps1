@@ -61,7 +61,8 @@ try {
     $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo'
     $global:SettingsFixture.Registry[$key] = @{ Enabled=@{Kind='DWord';Value=1}; Retain=@{Kind='String';Value='sentinel'} }
     $state = & $privacy -Operation Get -Context User -WarningAction SilentlyContinue
-    Assert ($state.Settings.Count -eq 18 -and $state.Unsupported.Count -eq 1) 'Privacy settings must remain structured and report Pro limitations.'
+    Assert ($state.Settings.Count -eq 17 -and $state.Unsupported.Count -eq 1) 'Privacy settings must remain structured and report Pro limitations.'
+    Assert (@($state.Settings | Where-Object { $_.Path -like 'HKCU:\Software\Policies\*' }).Count -eq 0) 'Normal-user preferences must not require writes to administrator-owned policy keys.'
     Assert ($global:SettingsFixture.Writes -eq 0) 'Get must not write.'
     & $privacy -Operation Set -Context User
     Assert (& $privacy -Operation Test -Context User) 'Privacy apply must converge.'

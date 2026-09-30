@@ -6,9 +6,11 @@ Run `Configure.ps1` from a normal PowerShell 7 window. WinGet requests elevation
 
 The existing `packages`, `preferences`, and `startup` modules are followed by `privacy`, `graphics`, and `debloat` during bootstrap. Applying all modules installs packages first and removes apps last. Use `-Module privacy`, `-Module graphics`, or `-Module debloat` for a check; add `-Action Apply` to change the machine.
 
-`privacy` configures user advertising, recommendations, welcome/setup prompts and recording settings, plus machine diagnostic-data level, Widgets, update sharing, and supported Recall policies. It does not depend on the Enterprise-only `DisableWindowsConsumerFeatures` policy. Diagnostics use required data (`AllowTelemetry=1`), not a claim of zero telemetry. Delivery Optimization uses mode `0` and retains the update services.
+`privacy` configures user advertising, recommendations, welcome/setup prompts, Widgets visibility, and recording settings, plus machine diagnostic-data level, update sharing, and supported Recall policies. It does not depend on the Enterprise-only `DisableWindowsConsumerFeatures` policy. Diagnostics use required data (`AllowTelemetry=1`), not a claim of zero telemetry. Delivery Optimization uses mode `0` and retains the update services.
 
 Windows Pro also lacks support for the broad `DisableConsumerAccountStateContent` policy. The helper reports this limitation; user suggestion settings are applied, but removal of every Microsoft 365 card in Settings Home is not guaranteed. Game Bar's controller launch is disabled without replacing its URL handlers with unrelated programs.
+
+User personalization uses the normal-user preference instead of writing the administrator-owned HKCU policy key. Widgets use the taskbar preference and the selected package removals: the inspected Windows build rejected `AllowNewsAndInterests` writes even with elevation, so bootstrap does not require or force that policy. Registry permissions and ownership are not changed. Individual privacy failures are collected after attempting the other settings and report the exact paths.
 
 ## App and component removal
 

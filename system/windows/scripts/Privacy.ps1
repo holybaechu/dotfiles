@@ -17,7 +17,6 @@ if ($Context -eq 'User') {
     $rows = @(
         ,@('HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo', 'Enabled', 0)
         ,@('HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy', 'TailoredExperiencesWithDiagnosticDataEnabled', 0)
-        ,@('HKCU:\Software\Policies\Microsoft\Windows\CloudContent', 'DisableTailoredExperiencesWithDiagnosticData', 1)
         ,@($explorer, 'Start_IrisRecommendations', 0)
         ,@($explorer, 'ShowSyncProviderNotifications', 0)
         ,@($explorer, 'TaskbarDa', 0)
@@ -41,7 +40,6 @@ if ($Context -eq 'User') {
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection', 'AllowTelemetry', 1)
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization', 'DODownloadMode', 0)
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR', 'AllowGameDVR', 0)
-        ,@('HKLM:\SOFTWARE\Policies\Microsoft\Dsh', 'AllowNewsAndInterests', 0)
     )
     if ([int]$version.CurrentBuild -gt 26100 -or ([int]$version.CurrentBuild -eq 26100 -and [int]$version.UBR -ge 3915)) {
         $rows += ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', 'DisableAIDataAnalysis', 1)
@@ -52,6 +50,13 @@ if ($Operation -ne 'Restore') { foreach ($message in $unsupported) { Write-Warni
 switch ($Operation) {
     Get { @{ Settings = @($settings | ForEach-Object { @{ Path = $_.Path; Name = $_.Name; Matches = [bool](Test-RegistrySetting $_) } }); Unsupported = $unsupported } }
     Test { @($settings | Where-Object { -not (Test-RegistrySetting $_) }).Count -eq 0 }
-    Set { foreach ($setting in $settings) { Set-TrackedRegistryValue $setting $journalPath } }
+    Set {
+        $failures = [Collections.Generic.List[string]]::new()
+        foreach ($setting in $settings) {
+            try { Set-TrackedRegistryValue $setting $journalPath }
+            catch { $failures.Add("$($setting.Path)\$($setting.Name): $($_.Exception.Message)") }
+        }
+        if ($failures.Count) { throw "Some privacy settings could not be applied. $($failures -join ' ')" }
+    }
     Restore { Restore-RegistryValues $settings $journalPath }
 }
