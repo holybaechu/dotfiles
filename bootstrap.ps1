@@ -27,7 +27,11 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
         Update-SessionPath
     }
     $powerShell = (Get-Command pwsh.exe -CommandType Application -ErrorAction Stop).Source
-    & $powerShell -NoLogo -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath -Repository $Repository -WslUser $WslUser
+    # Pass the script in memory so web bootstrap does not need a local file.
+    $repositoryArgument = $Repository.Replace("'", "''")
+    $command = "& {`n$($MyInvocation.MyCommand.ScriptBlock.ToString())`n} -Repository '$repositoryArgument' -WslUser '$WslUser'"
+    $encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
+    & $powerShell -NoLogo -NoProfile -ExecutionPolicy Bypass -EncodedCommand $encodedCommand
     exit $LASTEXITCODE
 }
 
