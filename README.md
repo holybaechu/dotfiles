@@ -9,6 +9,7 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Window manager | [komorebi](https://github.com/LGUG2Z/komorebi) |
 | Status bar & launcher | [Canopy](apps/yasb/) / [YASB](https://github.com/amnweb/yasb) |
 | Global keybindings | [whkd](https://github.com/LGUG2Z/whkd) |
+| Mouse window movement & resizing | [AltSnap](https://github.com/RamonUnch/AltSnap) |
 | Terminal | Windows Terminal |
 | Text editor | Neovim (Windows and Arch WSL) |
 | Archive manager | [Bandizip](https://www.bandisoft.com/bandizip/) (Windows) |
@@ -47,11 +48,12 @@ If setup requests a Windows restart, restart and rerun the same bootstrap comman
 
 ### First launch
 
-Sign out and back in to start komorebi, whkd, and Canopy. To start them immediately, open a new PowerShell 7 window and run:
+Sign out and back in to start komorebi, whkd, AltSnap, and Canopy. To start them immediately, open a new PowerShell 7 window and run:
 
 ```powershell
 Set-Location (chezmoi execute-template '{{ .chezmoi.workingTree }}')
 komorebic start --whkd
+Start-Process "$env:APPDATA\AltSnap\AltSnap.exe" -WindowStyle Hidden
 .\apps\yasb\Start.ps1
 ```
 
@@ -103,6 +105,8 @@ The shared [Starship configuration](home/dot_config/starship.toml) uses two line
 | `Alt + [ / ]` | Select the previous / next window in a stack |
 | `Alt + = / -` | Increase / decrease window width |
 | `Alt + Shift + = / -` | Increase / decrease window height |
+| `Alt + left mouse drag` | Move the window under the pointer |
+| `Alt + right mouse drag` | Resize from the nearest side or corner |
 | `Alt + T` | Toggle floating |
 | `Alt + Shift + F` | Toggle monocle (one window fills the workspace) |
 | `Alt + 1–8` | Switch workspace |
@@ -113,6 +117,8 @@ The shared [Starship configuration](home/dot_config/starship.toml) uses two line
 | `Alt + I` | Show / hide the komorebi shortcut helper |
 | `Alt + O` | Reload whkd keybindings |
 | `Alt + Shift + O` | Reload komorebi configuration |
+
+AltSnap handles the mouse gestures using [its managed settings](home/AppData/Roaming/AltSnap/AltSnap.ini). Its own snapping is disabled, and move/resize notifications let komorebi update the tiled layout. Komorebi animations are disabled for smooth mouse resizing. Use `Alt + T` for free movement of a floating window.
 
 ## Making changes
 
@@ -125,7 +131,7 @@ chezmoi diff
 chezmoi apply
 ```
 
-Press `Alt + O` after changing keybindings, or `Alt + Shift + O` after changing komorebi settings. Windows and WSL have separate chezmoi checkouts; update and apply changes in each environment.
+Press `Alt + O` after changing keybindings, or `Alt + Shift + O` after changing komorebi settings. After changing AltSnap settings, run `& "$env:APPDATA\AltSnap\AltSnap.exe" -r` to reload them. Windows and WSL have separate chezmoi checkouts; update and apply changes in each environment.
 
 Keep personal Fish settings in `~/.config/fish/config.fish`; chezmoi manages [conf.d/chezmoi.fish](home/dot_config/fish/conf.d/chezmoi.fish). For an existing Bash setup, install Fish with `sudo pacman -Syu --needed fish starship`, apply the updated dotfiles, then run `chsh -s /usr/bin/fish` and open a new terminal.
 
