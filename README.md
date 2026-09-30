@@ -15,6 +15,7 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Terminal startup summary | Fastfetch |
 | Linux environment | Arch Linux on WSL2 |
 | File search | Everything |
+| Browsers | [Aside](https://aside.com/) and [Helium](https://helium.computer/) |
 | Media player | [PotPlayer](https://potplayer.daum.net/) |
 | Git & GitHub | Git, GitHub CLI |
 | SSH & commit signing | 1Password |
@@ -25,6 +26,8 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Python environment | uv |
 
 Package lists: [Windows](system/windows/packages.winget) · [Arch](system/wsl/provision.yml).
+
+Windows setup installs Helium through WinGet and Aside through its official signed Windows installer (x64). Existing installations are retained on reruns. Both browsers install before the debloat step removes Edge. Choose your default browser in **Settings → Apps → Default apps**; setup leaves that choice to you.
 
 ## Getting started
 

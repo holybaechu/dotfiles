@@ -5,6 +5,27 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: AsideBrowser
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\AsideBrowser.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\AsideBrowser.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\AsideBrowser.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: HeliumBrowser
+    type: Microsoft.WinGet/Package
+    properties:
+      id: ImputNet.Helium
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
   - name: PotPlayer
     type: Microsoft.WinGet/Package
     properties:
