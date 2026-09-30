@@ -32,6 +32,10 @@
   },
   "monitors": [
     {
+      "wallpaper": {
+        "path": "$Env:KOMOREBI_CONFIG_HOME/wallpapers/wallhaven-oggvw9.jpg",
+        "generate_theme": false
+      },
       "workspaces": [
         {
           "name": "1",
