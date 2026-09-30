@@ -11,6 +11,7 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Global keybindings | [whkd](https://github.com/LGUG2Z/whkd) |
 | Terminal | Windows Terminal |
 | Text editor | Neovim (Windows and Arch WSL) |
+| Archive manager | [Bandizip](https://www.bandisoft.com/bandizip/) (Windows) |
 | Shells | PowerShell 7 (Windows), Fish (WSL), Bash (fallback) |
 | Prompt | Starship |
 | Terminal startup summary | Fastfetch |
@@ -155,7 +156,7 @@ Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On W
 | Formatting | Conform and StyLua, installed through Mason |
 | Git | Gitsigns |
 
-Bootstrap installs the editor, ripgrep, and the archive tools Mason needs. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, then Mason installs Lua Language Server and StyLua. Check `:Mason` for installation progress. Lua is the initial supported language; add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
+Bootstrap installs the editor and ripgrep on both platforms, curl and unzip on Arch, and Bandizip as the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, then Mason installs Lua Language Server and StyLua. Check `:Mason` for installation progress. Lua is the initial supported language; add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
 

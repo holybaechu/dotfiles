@@ -89,10 +89,10 @@ resources:
       useLatest: false
       acceptAgreements: true
 
-  - name: SevenZip
+  - name: Bandizip
     type: Microsoft.WinGet/Package
     properties:
-      id: 7zip.7zip
+      id: Bandisoft.Bandizip
       source: winget
       useLatest: false
       acceptAgreements: true

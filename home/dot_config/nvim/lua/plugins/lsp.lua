@@ -4,14 +4,6 @@ vim.pack.add({
   "https://github.com/mason-org/mason-lspconfig.nvim",
 }, { confirm = false })
 
--- Expose WinGet's default 7-Zip installation to Mason on Windows.
-if vim.fn.has("win32") == 1 then
-  local seven_zip = vim.env.ProgramFiles .. "/7-Zip"
-  if vim.fn.isdirectory(seven_zip) == 1 then
-    vim.env.PATH = vim.env.PATH .. ";" .. seven_zip
-  end
-end
-
 require("mason").setup()
 
 vim.lsp.config("lua_ls", {
