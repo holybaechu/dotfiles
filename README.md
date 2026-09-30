@@ -136,3 +136,7 @@ System setup is separate from `chezmoi apply`. From the repository root in Power
 ```
 
 Use `-Module packages` or `-Module startup` to apply those Windows settings separately. Replace `holybaechu` with your Linux username if customized.
+
+## Planned work
+
+Neovim configuration is planned. Implementation has not started; editor settings, plugins, keybindings, and platform support remain to be decided.
