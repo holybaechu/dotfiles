@@ -155,6 +155,10 @@ Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On W
 | Snippets | LuaSnip and friendly-snippets, with cmp_luasnip for completion |
 | Editing | MiniSurround, MiniAi text objects, and MiniPairs automatic pairs |
 | Keybinding help | WhichKey with Canopy styling and leader-key groups |
+| Statusline | MiniStatusline with mode, Git changes, diagnostics, LSP, and file information |
+| Extended search | MiniExtra pickers for diagnostics, symbols, references, recent files, and Git history |
+| Sessions | MiniSessions with explicit project snapshots in each OS's local state directory |
+| Undo history | Undotree with a diff preview and persistent Neovim undo history |
 | Syntax and folding | nvim-treesitter parsers and native Tree-sitter highlighting/folds |
 | AI suggestions | copilot.lua with automatic inline suggestions |
 | Language support | Native LSP and nvim-lspconfig; Mason installs Lua Language Server |
@@ -169,7 +173,11 @@ Completion offers LSP, file-path, and friendly-snippets suggestions, with curren
 
 Tree-sitter installs parsers for Bash, Fish, JSON (including JSONC), Lua, Markdown, PowerShell, Python, TOML, Vim, Vim help, and queries. Highlighting and folding start when a supported buffer's parser is available; folds start open, and `za` toggles one. Add languages in `lua/plugins/treesitter.lua`. Parser updates follow nvim-treesitter plugin updates automatically; use `:TSUpdate` to retry manually. These parsers provide syntax support independently of language servers.
 
-MiniSurround uses `sa` to add, `sd` to delete, and `sr` to replace surroundings: `saiw"` quotes a word, `sd"` removes its quotes, and `sr"'` changes double quotes to single quotes. MiniAi adds argument and function-call text objects; for example, `cia` changes an argument and `vif` selects the inside of a function call. Its next/previous-object shortcuts are disabled to preserve Neovim 0.12's native incremental selection. MiniPairs closes brackets and quotes, removes empty pairs with Backspace, and handles newlines inside pairs through cmp's Enter fallback.
+MiniSurround uses `sa` to add, `sd` to delete, and `sr` to replace surroundings: `saiw"` quotes a word, `sd"` removes its quotes, and `sr"'` changes double quotes to single quotes. MiniAi adds argument and function-call text objects; for example, `cia` changes an argument and `vif` selects the inside of a function call. Its next/previous-object shortcuts are disabled to preserve Neovim 0.12's native incremental selection. MiniPairs closes brackets and quotes, removes empty pairs with Backspace, and handles newlines inside pairs through cmp's Enter fallback. MiniMove moves the current line or visual selection with `Space m` followed by `h/j/k/l`, avoiding the desktop's Alt shortcuts.
+
+MiniSessions stores named project snapshots under `stdpath("state")/sessions`, separately on Windows and WSL. `Space ss` saves the current files, tabs, folds, and split layout; `Space sr` restores the saved snapshot for the current working directory's Git root (or the working directory outside Git). Names include a path hash so identically named projects do not collide. `Space sl` selects a saved session and `Space sd` selects one to delete. Saving and restoration are explicit; restoring refuses to discard unsaved buffers. Sessions do not back up unsaved file contents, terminal processes, or plugin scratch panels, and they are not synchronized through chezmoi.
+
+MiniExtra extends the existing picker UI. Its Git branch and commit pickers browse history and diffs; they do not switch branches or change the repository. `Space u` opens Undotree, where `j/k` and Enter select a history state, `u` undoes, and `D` toggles the diff panel. Windows uses the GNU diff bundled with Git for Windows; Arch's base-devel includes diffutils.
 
 GitHub Copilot uses [copilot.lua](https://github.com/zbirenbaum/copilot.lua)'s native server, downloaded and checksum-verified on first use (about 75–110 MB per OS); Node.js is not required on Windows or Arch WSL. Open a code file and run `:Copilot auth` to sign in with a GitHub account that has Copilot access. Authenticate separately in Windows and WSL; credentials remain local and are excluded from chezmoi. Suggestions appear automatically as italic teal inline text and hide while the cmp menu is open. Accept them with the dedicated shortcuts below; Enter and Tab keep their existing behavior. Use `:Copilot disable` / `:Copilot enable` to turn Copilot off / on for the session. The separate suggestion panel is disabled.
 
@@ -181,6 +189,8 @@ The main editor canvas is transparent so the managed Windows Terminal profile's 
 | --- | --- |
 | `Space ff` / `Space fg` | Find files / search project text |
 | `Space fb` / `Space fh` | Find buffers / search help |
+| `Space fd` / `Space fo` | Find diagnostics / recent files |
+| `Space fs` / `Space fS` / `Space fr` | Find document symbols / workspace symbols / references |
 | `Space e` | Browse files; press `g?` for browser help |
 | `Space w` | Save the current buffer |
 | `Space` then pause / `Space ?` | Show leader shortcuts / buffer-local shortcuts |
@@ -191,6 +201,10 @@ The main editor canvas is transparent so the managed Windows Terminal profile's 
 | `Ctrl+b` / `Ctrl+f` | Scroll completion documentation |
 | `Tab` / `Shift+Tab` (Insert or Select mode) | Next / previous field in the active LuaSnip snippet |
 | `sa` / `sd` / `sr` | Add / delete / replace surroundings |
+| `Space mh/j/k/l` (Normal or Visual mode) | Move line or selection left / down / up / right |
+| `Space ss` / `Space sr` | Save / restore the project session |
+| `Space sl` / `Space sd` | Select / delete a saved session |
+| `Space u` | Toggle undo history |
 | `za` / `zo` / `zc` | Toggle / open / close a fold |
 | `Alt+a` / `Alt+w` / `Alt+s` (Insert mode) | Accept the Copilot suggestion / next word / next line |
 | `Alt+.` / `Alt+,` (Insert mode) | Next / previous Copilot suggestion |
@@ -201,6 +215,7 @@ The main editor canvas is transparent so the managed Windows Terminal profile's 
 | `Space cf` | Format the buffer or selected range |
 | `]h` / `[h` | Next / previous Git hunk |
 | `Space gp` / `Space gb` | Preview Git hunk / toggle line blame |
+| `Space gB` / `Space gc` / `Space gh` | Browse Git branches / commits / hunks |
 
 Use `:PackUpdate` to review plugin updates, then `:write` in the review buffer to apply them. Keep the generated lockfile in version control. Update it from WSL and capture it with `chezmoi re-add ~/.config/nvim/nvim-pack-lock.json`, then commit the source change. After applying that lockfile on another installation, use `:PackRestore` to review and synchronize existing plugins to its revisions. Mason's external tools are managed separately from the plugin lockfile.
 

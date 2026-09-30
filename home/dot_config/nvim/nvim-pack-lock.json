@@ -54,9 +54,19 @@
       "src": "https://github.com/nvim-mini/mini.ai",
       "version": "'stable'"
     },
+    "mini.extra": {
+      "rev": "e5ecf197f8954d002cb9e85b3715851e2c8d3cd5",
+      "src": "https://github.com/nvim-mini/mini.extra",
+      "version": "'stable'"
+    },
     "mini.files": {
       "rev": "a5689dae6b732955e33eec225b798d6815063179",
       "src": "https://github.com/nvim-mini/mini.files",
+      "version": "'stable'"
+    },
+    "mini.move": {
+      "rev": "b9e452f9c83565a1520e14f7531632160f3b0170",
+      "src": "https://github.com/nvim-mini/mini.move",
       "version": "'stable'"
     },
     "mini.pairs": {
@@ -67,6 +77,16 @@
     "mini.pick": {
       "rev": "8c1f75f8ddd8c9f75d07ed2ab5718d2c3cb65a66",
       "src": "https://github.com/nvim-mini/mini.pick",
+      "version": "'stable'"
+    },
+    "mini.sessions": {
+      "rev": "7cb2945ccc11323b7ca19796eb42618493e1dc12",
+      "src": "https://github.com/nvim-mini/mini.sessions",
+      "version": "'stable'"
+    },
+    "mini.statusline": {
+      "rev": "b5547f44560dae3ccd81f914256fa6f705837022",
+      "src": "https://github.com/nvim-mini/mini.statusline",
       "version": "'stable'"
     },
     "mini.surround": {
@@ -85,6 +105,10 @@
     "nvim-treesitter": {
       "rev": "e6be2ff65d89df5039cad7a422600757bbf81d02",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
+    },
+    "undotree": {
+      "rev": "6fa6b57cda8459e1e4b2ca34df702f55242f4e4d",
+      "src": "https://github.com/mbbill/undotree"
     },
     "which-key.nvim": {
       "rev": "3aab2147e74890957785941f0c1ad87d0a44c15a",

@@ -8,6 +8,8 @@ wk.setup({
     { "<leader>f", group = "Find" },
     { "<leader>c", group = "Code", mode = { "n", "x" } },
     { "<leader>g", group = "Git" },
+    { "<leader>s", group = "Sessions" },
+    { "<leader>m", group = "Move", mode = { "n", "x" } },
     { "s", group = "Surround", mode = { "n", "x" } },
   },
 })
