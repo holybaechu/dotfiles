@@ -10,15 +10,16 @@
     "os",
     "shell",
     "uptime",
-    "memory",
 {{- if and (eq .chezmoi.os "linux") (contains "microsoft" (lower .chezmoi.kernel.osrelease)) }}
     // Use the memory-only config to avoid recursively querying the other OS.
     {
       "type": "command",
       "key": "Memory (Windows)",
       "text": "fastfetch.exe --config memory-only.jsonc"
-    }
-{{- else if eq .chezmoi.os "windows" }}
+    },
+{{- end }}
+    "memory",
+{{- if eq .chezmoi.os "windows" }}
     // Query Arch explicitly, regardless of which WSL distribution is the default.
     {
       "type": "command",
