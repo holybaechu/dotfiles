@@ -56,19 +56,21 @@ Bootstrap installs PotPlayer, then applies the [debloat module](system/windows/d
 - Power Automate, Start Experiences App, Windows Sound Recorder, Xbox and Xbox Live components (including Game Bar), Weather, and News.
 - Media Player (replaced with PotPlayer), Quick Assist, Sticky Notes (Sticker Memo), and Feedback Hub.
 
-Store apps are removed for all users and deprovisioned for new accounts. WinGet removes standalone OneDrive, classic Teams, Power Automate, and Edge installations visible to the current user or installed machine-wide. Other users' per-user desktop installations are outside this scope. Classic Outlook bundled with Microsoft Office is not removed. Start Menu, Microsoft Store, WinGet, shared frameworks/codecs, and Edge WebView2 remain available.
+Store apps are removed for all users and deprovisioned for new accounts in an elevated resource. A separate resource runs WinGet in the normal user session to remove standalone OneDrive, classic Teams, Power Automate, and Edge installations visible to that user or installed machine-wide; individual machine-wide uninstallers can request elevation. This separation is required because WinGet rejects user-scope uninstalls from an administrator session. Other users' per-user desktop installations are outside this scope. Classic Outlook bundled with Microsoft Office is not removed. Start Menu, Microsoft Store, WinGet, shared frameworks/codecs, and Edge WebView2 remain available.
 
 Missing apps are skipped on reruns. Inventory errors, blocked uninstalls, and apps still present after removal fail the module; the other removals are attempted before reporting failures. [Windows can restrict Edge removal by device and region](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-update-policies#uninstall). Setup uses its registered uninstaller and does not delete browser files or change protected Windows policies. If removal requires a restart, restart and rerun setup; debloating never restarts Windows automatically.
 
 Removing an app can remove its local app data. OneDrive's synced folders are not deleted by this script. Reinstall an app through Microsoft Store or its original installer if needed, and remove its identity from the removal list before running bootstrap again. Choose PotPlayer's file associations in **Settings → Apps → Default apps**; setup does not overwrite existing associations.
 
-To check or apply only this module from PowerShell 7 (Windows requests elevation):
+To check or apply only this module, use a **normal, non-administrator PowerShell 7 window**. Windows requests elevation for the Store-app resource:
 
 ```powershell
 .\system\windows\Configure.ps1 -Module debloat
 .\system\windows\Configure.ps1 -Action Apply -Module packages  # Includes PotPlayer
 .\system\windows\Configure.ps1 -Action Apply -Module debloat
 ```
+
+For troubleshooting, the helper requires an explicit `-AppType Store` or `-AppType Desktop`. Store operations require administrator Windows PowerShell 5.1; desktop operations run in a normal PowerShell session. Prefer the configuration commands above to run both with the correct privileges.
 
 ### First launch
 

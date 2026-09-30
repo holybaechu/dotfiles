@@ -1,11 +1,17 @@
 #requires -Version 5.1
 
 [CmdletBinding()]
-param([ValidateSet('Get', 'Test', 'Set')][string]$Operation = 'Test')
+param(
+    [ValidateSet('Get', 'Test', 'Set')][string]$Operation = 'Test',
+    [ValidateSet('Store', 'Desktop')][string]$AppType
+)
 
 $ErrorActionPreference = 'Stop'
+if (-not $AppType) {
+    throw 'Run Configure.ps1 -Action Apply -Module debloat from a normal PowerShell window. Direct calls must specify -AppType Store (administrator) or -AppType Desktop (normal user).'
+}
 # Appx needs Windows PowerShell; debloat.winget uses WindowsPowerShellScript.
-if ($PSVersionTable.PSEdition -ne 'Desktop') {
+if ($AppType -eq 'Store' -and $PSVersionTable.PSEdition -ne 'Desktop') {
     throw 'Run debloating through Configure.ps1 -Module debloat, or Windows PowerShell 5.1.'
 }
 
@@ -52,12 +58,21 @@ function Test-WinGetPackage([string]$Id) {
 }
 
 function Get-DebloatState {
-    [pscustomobject]@{
-        Installed = @(Get-AppxPackage -AllUsers -PackageTypeFilter Main, Bundle -ErrorAction Stop |
+    $installed = @()
+    $provisioned = @()
+    $desktop = @()
+    if ($AppType -eq 'Store') {
+        $installed = @(Get-AppxPackage -AllUsers -PackageTypeFilter Main, Bundle -ErrorAction Stop |
             Where-Object { $_.Name -in $appNames })
-        Provisioned = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop |
+        $provisioned = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop |
             Where-Object { $_.DisplayName -in $appNames })
-        Desktop = @($desktopIds | Where-Object { Test-WinGetPackage $_ })
+    } else {
+        $desktop = @($desktopIds | Where-Object { Test-WinGetPackage $_ })
+    }
+    [pscustomobject]@{
+        Installed = $installed
+        Provisioned = $provisioned
+        Desktop = $desktop
     }
 }
 
@@ -92,8 +107,10 @@ switch ($Operation) {
         }
 
         # Deprovisioning can also remove registrations; do not act on stale identities.
-        $state.Installed = @(Get-AppxPackage -AllUsers -PackageTypeFilter Main, Bundle -ErrorAction Stop |
-            Where-Object { $_.Name -in $appNames })
+        if ($AppType -eq 'Store') {
+            $state.Installed = @(Get-AppxPackage -AllUsers -PackageTypeFilter Main, Bundle -ErrorAction Stop |
+                Where-Object { $_.Name -in $appNames })
+        }
         # Remove bundles via their parent identity, not their constituent main packages.
         $bundleNames = @($state.Installed | Where-Object IsBundle | Select-Object -ExpandProperty Name)
         $packages = @($state.Installed | Where-Object { $_.IsBundle -or $_.Name -notin $bundleNames } |
@@ -111,7 +128,10 @@ switch ($Operation) {
             try {
                 $output = & winget.exe uninstall --id $id --exact --source winget --silent --accept-source-agreements --disable-interactivity 2>&1
                 $code = $LASTEXITCODE
-                # A Store-package removal above may also have removed the WinGet match.
+                if ($code -eq -1978335107) {
+                    throw 'This user-scope app must be uninstalled from a normal, non-administrator PowerShell window. Run Configure.ps1 -Action Apply -Module debloat there.'
+                }
+                # The Store-app resource may already have removed the WinGet match.
                 if ($code -notin @(0, -1978335212)) {
                     throw "WinGet exit code ${code}: $($output -join ' ')"
                 }

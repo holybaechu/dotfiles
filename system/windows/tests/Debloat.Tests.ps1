@@ -28,6 +28,7 @@ function Reset-Fixture {
     $global:DotfilesDebloatTest.blocked = ''
     $global:DotfilesDebloatTest.falseSuccess = ''
     $global:DotfilesDebloatTest.deprovisionRemovesRegistration = $false
+    $global:DotfilesDebloatTest.adminBlocked = $false
 }
 
 function Get-AppxPackage {
@@ -82,16 +83,17 @@ function winget.exe {
         uninstall {
             Assert ('--silent' -in $args) 'Uninstall must be silent.'
             $global:DotfilesDebloatTest.calls.Add("desktop:$id")
-            if ($id -eq $global:DotfilesDebloatTest.blocked) { $global:LASTEXITCODE = 5 }
+            if ($id -eq 'Microsoft.OneDrive' -and $global:DotfilesDebloatTest.adminBlocked) { $global:LASTEXITCODE = -1978335107 }
+            elseif ($id -eq $global:DotfilesDebloatTest.blocked) { $global:LASTEXITCODE = 5 }
             elseif ($id -ne $global:DotfilesDebloatTest.falseSuccess) { $global:DotfilesDebloatTest.desktop = @($global:DotfilesDebloatTest.desktop | Where-Object { $_ -ne $id }) }
         }
         default { throw "Unexpected WinGet action: $($args[0])" }
     }
 }
 
-function Assert-Failure([string]$Message) {
+function Assert-Failure([string]$Message, [string]$AppType = 'Store') {
     $caught = $null
-    try { & $target -Operation Set } catch { $caught = $_.Exception.Message }
+    try { & $target -Operation Set -AppType $AppType } catch { $caught = $_.Exception.Message }
     Assert ($caught -like "*$Message*") "Expected failure containing '$Message'; got '$caught'."
 }
 
@@ -112,17 +114,22 @@ $global:DotfilesDebloatTest.provisioned = @(
     [pscustomobject]@{ DisplayName = 'Microsoft.WindowsStore'; PackageName = 'Store_provisioned' }
 )
 $global:DotfilesDebloatTest.desktop += @('Microsoft.Edge', 'Microsoft.OneDrive', 'Microsoft.EdgeWebView2Runtime', 'Microsoft.Edge.Beta')
-$before = & $target -Operation Get
-Assert ($before.Installed.Count -eq 4 -and $before.Desktop.Count -eq 2) 'Get must report only targeted apps.'
-Assert (-not (& $target -Operation Test)) 'Test must detect unwanted apps.'
+$before = & $target -Operation Get -AppType Store
+Assert ($before.Installed.Count -eq 4 -and $before.Desktop.Count -eq 0) 'Store inventory must not include desktop apps.'
+$beforeDesktop = & $target -Operation Get -AppType Desktop
+Assert ($beforeDesktop.Installed.Count -eq 0 -and $beforeDesktop.Provisioned.Count -eq 0 -and $beforeDesktop.Desktop.Count -eq 2) 'Desktop inventory must not include Store apps.'
+Assert (-not (& $target -Operation Test -AppType Store)) 'Test must detect unwanted apps.'
 Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'Get and Test must not remove apps.'
-& $target -Operation Set
-Assert (& $target -Operation Test) 'Set must converge to the desired state.'
+& $target -Operation Set -AppType Store
+& $target -Operation Set -AppType Desktop
+Assert (& $target -Operation Test -AppType Store) 'Set must converge to the desired state.'
+Assert (& $target -Operation Test -AppType Desktop) 'Desktop Set must converge to the desired state.'
 Assert ($global:DotfilesDebloatTest.installed.Count -eq 5 -and $global:DotfilesDebloatTest.provisioned.Count -eq 1) 'Unrelated apps must survive.'
 Assert ('Microsoft.EdgeWebView2Runtime' -in $global:DotfilesDebloatTest.desktop -and 'Microsoft.Edge.Beta' -in $global:DotfilesDebloatTest.desktop) 'Exact Edge targeting must preserve shared runtime and other channels.'
 Assert (@($global:DotfilesDebloatTest.calls | Where-Object { $_ -like 'app:Microsoft.StartExperiencesApp*' }).Count -eq 1) 'Remove a bundle once, via its parent.'
 $count = $global:DotfilesDebloatTest.calls.Count
-& $target -Operation Set
+& $target -Operation Set -AppType Store
+& $target -Operation Set -AppType Desktop
 Assert ($global:DotfilesDebloatTest.calls.Count -eq $count) 'A rerun must not repeat removals.'
 Write-Output 'PASS: read-only inventory, exact targeting, bundles, deprovisioning, and reruns'
 
@@ -139,7 +146,7 @@ Assert-Failure 'Access denied'
 Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'An inventory failure must not be treated as absence.'
 $global:DotfilesDebloatTest.inventoryError = $false
 $global:DotfilesDebloatTest.listError = $true
-Assert-Failure 'Checking Microsoft.OneDrive failed'
+Assert-Failure 'Checking Microsoft.OneDrive failed' 'Desktop'
 Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'A WinGet source failure must not trigger removals.'
 Write-Output 'PASS: denied inventory and WinGet source failures stop before removal'
 
@@ -148,13 +155,14 @@ $global:DotfilesDebloatTest.installed = @((New-App 'Microsoft.Todos'), (New-App 
 $global:DotfilesDebloatTest.blocked = 'Microsoft.Todos'
 $global:DotfilesDebloatTest.desktop += 'Microsoft.OneDrive'
 Assert-Failure 'App removal denied'
+& $target -Operation Set -AppType Desktop
 Assert ($global:DotfilesDebloatTest.installed.Count -eq 1 -and 'Microsoft.OneDrive' -notin $global:DotfilesDebloatTest.desktop) 'Other requested removals must continue after one failure.'
 Write-Output 'PASS: failed removals are reported after attempting other apps'
 
 Reset-Fixture
 $global:DotfilesDebloatTest.desktop += 'Microsoft.Edge'
 $global:DotfilesDebloatTest.falseSuccess = 'Microsoft.Edge'
-Assert-Failure 'Windows may restrict Edge removal'
+Assert-Failure 'Windows may restrict Edge removal' 'Desktop'
 Write-Output 'PASS: a successful exit code cannot hide an Edge uninstall that did nothing'
 
 Reset-Fixture
@@ -167,6 +175,31 @@ Reset-Fixture
 $global:DotfilesDebloatTest.installed = @((New-App 'Microsoft.BingSearch'))
 $global:DotfilesDebloatTest.provisioned = @([pscustomobject]@{ DisplayName = 'Microsoft.BingSearch'; PackageName = 'Bing_provisioned' })
 $global:DotfilesDebloatTest.deprovisionRemovesRegistration = $true
-& $target -Operation Set
+& $target -Operation Set -AppType Store
 Assert ($global:DotfilesDebloatTest.calls.Count -eq 1) 'Refresh registrations after deprovisioning.'
 Write-Output 'PASS: deprovisioning cannot cause a second removal of stale registrations'
+
+Reset-Fixture
+$global:DotfilesDebloatTest.inventoryError = $true
+$global:DotfilesDebloatTest.desktop += 'Microsoft.OneDrive'
+& $target -Operation Set -AppType Desktop
+Assert ('Microsoft.OneDrive' -notin $global:DotfilesDebloatTest.desktop) 'Desktop removal must work without permission to query all-user Store apps.'
+Write-Output 'PASS: user-scope OneDrive removal never queries administrator-only Appx inventory'
+
+Reset-Fixture
+$global:DotfilesDebloatTest.listError = $true
+$global:DotfilesDebloatTest.installed = @((New-App 'Microsoft.BingSearch'))
+& $target -Operation Set -AppType Store
+Assert ($global:DotfilesDebloatTest.installed.Count -eq 0) 'Store removal must not query desktop apps through WinGet.'
+Write-Output 'PASS: elevated Store removal never runs desktop WinGet inventory or uninstall'
+
+Reset-Fixture
+$global:DotfilesDebloatTest.desktop += 'Microsoft.OneDrive'
+$global:DotfilesDebloatTest.adminBlocked = $true
+Assert-Failure 'normal, non-administrator PowerShell window' 'Desktop'
+Write-Output 'PASS: an elevated user-scope uninstall reports the correct recovery instruction'
+
+$caught = $null
+try { & $target -Operation Set } catch { $caught = $_.Exception.Message }
+Assert ($caught -like '*Direct calls must specify*') 'Reject ambiguous direct calls instead of silently skipping one app type.'
+Write-Output 'PASS: direct calls require an explicit app type'
