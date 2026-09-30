@@ -19,6 +19,7 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Media player | [PotPlayer](https://potplayer.daum.net/) |
 | Git & GitHub | Git, GitHub CLI |
 | SSH & commit signing | 1Password |
+| YubiKey authentication | [Yubico Authenticator](https://www.yubico.com/products/yubico-authenticator/) |
 | Fonts | JetBrainsMono Nerd Font Mono (terminal), Inter (bar) |
 | Dotfile management | chezmoi |
 | Windows provisioning | WinGet + DSC v3 |
