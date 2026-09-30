@@ -1,5 +1,11 @@
 vim.pack.add({ "https://github.com/nvim-treesitter/nvim-treesitter" }, { confirm = false })
 
+-- Windows virtualized paths must resolve before becoming query junction targets.
+if vim.fn.has("win32") == 1 then
+  local path = vim.pack.get({ "nvim-treesitter" }, { info = false })[1].path
+  vim.opt.runtimepath:prepend(vim.uv.fs_realpath(path) or path)
+end
+
 local ts = require("nvim-treesitter")
 ts.setup()
 -- The Windows CLI targets MSVC by default; bootstrap supplies x64 LLVM MinGW.
