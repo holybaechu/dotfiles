@@ -1,0 +1,73 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# One shared layout, with the actual shell name.
+format = '${env_var.STARSHIP_SHELL}$directory$git_branch$git_commit$git_state$git_status$cmd_duration$status$line_break$character'
+add_newline = true
+continuation_prompt = '[·](muted) '
+palette = 'canopy'
+
+[palettes.canopy]
+green = '#a6e3a1'
+purple = '#cba6f7'
+yellow = '#f9e2af'
+red = '#f38ba8'
+muted = '#87998b'
+
+[env_var.STARSHIP_SHELL]
+default = 'shell'
+format = '[$env_value]($style) '
+style = 'muted'
+
+[directory]
+style = 'bold green'
+truncation_length = 3
+truncation_symbol = '…/'
+truncate_to_repo = true
+use_os_path_sep = false
+read_only = ' '
+read_only_style = 'red'
+
+[git_branch]
+format = '[$symbol$branch]($style) '
+style = 'purple'
+truncation_length = 24
+only_attached = true
+
+[git_commit]
+format = '[@$hash]($style) '
+style = 'purple'
+
+[git_state]
+style = 'bold yellow'
+
+[git_status]
+style = 'yellow'
+conflicted = '=${count}'
+stashed = '*${count}'
+deleted = '-${count}'
+renamed = '»${count}'
+modified = '!${count}'
+staged = '+${count}'
+untracked = '?${count}'
+typechanged = '~${count}'
+ahead = '↑${count}'
+behind = '↓${count}'
+diverged = '↑${ahead_count}↓${behind_count}'
+
+[cmd_duration]
+min_time = 3000
+format = '[$duration]($style) '
+style = 'muted'
+
+[status]
+disabled = false
+format = '[exit $status]($style) '
+style = 'bold red'
+
+[character]
+success_symbol = '[❯](bold green)'
+error_symbol = '[❯](bold red)'
+vimcmd_symbol = '[❮](bold green)'
+vimcmd_visual_symbol = '[❮](bold yellow)'
+vimcmd_replace_symbol = '[❮](bold purple)'
+vimcmd_replace_one_symbol = '[❮](bold purple)'

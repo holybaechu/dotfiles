@@ -62,6 +62,14 @@ resources:
       winget:
         securityContext: elevated
 
+  - name: Fastfetch
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Fastfetch-cli.Fastfetch
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
   - name: Komorebi
     type: Microsoft.WinGet/Package
     properties:

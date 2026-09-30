@@ -2,6 +2,8 @@
 - name: Provision Arch Linux on WSL
   hosts: localhost
   connection: local
+  # Keep provisioning commands on Bash when becoming the Fish login user.
+  become_flags: '-s /bin/bash'
   vars:
     ansible_python_interpreter: /usr/bin/python
     linux_user: "{{ lookup('ansible.builtin.env', 'DOTFILES_LINUX_USER') | default('holybaechu', true) }}"
@@ -50,11 +52,15 @@
         name:
           - base-devel
           - chezmoi
+          - fastfetch
+          - fish
           - git
           - github-cli
+          - less
           - openssh
           - starship
           - sudo
+          - util-linux # provides more
         state: present
 
     - name: Create the Linux account and ensure wheel membership
@@ -64,7 +70,7 @@
         create_home: true
         groups: wheel
         append: true
-        shell: /bin/bash
+        shell: /usr/bin/fish
 
     - name: Allow sudo with the Linux password
       ansible.builtin.copy:

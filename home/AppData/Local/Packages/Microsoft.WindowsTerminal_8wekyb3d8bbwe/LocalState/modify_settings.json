@@ -37,7 +37,7 @@
 
 {{- /* Manage the WSL and PowerShell 7 entries, preserving other profiles. */ -}}
 {{- $wsl := dict "guid" $wslGuid "name" "WSL" "commandline" "wsl.exe --cd ~" "hidden" false -}}
-{{- $powerShell := dict "guid" $powerShellGuid "name" "PowerShell 7" "commandline" "pwsh.exe -NoLogo" "hidden" false -}}
+{{- $powerShell := dict "guid" $powerShellGuid "name" "PowerShell 7" "commandline" "pwsh.exe -NoLogo" "startingDirectory" "%USERPROFILE%" "hidden" false -}}
 {{- $profileList := get $profiles "list" | default (list) -}}
 {{- range (list $wsl $powerShell) -}}
     {{- $managed := . -}}

@@ -10,8 +10,9 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Status bar & launcher | [Canopy](apps/yasb/) / [YASB](https://github.com/amnweb/yasb) |
 | Global keybindings | [whkd](https://github.com/LGUG2Z/whkd) |
 | Terminal | Windows Terminal |
-| Shells | PowerShell 7 (Windows), Bash (WSL) |
+| Shells | PowerShell 7 (Windows), Fish (WSL), Bash (fallback) |
 | Prompt | Starship |
+| Terminal startup summary | Fastfetch |
 | Linux environment | Arch Linux on WSL2 |
 | File search | Everything |
 | Git & GitHub | Git, GitHub CLI |
@@ -38,7 +39,7 @@ Run [bootstrap.ps1](bootstrap.ps1) directly from the web, without saving a scrip
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& ([scriptblock]::Create((irm https://raw.githubusercontent.com/holybaechu/dotfiles/main/bootstrap.ps1 -ErrorAction Stop))); exit $LASTEXITCODE'
 ```
 
-Setup installs the Windows apps and Canopy, applies dotfiles, configures sign-in startup, and provisions Arch Linux on WSL2. Arch becomes the default WSL distribution. The default Linux user is `holybaechu`; add `-WslUser yourname` before `; exit` in the command to change it, or `-Repository https://github.com/yourname/dotfiles.git` to use a fork.
+Setup installs the Windows apps and Canopy, applies dotfiles, configures sign-in startup, and provisions Arch Linux on WSL2 with Fish as the login shell. Arch becomes the default WSL distribution. The default Linux user is `holybaechu`; add `-WslUser yourname` before `; exit` in the command to change it, or `-Repository https://github.com/yourname/dotfiles.git` to use a fork.
 
 If setup requests a Windows restart, restart and rerun the same bootstrap command. Set the Linux password when prompted.
 
@@ -79,7 +80,11 @@ Global shortcuts are defined in [whkdrc](home/dot_config/whkdrc.tmpl). `H / J / 
 
 In the launcher, type an app name or `file report.pdf` to search files. Use `↑ / ↓` to select, `Enter` to open, `Esc` to dismiss, and `Ctrl + R` to refresh the app list.
 
-Terminal opens separate windows in focus mode, with its title bar and tabs hidden. Tab shortcuts are disabled; copy, paste, and pane shortcuts remain available.
+Terminal opens separate windows in focus mode, with its title bar and tabs hidden. Tab shortcuts are disabled; copy, paste, and pane shortcuts remain available. Fish provides autosuggestions, syntax highlighting, and completions, with Starship as the prompt.
+
+Fastfetch shows a compact summary with a small logo and OS, shell, uptime, and memory when a new interactive Fish, Bash, or PowerShell terminal starts. Windows and Arch provisioning install it automatically. Startup hooks skip redirected sessions, PowerShell script/command invocations, and non-interactive shells so automation and whkd stay quiet.
+
+The shared [Starship configuration](home/dot_config/starship.toml) uses two lines: a shell label (`pwsh`, `fish`, or `bash`), folder, and Git details above a clean prompt arrow. Git markers show counts (`+` staged, `!` modified, `?` untracked, `↑` ahead, `↓` behind). Commands taking at least three seconds show their duration; failures show an exit code and turn the arrow red. Chezmoi renders the configuration to `~/.config/starship.toml` on each platform.
 
 ### Windows & workspaces
 
@@ -109,6 +114,8 @@ Terminal opens separate windows in focus mode, with its title bar and tabs hidde
 
 ## Making changes
 
+Configuration files use application-native formats: YAML for YASB, GitHub CLI, Ansible, and WinGet (`.winget`); TOML for Starship and Python project settings; and JSON/JSONC for Komorebi, Windows Terminal, and Fastfetch. Git, SSH, systemd, whkd, shell scripts, and stylesheets retain their own native syntax. Chezmoi templates are used only where substitution or partial-file updates are needed.
+
 Edit application settings in [home/](home/), then preview and apply them:
 
 ```sh
@@ -117,6 +124,8 @@ chezmoi apply
 ```
 
 Press `Alt + O` after changing keybindings, or `Alt + Shift + O` after changing komorebi settings. Windows and WSL have separate chezmoi checkouts; update and apply changes in each environment.
+
+Keep personal Fish settings in `~/.config/fish/config.fish`; chezmoi manages [conf.d/chezmoi.fish](home/dot_config/fish/conf.d/chezmoi.fish). For an existing Bash setup, install Fish with `sudo pacman -Syu --needed fish starship`, apply the updated dotfiles, then run `chsh -s /usr/bin/fish` and open a new terminal.
 
 System setup is separate from `chezmoi apply`. From the repository root in PowerShell 7:
 
