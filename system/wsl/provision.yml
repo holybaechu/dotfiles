@@ -57,6 +57,7 @@
           - git
           - github-cli
           - less
+          - neovim
           - openssh
           - starship
           - sudo

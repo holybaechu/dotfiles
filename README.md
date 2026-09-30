@@ -10,6 +10,7 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Status bar & launcher | [Canopy](apps/yasb/) / [YASB](https://github.com/amnweb/yasb) |
 | Global keybindings | [whkd](https://github.com/LGUG2Z/whkd) |
 | Terminal | Windows Terminal |
+| Text editor | Neovim (Windows and Arch WSL) |
 | Shells | PowerShell 7 (Windows), Fish (WSL), Bash (fallback) |
 | Prompt | Starship |
 | Terminal startup summary | Fastfetch |
@@ -137,6 +138,6 @@ System setup is separate from `chezmoi apply`. From the repository root in Power
 
 Use `-Module packages` or `-Module startup` to apply those Windows settings separately. Replace `holybaechu` with your Linux username if customized.
 
-## Planned work
+## Neovim
 
-Neovim configuration is planned. Implementation has not started; editor settings, plugins, keybindings, and platform support remain to be decided.
+Bootstrap installs Neovim on Windows and Arch WSL; run `nvim` to open it. Editor settings, plugins, and keybindings remain to be configured.
