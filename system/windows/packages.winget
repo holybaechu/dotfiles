@@ -5,6 +5,38 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: AsideBrowser
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\AsideBrowser.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\AsideBrowser.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\AsideBrowser.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: HeliumBrowser
+    type: Microsoft.WinGet/Package
+    properties:
+      id: ImputNet.Helium
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: PotPlayer
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Daum.PotPlayer
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: OnePassword
     type: Microsoft.WinGet/Package
     properties:
@@ -12,6 +44,17 @@ resources:
       source: winget
       useLatest: false
       acceptAgreements: true
+
+  - name: YubicoAuthenticator
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Yubico.Authenticator
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
 
   - name: Everything
     type: Microsoft.WinGet/Package

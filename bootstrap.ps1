@@ -62,6 +62,8 @@ if ($LASTEXITCODE -ne 0) { throw 'chezmoi apply failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Applying Windows preferences failed.' }
 & $configure -Action Apply -Module startup
 if ($LASTEXITCODE -ne 0) { throw 'Configuring Windows startup failed.' }
+& $configure -Action Apply -Module debloat
+if ($LASTEXITCODE -ne 0) { throw 'Removing unwanted Windows apps failed.' }
 
 & (Join-Path $repositoryRoot 'system\wsl\Setup.ps1') -Repository $Repository -LinuxUser $WslUser
 if ($LASTEXITCODE -eq 3010) {

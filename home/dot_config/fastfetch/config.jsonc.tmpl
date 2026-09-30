@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/dev/doc/json_schema.json",
+  "logo": {
+    "type": "small",
+    "padding": {
+      "right": 2
+    }
+  },
+  "modules": [
+    "os",
+    "shell",
+    "uptime",
+{{- if and (eq .chezmoi.os "linux") (contains "microsoft" (lower .chezmoi.kernel.osrelease)) }}
+    // Use the memory-only config to avoid recursively querying the other OS.
+    {
+      "type": "command",
+      "key": "Memory (Windows)",
+      "text": "fastfetch.exe --config memory-only.jsonc"
+    },
+{{- end }}
+    "memory",
+{{- if eq .chezmoi.os "windows" }}
+    // Query Arch explicitly, regardless of which WSL distribution is the default.
+    {
+      "type": "command",
+      "key": "Memory (WSL)",
+      "text": "wsl.exe --distribution archlinux --exec fastfetch --config memory-only.jsonc"
+    }
+{{- end }}
+  ]
+}

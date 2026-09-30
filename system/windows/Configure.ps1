@@ -8,9 +8,17 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$modules = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter "$Module.winget" -File | Sort-Object Name)
+# Install replacements before removing apps when applying all modules.
+$modules = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter "$Module.winget" -File |
+    Sort-Object @{ Expression = { $_.BaseName -eq 'debloat' } }, Name)
 if (-not $modules.Count) {
     throw "No DSC module matches '$Module'."
+}
+if ($Action -eq 'Apply' -and 'debloat' -in $modules.BaseName) {
+    $principal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
+    if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw 'Run debloating from a normal, non-administrator PowerShell window. WinGet will request elevation for Store apps; user-scope desktop apps cannot be removed from an elevated session.'
+    }
 }
 
 $result = 0
