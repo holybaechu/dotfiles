@@ -5,15 +5,25 @@ metadata:
       identifier: dscv3
 
 resources:
-  - name: RemoveUnwantedWindowsApps
+  - name: RemoveUnwantedStoreApps
     type: Microsoft.DSC.Transitional/WindowsPowerShellScript
     properties:
       getScript: |
-        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Get
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Get -AppType Store
       testScript: |
-        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Test
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Test -AppType Store
       setScript: |
-        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Set
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Set -AppType Store
     metadata:
       winget:
         securityContext: elevated
+
+  - name: RemoveUnwantedDesktopApps
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Get -AppType Desktop
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Test -AppType Desktop
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Set -AppType Desktop
