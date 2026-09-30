@@ -1,5 +1,5 @@
 #requires -Version 7.0
-# Registry writes and DxDiag are mocked; only temporary journal files are written.
+# Registry writes, visual-effects APIs, and DxDiag are mocked; only temporary journal files are written.
 $ErrorActionPreference = 'Stop'
 $scripts = Join-Path (Split-Path $PSScriptRoot) 'scripts'
 $global:SettingsFixture = @{ Registry = @{}; Writes = 0; Deny = $false; Hardware = 'DriverSupportState:Stable Enabled:True' }
@@ -7,6 +7,19 @@ $scratch = Join-Path ([IO.Path]::GetTempPath()) ('dotfiles-settings-test-' + [gu
 [void](New-Item -ItemType Directory -Path $scratch)
 $savedLocal = $env:LOCALAPPDATA
 $savedProgram = $env:ProgramData
+if ('Dotfiles.VisualEffects' -as [type]) { throw 'Run this fixture in a fresh PowerShell process.' }
+Add-Type -Namespace Dotfiles -Name VisualEffects -MemberDefinition @'
+public static System.Collections.Generic.Dictionary<uint, bool> Values = new System.Collections.Generic.Dictionary<uint, bool>();
+public static int Writes = 0;
+public static bool Deny = false;
+public static bool Read(uint action) { return Values.ContainsKey(action) ? Values[action] : true; }
+public static void Write(uint action, bool enabled) {
+    if (Deny) throw new System.InvalidOperationException("Visual preference access denied.");
+    Writes++;
+    Values[action - 1] = enabled;
+}
+public static void Notify() { }
+'@
 
 function Assert($Condition, [string]$Message) { if (-not $Condition) { throw $Message } }
 function Test-Path {
@@ -74,6 +87,29 @@ try {
     Assert ($global:SettingsFixture.Registry[$key].Retain.Value -eq 'sentinel') 'Preserve unrelated values.'
     Assert (-not $global:SettingsFixture.Registry['HKCU:\System\GameConfigStore'].ContainsKey('GameDVR_Enabled')) 'Remove only values introduced by the change.'
     Write-Output 'PASS: privacy read-only checks, convergence, journal retention, and restoration'
+
+    $visual = Join-Path $scripts 'VisualEffects.ps1'
+    $personalize = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+    $global:SettingsFixture.Registry[$personalize] = @{ EnableTransparency=@{Kind='DWord';Value=0}; AppsUseLightTheme=@{Kind='DWord';Value=0} }
+    $state = & $visual -Operation Get
+    Assert (-not $state.AnimationsDisabled -and -not $state.TransparencyEnabled -and [Dotfiles.VisualEffects]::Writes -eq 0) 'Visual Get must read without applying.'
+    & $visual -Operation Set
+    Assert (& $visual -Operation Test) 'Disable animations while explicitly enabling transparency.'
+    $visualWrites = [Dotfiles.VisualEffects]::Writes
+    $registryWrites = $global:SettingsFixture.Writes
+    & $visual -Operation Set
+    Assert ([Dotfiles.VisualEffects]::Writes -eq $visualWrites -and $global:SettingsFixture.Writes -eq $registryWrites) 'Visual reapply must preserve the original journal and avoid writes.'
+    Assert ([Dotfiles.VisualEffects]::Read(0x004a) -and $global:SettingsFixture.Registry[$personalize].AppsUseLightTheme.Value -eq 0) 'Preserve font smoothing and theme selection.'
+    & $visual -Operation Restore
+    $state = & $visual -Operation Get
+    Assert ($state.EnabledAnimations.Count -eq 7 -and -not $state.TransparencyEnabled) 'Restore the recorded animation and transparency preferences.'
+    Assert (-not $global:SettingsFixture.Registry['HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'].ContainsKey('TaskbarAnimations')) 'Restore an originally absent taskbar value by removing it.'
+    [Dotfiles.VisualEffects]::Deny = $true
+    $caught = $false
+    try { & $visual -Operation Set } catch { $caught = $_.Exception.Message -like '*access denied*' }
+    Assert $caught 'A failed Windows animation API must not be reported as success.'
+    [Dotfiles.VisualEffects]::Deny = $false
+    Write-Output 'PASS: animations off with transparency on, retained appearance, idempotence, restoration, and denied API writes'
 
     $gpuKey = 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences'
     $global:SettingsFixture.Registry[$gpuKey] = @{ DirectXUserGlobalSettings=@{Kind='String';Value='VRROptimizeEnable=1;AutoHDREnable=0;SwapEffectUpgradeEnable=0;'} }

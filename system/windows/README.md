@@ -14,7 +14,7 @@ User personalization uses the normal-user preference instead of writing the admi
 
 ## App and component removal
 
-Additional exact app identities cover Solitaire, Dev Home, Get Help, Windows Web Experience, Widgets Platform Runtime, standalone Copilot, and Microsoft 365 Office Hub. Phone Link, Cross Device, actual Office applications, animations, transparency, Defender, WSL, and shared codecs are not targeted.
+Additional exact app identities cover Solitaire, Dev Home, Get Help, Windows Web Experience, Widgets Platform Runtime, standalone Copilot, and Microsoft 365 Office Hub. Phone Link, Cross Device, actual Office applications, Defender, WSL, and shared codecs are not targeted.
 
 Optional servicing targets Recall, legacy Windows Media Player, Windows Fax and Scan, and installed `Language.Handwriting` capabilities. It preserves language basics, keyboard input, printing services, and the WIA scanning platform. Removing the Fax capability also removes the legacy Fax and Scan application. PotPlayer must be detected before removing an installed legacy Media Player.
 
@@ -61,6 +61,19 @@ GPU scheduling is checked against fresh DxDiag `HardwareSchedulingAttributes`. U
 ```
 
 The inspected Arc B390 driver already reports active scheduling. No FPS improvement is claimed.
+
+## Visual preferences
+
+The `preferences` module disables Windows client-area, minimize/maximize, taskbar, menu, combo-box, list-box scrolling, selection-fade, and tooltip animations. Transparency is explicitly enabled. It changes individual [Windows animation parameters](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-systemparametersinfow) rather than replacing the whole `UserPreferencesMask` or selecting a performance preset. Font smoothing, hover highlighting, and the existing shadow preferences are retained.
+
+The helper persists and broadcasts these preferences, then reads them back. Applications that cache appearance settings may need reopening or a sign-out; it does not restart Explorer automatically. Apply or inspect only this setting from normal PowerShell 7:
+
+```powershell
+.\system\windows\scripts\VisualEffects.ps1 -Operation Set
+.\system\windows\scripts\VisualEffects.ps1 -Operation Get
+```
+
+Original animation API values and touched registry values are saved before their first change in `%LOCALAPPDATA%\dotfiles\rollback\visual-effects-user.json`. Restore them with `VisualEffects.ps1 -Operation Restore`; only the recorded animation, taskbar, and transparency preferences are restored. Change bootstrap's desired configuration before applying again if you want to retain the restored choices.
 
 ## Startup audit
 

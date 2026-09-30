@@ -105,6 +105,16 @@ resources:
         param($settings)
         & "${WinGetConfigRoot}\scripts\MouseAcceleration.ps1" -Operation Set -Enabled $settings.enabled
 
+  - name: VisualEffects
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\VisualEffects.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\VisualEffects.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\VisualEffects.ps1" -Operation Set
+
   - name: WindowShadows
     type: Microsoft.DSC.Transitional/PowerShellScript
     properties:

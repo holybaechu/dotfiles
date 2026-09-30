@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# Shared only by the privacy/graphics resources. Journals contain touched values,
+# Shared by the Windows setting resources. Journals contain touched values,
 # never commands or arbitrary restore paths: restore uses the caller's allowlist.
 function Get-RegistryState($Setting) {
     if (Test-Path -LiteralPath $Setting.Path) {
