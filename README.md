@@ -152,7 +152,7 @@ Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On W
 | Theme | Standalone Canopy High Contrast colorscheme |
 | File search and browser | MiniPick and MiniFiles; ripgrep for project search |
 | Completion | nvim-cmp with LSP, file-path, and current-buffer sources; native snippet expansion |
-| AI suggestions | copilot.lua and copilot-cmp, integrated into the completion menu |
+| AI suggestions | copilot.lua with automatic inline suggestions |
 | Language support | Native LSP and nvim-lspconfig; Mason installs Lua Language Server |
 | Formatting | Conform and StyLua, installed through Mason |
 | Git | Gitsigns |
@@ -161,9 +161,9 @@ Bootstrap installs the editor and ripgrep on both platforms, curl and unzip on A
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
 
-Completion offers LSP, file-path, and Copilot suggestions together, with current-buffer words as a fallback. Each item shows its source, including `[Copilot]` for AI suggestions. Snippets returned by a language server expand through Neovim's built-in snippet engine. Signature help is available on request with `Ctrl+s` in Insert mode.
+Completion offers LSP and file-path suggestions, with current-buffer words as a fallback. Each menu item shows its source. Snippets returned by a language server expand through Neovim's built-in snippet engine. Signature help is available on request with `Ctrl+s` in Insert mode.
 
-GitHub Copilot uses [copilot.lua](https://github.com/zbirenbaum/copilot.lua)'s native server, downloaded and checksum-verified on first use (about 75–110 MB per OS); Node.js is not required on Windows or Arch WSL. Open a code file and run `:Copilot auth` to sign in with a GitHub account that has Copilot access. Authenticate separately in Windows and WSL; credentials remain local and are excluded from chezmoi. Copilot suggestions use the same explicit selection and acceptance keys as other completions. Use `:Copilot disable` / `:Copilot enable` to turn them off / on for the session. Its separate inline suggestions and panel are disabled because completion is handled by cmp.
+GitHub Copilot uses [copilot.lua](https://github.com/zbirenbaum/copilot.lua)'s native server, downloaded and checksum-verified on first use (about 75–110 MB per OS); Node.js is not required on Windows or Arch WSL. Open a code file and run `:Copilot auth` to sign in with a GitHub account that has Copilot access. Authenticate separately in Windows and WSL; credentials remain local and are excluded from chezmoi. Suggestions appear automatically as italic teal inline text and hide while the cmp menu is open. Accept them with the dedicated shortcuts below; Enter and Tab keep their existing behavior. Use `:Copilot disable` / `:Copilot enable` to turn Copilot off / on for the session. The separate suggestion panel is disabled.
 
 The standalone `canopy` colorscheme defines its own editor, syntax, Tree-sitter, semantic-token, and plugin highlights. It uses Canopy's forest-green surfaces, mint interface accents, and warm-white text. Syntax roles are separated: lavender keywords, blue functions, mint strings, teal types, and amber numbers. Errors are red, warnings amber, information blue, and hints green; diagnostic signs and messages also identify severity.
 
@@ -180,6 +180,9 @@ The main editor canvas is transparent so the managed Windows Terminal profile's 
 | `Ctrl+y` / `Enter` | Accept an explicitly selected completion; Enter otherwise inserts a newline |
 | `Ctrl+Space` / `Ctrl+e` | Open / dismiss completion |
 | `Ctrl+b` / `Ctrl+f` | Scroll completion documentation |
+| `Alt+a` / `Alt+w` / `Alt+s` (Insert mode) | Accept the Copilot suggestion / next word / next line |
+| `Alt+.` / `Alt+,` (Insert mode) | Next / previous Copilot suggestion |
+| `Ctrl+]` (Insert mode) | Dismiss the Copilot suggestion |
 | `Ctrl+s` (Insert mode) | Show LSP signature help |
 | `gd` / `K` | Go to definition / show hover documentation |
 | `Space cr` / `Space ca` / `Space cd` | Rename symbol / code action / line diagnostics |

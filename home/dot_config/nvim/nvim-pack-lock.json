@@ -16,10 +16,6 @@
       "rev": "016802de402556da54c36bd7359b441266b01cdd",
       "src": "https://github.com/stevearc/conform.nvim"
     },
-    "copilot-cmp": {
-      "rev": "15fc12af3d0109fa76b60b5cffa1373697e261d1",
-      "src": "https://github.com/zbirenbaum/copilot-cmp"
-    },
     "copilot.lua": {
       "rev": "9c8b172570105d31ff707cb0d62897f79c2ddb1f",
       "src": "https://github.com/zbirenbaum/copilot.lua"
