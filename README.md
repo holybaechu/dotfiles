@@ -149,9 +149,9 @@ Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On W
 
 | Feature | Configuration |
 | --- | --- |
-| Theme | Canopy High Contrast, using Tokyo Night's syntax and plugin highlights |
+| Theme | Standalone Canopy High Contrast colorscheme |
 | File search and browser | MiniPick and MiniFiles; ripgrep for project search |
-| Completion | MiniCompletion, with native snippet support |
+| Completion | nvim-cmp with LSP, file-path, and current-buffer sources; native snippet expansion |
 | Language support | Native LSP and nvim-lspconfig; Mason installs Lua Language Server |
 | Formatting | Conform and StyLua, installed through Mason |
 | Git | Gitsigns |
@@ -160,9 +160,11 @@ Bootstrap installs the editor and ripgrep on both platforms, curl and unzip on A
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
 
-The `canopy` colorscheme uses Canopy's forest-green surfaces, mint interface accents, and warm-white text. Syntax roles are separated: lavender keywords, blue functions, mint strings, teal types, and amber numbers. Errors are red, warnings amber, information blue, and hints green; diagnostic signs and messages also identify severity.
+Completion prioritizes LSP and file-path suggestions, with current-buffer words as a fallback. Snippets returned by a language server expand through Neovim's built-in snippet engine. Signature help is available on request with `Ctrl+s` in Insert mode.
 
-The main editor canvas is transparent so the managed Windows Terminal profile's acrylic blur shows through, including when Neovim runs in WSL. Terminal already uses `useAcrylic: true` at 70% opacity. Floating panels, menus, selections, and diagnostic text backgrounds remain solid for readability. Canvas contrast depends on the content behind the terminal; opacity can be increased in Terminal for stronger contrast. Other terminals supply their own background effects. The palette and overrides live in [colors/canopy.lua](home/dot_config/nvim/colors/canopy.lua); reload with `:colorscheme canopy` after editing.
+The standalone `canopy` colorscheme defines its own editor, syntax, Tree-sitter, semantic-token, and plugin highlights. It uses Canopy's forest-green surfaces, mint interface accents, and warm-white text. Syntax roles are separated: lavender keywords, blue functions, mint strings, teal types, and amber numbers. Errors are red, warnings amber, information blue, and hints green; diagnostic signs and messages also identify severity.
+
+The main editor canvas is transparent so the managed Windows Terminal profile's acrylic blur shows through, including when Neovim runs in WSL. Terminal already uses `useAcrylic: true` at 70% opacity. Floating panels, menus, selections, and diagnostic text backgrounds remain solid for readability. Canvas contrast depends on the content behind the terminal; opacity can be increased in Terminal for stronger contrast. Other terminals supply their own background effects. The palette and highlight definitions live in [colors/canopy.lua](home/dot_config/nvim/colors/canopy.lua); reload with `:colorscheme canopy` after editing.
 
 | Shortcut | Action |
 | --- | --- |
@@ -171,7 +173,11 @@ The main editor canvas is transparent so the managed Windows Terminal profile's 
 | `Space e` | Browse files; press `g?` for browser help |
 | `Space w` | Save the current buffer |
 | `Ctrl+h/j/k/l` | Move between split windows |
-| `Ctrl+n` / `Ctrl+p` / `Ctrl+y` | Next completion / previous completion / accept |
+| `Ctrl+n` / `Ctrl+p` | Select the next / previous completion |
+| `Ctrl+y` / `Enter` | Accept an explicitly selected completion; Enter otherwise inserts a newline |
+| `Ctrl+Space` / `Ctrl+e` | Open / dismiss completion |
+| `Ctrl+b` / `Ctrl+f` | Scroll completion documentation |
+| `Ctrl+s` (Insert mode) | Show LSP signature help |
 | `gd` / `K` | Go to definition / show hover documentation |
 | `Space cr` / `Space ca` / `Space cd` | Rename symbol / code action / line diagnostics |
 | `Space cf` | Format the buffer or selected range |
@@ -180,4 +186,4 @@ The main editor canvas is transparent so the managed Windows Terminal profile's 
 
 Use `:PackUpdate` to review plugin updates, then `:write` in the review buffer to apply them. Keep the generated lockfile in version control. Update it from WSL and capture it with `chezmoi re-add ~/.config/nvim/nvim-pack-lock.json`, then commit the source change. After applying that lockfile on another installation, use `:PackRestore` to review and synchronize existing plugins to its revisions. Mason's external tools are managed separately from the plugin lockfile.
 
-Use `:checkhealth vim.pack`, `:checkhealth vim.lsp`, `:Mason`, and `:ConformInfo` to inspect the setup.
+Use `:checkhealth vim.pack`, `:checkhealth vim.lsp`, `:CmpStatus`, `:Mason`, and `:ConformInfo` to inspect the setup.

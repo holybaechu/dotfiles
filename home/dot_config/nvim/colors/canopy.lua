@@ -1,5 +1,4 @@
 -- Canopy's core palette comes from apps/yasb/canopy/theme.py.
--- Additional pale accents distinguish syntax and diagnostic categories.
 local p = {
   black = "#000000",
   surface = "#111a13",
@@ -17,116 +16,332 @@ local p = {
   lavender = "#d6c4ee",
 }
 
-require("tokyonight").load({
-  style = "night",
-  -- The terminal supplies acrylic blur; keep floating panels opaque below.
-  transparent = true,
-  dim_inactive = false,
-  styles = {
-    comments = { italic = false },
-    keywords = { bold = true, italic = false },
-    sidebars = "dark",
-    floats = "dark",
-  },
-  on_colors = function(c)
-    for name, value in pairs({
-      bg = p.black,
-      bg_dark = p.surface,
-      bg_dark1 = p.black,
-      bg_highlight = p.surface,
-      bg_popup = p.surface,
-      bg_float = p.surface,
-      bg_sidebar = p.surface,
-      bg_statusline = p.raised,
-      bg_visual = p.pressed,
-      bg_search = p.green,
-      fg = p.text,
-      fg_dark = p.muted,
-      fg_float = p.text,
-      fg_sidebar = p.text,
-      fg_gutter = p.muted,
-      comment = p.muted,
-      black = p.black,
-      border = p.border,
-      border_highlight = p.green,
-      dark3 = p.muted,
-      dark5 = p.muted,
-      terminal_black = p.border,
-      blue = p.blue,
-      blue0 = p.raised,
-      blue1 = p.cyan,
-      blue2 = p.cyan,
-      blue5 = p.text,
-      blue6 = p.cyan,
-      blue7 = p.raised,
-      green = p.green,
-      green1 = p.green_hover,
-      green2 = p.cyan,
-      cyan = p.lavender,
-      teal = p.cyan,
-      magenta = p.lavender,
-      magenta2 = p.lavender,
-      purple = p.lavender,
-      orange = p.amber,
-      yellow = p.amber,
-      red = p.error,
-      red1 = p.error,
-      error = p.error,
-      warning = p.amber,
-      info = p.blue,
-      hint = p.green,
-      todo = p.green,
-      git = { add = p.green, change = p.amber, delete = p.error, ignore = p.muted },
-      diff = { add = "#102516", change = "#172522", delete = "#2b1717", text = p.pressed },
-      rainbow = { p.green, p.amber, p.blue, p.cyan, p.lavender, p.error },
-      terminal = {
-        black = p.black, black_bright = p.border,
-        red = p.error, red_bright = p.error,
-        green = p.green, green_bright = p.green_hover,
-        yellow = p.amber, yellow_bright = p.amber,
-        blue = p.blue, blue_bright = p.blue,
-        magenta = p.lavender, magenta_bright = p.lavender,
-        cyan = p.cyan, cyan_bright = p.cyan,
-        white = p.muted, white_bright = p.text,
-      },
-    }) do
-      c[name] = value
-    end
-  end,
-  on_highlights = function(h)
-    h.Identifier = { fg = p.text }
-    h["@function.builtin"] = { fg = p.blue }
-    h.Directory = { fg = p.green_hover }
-    h.CursorLineNr = { fg = p.green, bg = p.surface, bold = true }
-    h.Folded = { fg = p.green, bg = p.surface }
-    h.Visual = { fg = p.text, bg = p.pressed }
-    h.VisualNOS = h.Visual
-    h.Search = { fg = p.black, bg = p.green }
-    h.IncSearch = { fg = p.black, bg = p.amber, bold = true }
-    h.CurSearch = h.IncSearch
-    h.MatchParen = { fg = p.black, bg = p.green, bold = true }
-    h.StatusLine = { fg = p.text, bg = p.raised }
-    h.StatusLineNC = { fg = p.muted, bg = p.surface }
-    h.PmenuSel = { fg = p.black, bg = p.green, bold = true }
-    h.PmenuMatchSel = { fg = p.black, bg = p.green, bold = true, underline = true }
-    h.PmenuSbar = { bg = p.raised }
-    h.PmenuThumb = { bg = p.green }
-    h.MiniPickMatchCurrent = { fg = p.text, bg = p.raised, bold = true }
-    h.MiniPickMatchMarked = h.Visual
-    h.MiniPickMatchRanges = { fg = p.green, bold = true, underline = true }
-    h.MiniFilesCursorLine = h.MiniPickMatchCurrent
-    h.LspReferenceText = { fg = p.text, bg = p.raised }
-    h.LspReferenceRead = h.LspReferenceText
-    h.LspReferenceWrite = h.LspReferenceText
-    h.LspSignatureActiveParameter = { fg = p.green_hover, bg = p.raised, bold = true }
-    h.LspInlayHint = { fg = p.muted, bg = p.surface }
-    h.ComplHint = { fg = p.muted }
-    h.DiagnosticUnnecessary = { fg = p.muted }
-    h.DiagnosticVirtualTextError = { fg = p.error, bg = p.surface }
-    h.DiagnosticVirtualTextWarn = { fg = p.amber, bg = p.surface }
-    h.DiagnosticVirtualTextInfo = { fg = p.blue, bg = p.surface }
-    h.DiagnosticVirtualTextHint = { fg = p.green, bg = p.surface }
-  end,
-})
-
+vim.o.background = "dark"
+vim.o.termguicolors = true
+vim.cmd("highlight clear")
+if vim.g.syntax_on then
+  vim.cmd("syntax reset")
+end
 vim.g.colors_name = "canopy"
+
+-- Main buffers inherit the terminal's acrylic background; panels stay solid.
+local groups = {
+  Normal = { fg = p.text, bg = "NONE" },
+  NormalFloat = { fg = p.text, bg = p.surface },
+  FloatBorder = { fg = p.green, bg = p.surface },
+  FloatTitle = { fg = p.green_hover, bg = p.surface, bold = true },
+  SignColumn = { fg = p.muted, bg = "NONE" },
+  LineNr = { fg = p.muted },
+  CursorLine = { bg = p.surface },
+  CursorLineNr = { fg = p.green, bg = p.surface, bold = true },
+  Cursor = { fg = p.black, bg = p.text },
+  ColorColumn = { bg = p.surface },
+  WinSeparator = { fg = p.border },
+  NonText = { fg = p.muted },
+  Whitespace = { fg = p.border },
+  Conceal = { fg = p.muted },
+  Folded = { fg = p.green, bg = p.surface },
+  FoldColumn = { fg = p.muted },
+  Visual = { fg = p.text, bg = p.pressed },
+  Search = { fg = p.black, bg = p.green },
+  IncSearch = { fg = p.black, bg = p.amber, bold = true },
+  MatchParen = { fg = p.black, bg = p.green, bold = true },
+  Pmenu = { fg = p.text, bg = p.surface },
+  PmenuSel = { fg = p.black, bg = p.green, bold = true },
+  PmenuMatch = { fg = p.cyan, bg = p.surface, bold = true },
+  PmenuMatchSel = { fg = p.black, bg = p.green, bold = true, underline = true },
+  PmenuSbar = { bg = p.raised },
+  PmenuThumb = { bg = p.green },
+  StatusLine = { fg = p.text, bg = p.raised },
+  StatusLineNC = { fg = p.muted, bg = p.surface },
+  TabLine = { fg = p.muted, bg = p.surface },
+  TabLineSel = { fg = p.black, bg = p.green, bold = true },
+  TabLineFill = { bg = p.surface },
+  MsgArea = { fg = p.text },
+  ModeMsg = { fg = p.green, bold = true },
+  MoreMsg = { fg = p.green },
+  Question = { fg = p.green, bold = true },
+  ErrorMsg = { fg = p.error },
+  WarningMsg = { fg = p.amber },
+  Title = { fg = p.green, bold = true },
+  Directory = { fg = p.green_hover },
+  Comment = { fg = p.muted },
+  Identifier = { fg = p.text },
+  Function = { fg = p.blue },
+  Keyword = { fg = p.lavender, bold = true },
+  String = { fg = p.green },
+  Constant = { fg = p.amber },
+  Type = { fg = p.cyan },
+  Operator = { fg = p.text },
+  Delimiter = { fg = p.muted },
+  Special = { fg = p.cyan },
+  Underlined = { fg = p.blue, underline = true },
+  Todo = { fg = p.black, bg = p.amber, bold = true },
+  Error = { fg = p.error },
+  Bold = { bold = true },
+  Italic = { italic = true },
+  DiffAdd = { bg = "#102516" },
+  DiffChange = { bg = "#172522" },
+  DiffDelete = { fg = p.error, bg = "#2b1717" },
+  DiffText = { fg = p.text, bg = p.pressed },
+  LspReferenceText = { fg = p.text, bg = p.raised },
+  LspSignatureActiveParameter = { fg = p.green_hover, bg = p.raised, bold = true },
+  LspInlayHint = { fg = p.muted, bg = p.surface },
+  DiagnosticUnnecessary = { fg = p.muted },
+  DiagnosticDeprecated = { fg = p.muted, strikethrough = true },
+  ["@variable.parameter"] = { fg = p.amber },
+  ["@variable.builtin"] = { fg = p.cyan },
+  MiniPickMatchCurrent = { fg = p.text, bg = p.raised, bold = true },
+  MiniPickMatchRanges = { fg = p.green, bold = true, underline = true },
+  MiniPickPrompt = { fg = p.green, bg = p.surface },
+  MiniFilesFile = { fg = p.text },
+  GitSignsAdd = { fg = p.green },
+  GitSignsChange = { fg = p.amber },
+  GitSignsDelete = { fg = p.error },
+  GitSignsUntracked = { fg = p.muted },
+  CmpItemAbbr = { fg = p.text },
+  CmpItemAbbrDeprecated = { fg = p.muted, strikethrough = true },
+  CmpItemAbbrMatch = { fg = p.green, bold = true },
+  CmpItemMenu = { fg = p.muted },
+  MasonHeader = { fg = p.black, bg = p.green, bold = true },
+  MasonHeaderSecondary = { fg = p.black, bg = p.blue, bold = true },
+  MasonHighlight = { fg = p.green },
+  MasonHighlightSecondary = { fg = p.blue },
+  MasonHighlightBlock = { fg = p.black, bg = p.green },
+  MasonHighlightBlockSecondary = { fg = p.black, bg = p.blue },
+  MasonMuted = { fg = p.muted },
+  MasonMutedBlock = { fg = p.text, bg = p.raised },
+  MasonMutedBlockBold = { fg = p.text, bg = p.raised, bold = true },
+}
+
+local links = {
+  NormalNC = "Normal",
+  NormalSB = "NormalFloat",
+  EndOfBuffer = "NonText",
+  CursorColumn = "CursorLine",
+  CursorLineSign = "SignColumn",
+  lCursor = "Cursor",
+  CursorIM = "Cursor",
+  LineNrAbove = "LineNr",
+  LineNrBelow = "LineNr",
+  VertSplit = "WinSeparator",
+  VisualNOS = "Visual",
+  CurSearch = "IncSearch",
+  Substitute = "IncSearch",
+  QuickFixLine = "Visual",
+  WildMenu = "PmenuSel",
+  WinBar = "StatusLine",
+  WinBarNC = "StatusLineNC",
+  SpecialKey = "NonText",
+  Character = "String",
+  Number = "Constant",
+  Boolean = "Constant",
+  Float = "Constant",
+  Statement = "Keyword",
+  Conditional = "Keyword",
+  Repeat = "Keyword",
+  Label = "Keyword",
+  Exception = "Keyword",
+  PreProc = "Keyword",
+  Include = "Keyword",
+  Define = "Keyword",
+  Macro = "Constant",
+  PreCondit = "Keyword",
+  StorageClass = "Keyword",
+  Structure = "Type",
+  Typedef = "Type",
+  SpecialChar = "Special",
+  Tag = "Type",
+  Debug = "Special",
+  SpecialComment = "Comment",
+  ComplHint = "Comment",
+  LspCodeLens = "Comment",
+  LspReferenceRead = "LspReferenceText",
+  LspReferenceWrite = "LspReferenceText",
+  LspInfoBorder = "FloatBorder",
+  LspCodeLensSeparator = "Comment",
+  SpellBad = "DiagnosticUnderlineError",
+  SpellCap = "DiagnosticUnderlineWarn",
+  SpellLocal = "DiagnosticUnderlineInfo",
+  SpellRare = "DiagnosticUnderlineHint",
+  healthError = "DiagnosticError",
+  healthWarning = "DiagnosticWarn",
+  healthSuccess = "DiagnosticOk",
+  diffAdded = "GitSignsAdd",
+  diffRemoved = "GitSignsDelete",
+  diffChanged = "GitSignsChange",
+  ["@variable"] = "Identifier",
+  ["@property"] = "Identifier",
+  ["@module"] = "Type",
+  ["@constant"] = "Constant",
+  ["@string"] = "String",
+  ["@string.escape"] = "SpecialChar",
+  ["@string.regexp"] = "Special",
+  ["@character"] = "Character",
+  ["@boolean"] = "Boolean",
+  ["@number"] = "Number",
+  ["@type"] = "Type",
+  ["@attribute"] = "Type",
+  ["@function"] = "Function",
+  ["@function.builtin"] = "Function",
+  ["@constructor"] = "Type",
+  ["@operator"] = "Operator",
+  ["@keyword"] = "Keyword",
+  ["@label"] = "Label",
+  ["@punctuation.delimiter"] = "Delimiter",
+  ["@punctuation.bracket"] = "Delimiter",
+  ["@punctuation.special"] = "Special",
+  ["@comment"] = "Comment",
+  ["@comment.todo"] = "Todo",
+  ["@comment.error"] = "DiagnosticError",
+  ["@comment.warning"] = "DiagnosticWarn",
+  ["@comment.note"] = "DiagnosticInfo",
+  ["@markup.strong"] = "Bold",
+  ["@markup.italic"] = "Italic",
+  ["@markup.strikethrough"] = "DiagnosticDeprecated",
+  ["@markup.heading"] = "Title",
+  ["@markup.link"] = "Underlined",
+  ["@markup.raw"] = "String",
+  ["@markup.list"] = "Special",
+  ["@tag"] = "Keyword",
+  ["@tag.attribute"] = "Type",
+  ["@tag.delimiter"] = "Delimiter",
+  ["@lsp.mod.deprecated"] = "DiagnosticDeprecated",
+  MiniPickNormal = "NormalFloat",
+  MiniPickBorder = "FloatBorder",
+  MiniPickBorderText = "FloatTitle",
+  MiniPickBorderBusy = "DiagnosticFloatingWarn",
+  MiniPickHeader = "Title",
+  MiniPickIconDirectory = "Directory",
+  MiniPickIconFile = "NormalFloat",
+  MiniPickMatchMarked = "Visual",
+  MiniPickPreviewLine = "CursorLine",
+  MiniPickPreviewRegion = "IncSearch",
+  MiniFilesNormal = "NormalFloat",
+  MiniFilesBorder = "FloatBorder",
+  MiniFilesBorderModified = "DiagnosticFloatingWarn",
+  MiniFilesTitle = "FloatTitle",
+  MiniFilesTitleFocused = "FloatTitle",
+  MiniFilesDirectory = "Directory",
+  MiniFilesCursorLine = "MiniPickMatchCurrent",
+  GitSignsTopdelete = "GitSignsDelete",
+  GitSignsChangedelete = "GitSignsChange",
+  GitSignsStagedAdd = "GitSignsAdd",
+  GitSignsStagedChange = "GitSignsChange",
+  GitSignsStagedDelete = "GitSignsDelete",
+  GitSignsStagedTopdelete = "GitSignsDelete",
+  GitSignsStagedChangedelete = "GitSignsChange",
+  GitSignsAddNr = "GitSignsAdd",
+  GitSignsChangeNr = "GitSignsChange",
+  GitSignsDeleteNr = "GitSignsDelete",
+  GitSignsAddLn = "DiffAdd",
+  GitSignsChangeLn = "DiffChange",
+  GitSignsDeleteLn = "DiffDelete",
+  GitSignsAddPreview = "DiffAdd",
+  GitSignsDeletePreview = "DiffDelete",
+  GitSignsAddInline = "DiffText",
+  GitSignsDeleteInline = "DiffText",
+  GitSignsChangeInline = "DiffText",
+  CmpItemAbbrMatchFuzzy = "CmpItemAbbrMatch",
+  CmpItemKind = "Type",
+  CmpSelected = "MiniPickMatchCurrent",
+  MasonNormal = "NormalFloat",
+  MasonHeading = "Title",
+  MasonLink = "Underlined",
+  MasonHighlightBlockBold = "MasonHeader",
+  MasonHighlightBlockBoldSecondary = "MasonHeaderSecondary",
+  MasonError = "DiagnosticError",
+  MasonWarning = "DiagnosticWarn",
+}
+
+for severity, color in pairs({ Error = p.error, Warn = p.amber, Info = p.blue, Hint = p.green, Ok = p.green }) do
+  groups["Diagnostic" .. severity] = { fg = color }
+  groups["DiagnosticFloating" .. severity] = { fg = color, bg = p.surface }
+  groups["DiagnosticVirtualText" .. severity] = { fg = color, bg = p.surface }
+  groups["DiagnosticUnderline" .. severity] = { sp = color, undercurl = true }
+  links["DiagnosticSign" .. severity] = "Diagnostic" .. severity
+end
+
+for token, target in pairs({
+  class = "Type",
+  enum = "Type",
+  enumMember = "Constant",
+  interface = "Type",
+  namespace = "Type",
+  parameter = "@variable.parameter",
+  property = "Identifier",
+  variable = "Identifier",
+  ["function"] = "Function",
+  method = "Function",
+  macro = "Constant",
+  type = "Type",
+  typeParameter = "Type",
+  struct = "Type",
+  decorator = "Special",
+  keyword = "Keyword",
+  number = "Number",
+  string = "String",
+  operator = "Operator",
+  comment = "Comment",
+}) do
+  links["@lsp.type." .. token] = target
+end
+
+for kind, target in pairs({
+  Text = "Identifier",
+  Method = "Function",
+  Function = "Function",
+  Constructor = "Type",
+  Field = "Identifier",
+  Variable = "Identifier",
+  Class = "Type",
+  Interface = "Type",
+  Module = "Type",
+  Property = "Identifier",
+  Unit = "Constant",
+  Value = "Constant",
+  Enum = "Type",
+  Keyword = "Keyword",
+  Snippet = "String",
+  Color = "Special",
+  File = "Identifier",
+  Reference = "Underlined",
+  Folder = "Directory",
+  EnumMember = "Constant",
+  Constant = "Constant",
+  Struct = "Type",
+  Event = "Special",
+  Operator = "Operator",
+  TypeParameter = "Type",
+}) do
+  links["CmpItemKind" .. kind] = target
+end
+
+for name, attributes in pairs(groups) do
+  vim.api.nvim_set_hl(0, name, attributes)
+end
+for name, target in pairs(links) do
+  vim.api.nvim_set_hl(0, name, { link = target })
+end
+
+local terminal = {
+  p.black,
+  p.error,
+  p.green,
+  p.amber,
+  p.blue,
+  p.lavender,
+  p.cyan,
+  p.muted,
+  p.border,
+  p.error,
+  p.green_hover,
+  p.amber,
+  p.blue,
+  p.lavender,
+  p.cyan,
+  p.text,
+}
+for index, color in ipairs(terminal) do
+  vim.g["terminal_color_" .. (index - 1)] = color
+end
