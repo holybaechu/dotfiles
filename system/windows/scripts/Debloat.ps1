@@ -17,6 +17,13 @@ if ($AppType -eq 'Store' -and $PSVersionTable.PSEdition -ne 'Desktop') {
 
 # Exact identities only. In particular, StartExperiencesApp is not StartMenuExperienceHost.
 $appNames = @(
+    'Microsoft.MicrosoftSolitaireCollection'
+    'Microsoft.Windows.DevHome'
+    'Microsoft.GetHelp'
+    'MicrosoftWindows.Client.WebExperience'
+    'Microsoft.WidgetsPlatformRuntime'
+    'Microsoft.Copilot'
+    'Microsoft.MicrosoftOfficeHub'
     'MicrosoftCorporationII.MicrosoftFamily'
     'Microsoft.BingSearch'
     'Clipchamp.Clipchamp'

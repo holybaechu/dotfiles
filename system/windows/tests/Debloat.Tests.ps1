@@ -203,3 +203,15 @@ $caught = $null
 try { & $target -Operation Set } catch { $caught = $_.Exception.Message }
 Assert ($caught -like '*Direct calls must specify*') 'Reject ambiguous direct calls instead of silently skipping one app type.'
 Write-Output 'PASS: direct calls require an explicit app type'
+
+Reset-Fixture
+$global:DotfilesDebloatTest.installed = @(
+    (New-App 'Microsoft.WidgetsPlatformRuntime')
+    (New-App 'Microsoft.MicrosoftOfficeHub')
+    (New-App 'Microsoft.YourPhone')
+    (New-App 'MicrosoftWindows.CrossDevice')
+    (New-App 'Microsoft.Office.Word')
+)
+& $target -Operation Set -AppType Store
+Assert ($global:DotfilesDebloatTest.installed.Count -eq 3 -and 'Microsoft.Office.Word' -in $global:DotfilesDebloatTest.installed.Name -and 'Microsoft.YourPhone' -in $global:DotfilesDebloatTest.installed.Name -and 'MicrosoftWindows.CrossDevice' -in $global:DotfilesDebloatTest.installed.Name) 'Remove selected Widgets/Office launcher packages while preserving phone integration and actual Office apps.'
+Write-Output 'PASS: additional removals preserve phone integration and actual Office applications'

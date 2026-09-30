@@ -27,3 +27,16 @@ resources:
         & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Test -AppType Desktop
       setScript: |
         & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Set -AppType Desktop
+
+  - name: RemoveOptionalComponents
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\RemoveOptionalComponents.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\RemoveOptionalComponents.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\RemoveOptionalComponents.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated

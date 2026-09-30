@@ -10,7 +10,7 @@ param(
 $ErrorActionPreference = 'Stop'
 # Install replacements before removing apps when applying all modules.
 $modules = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter "$Module.winget" -File |
-    Sort-Object @{ Expression = { $_.BaseName -eq 'debloat' } }, Name)
+    Sort-Object @{ Expression = { if ($_.BaseName -eq 'packages') { 0 } elseif ($_.BaseName -eq 'debloat') { 2 } else { 1 } } }, Name)
 if (-not $modules.Count) {
     throw "No DSC module matches '$Module'."
 }
