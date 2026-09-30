@@ -90,6 +90,21 @@ resources:
         $expected = Join-Path $env:USERPROFILE '.config\komorebi'
         [Environment]::SetEnvironmentVariable('KOMOREBI_CONFIG_HOME', $expected, 'User')
 
+  - name: MouseAcceleration
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      input:
+        enabled: false
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\MouseAcceleration.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        (& "${WinGetConfigRoot}\scripts\MouseAcceleration.ps1" -Operation Get) -eq $settings.enabled
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\MouseAcceleration.ps1" -Operation Set -Enabled $settings.enabled
+
   - name: WindowShadows
     type: Microsoft.DSC.Transitional/PowerShellScript
     properties:

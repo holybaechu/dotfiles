@@ -32,7 +32,7 @@ Package lists: [Windows](system/windows/packages.winget) · [Arch](system/wsl/pr
 
 Requires Windows with WSL2 support, internet access, and [WinGet 1.11+](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create-v3). Open PowerShell as your regular user; setup requests elevation when needed and installs PowerShell 7, chezmoi, and DSC as needed.
 
-These are personal defaults. Bootstrap applies managed files automatically, disables Windows Search indexing and window shadows, hides desktop icons, shows hidden files and extensions, and enables taskbar auto-hide. Review the [Windows preferences](system/windows/preferences.winget) first. For your own fork, also change the [Git identity](home/dot_config/git/config.tmpl) and [SSH public key](home/dot_config/git/github.pub).
+These are personal defaults. Bootstrap applies managed files automatically, disables Windows Search indexing, window shadows, and mouse acceleration (Enhance pointer precision), hides desktop icons, shows hidden files and extensions, and enables taskbar auto-hide. Review the [Windows preferences](system/windows/preferences.winget) first. For your own fork, also change the [Git identity](home/dot_config/git/config.tmpl) and [SSH public key](home/dot_config/git/github.pub).
 
 Run [bootstrap.ps1](bootstrap.ps1) directly from the web, without saving a script file:
 
