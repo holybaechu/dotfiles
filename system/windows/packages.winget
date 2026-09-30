@@ -5,6 +5,17 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: PotPlayer
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Daum.PotPlayer
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: OnePassword
     type: Microsoft.WinGet/Package
     properties:
