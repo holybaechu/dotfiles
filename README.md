@@ -43,6 +43,14 @@ Setup installs the Windows apps and Canopy, applies dotfiles, configures sign-in
 
 If setup requests a Windows restart, restart and rerun the same bootstrap command. Set the Linux password when prompted.
 
+### Planned: Windows debloating
+
+Windows debloating during bootstrap is planned but not implemented. Before adding it:
+
+- Define which bundled apps and optional Windows settings to remove or disable, and what to retain.
+- Decide whether debloating runs by default or is opt-in, and where it fits in the Windows setup flow.
+- Document repeat-run behavior, restart requirements, and recovery steps for the chosen changes.
+
 ### First launch
 
 Sign out and back in to start komorebi, whkd, and Canopy. To start them immediately, open a new PowerShell 7 window and run:
