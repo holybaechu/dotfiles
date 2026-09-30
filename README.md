@@ -160,7 +160,9 @@ Bootstrap installs the editor and ripgrep on both platforms, curl and unzip on A
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
 
-The `canopy` colorscheme uses Canopy's black background, forest-green surfaces, mint accents, and warm-white text. Comments and line numbers stay readable, while selections, search matches, completion menus, and diagnostics have explicit high-contrast colors. Its palette and overrides live in [colors/canopy.lua](home/dot_config/nvim/colors/canopy.lua); reload it with `:colorscheme canopy` after editing.
+The `canopy` colorscheme uses Canopy's forest-green surfaces, mint interface accents, and warm-white text. Syntax roles are separated: lavender keywords, blue functions, mint strings, teal types, and amber numbers. Errors are red, warnings amber, information blue, and hints green; diagnostic signs and messages also identify severity.
+
+The main editor canvas is transparent so the managed Windows Terminal profile's acrylic blur shows through, including when Neovim runs in WSL. Terminal already uses `useAcrylic: true` at 70% opacity. Floating panels, menus, selections, and diagnostic text backgrounds remain solid for readability. Canvas contrast depends on the content behind the terminal; opacity can be increased in Terminal for stronger contrast. Other terminals supply their own background effects. The palette and overrides live in [colors/canopy.lua](home/dot_config/nvim/colors/canopy.lua); reload with `:colorscheme canopy` after editing.
 
 | Shortcut | Action |
 | --- | --- |

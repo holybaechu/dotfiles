@@ -12,13 +12,15 @@ local p = {
   border = "#728673",
   error = "#f2a59e",
   amber = "#f2d08f",
+  blue = "#adcfff",
   cyan = "#9ee0d1",
   lavender = "#d6c4ee",
 }
 
 require("tokyonight").load({
   style = "night",
-  transparent = false,
+  -- The terminal supplies acrylic blur; keep floating panels opaque below.
+  transparent = true,
   dim_inactive = false,
   styles = {
     comments = { italic = false },
@@ -50,7 +52,7 @@ require("tokyonight").load({
       dark3 = p.muted,
       dark5 = p.muted,
       terminal_black = p.border,
-      blue = p.green_hover,
+      blue = p.blue,
       blue0 = p.raised,
       blue1 = p.cyan,
       blue2 = p.cyan,
@@ -60,9 +62,9 @@ require("tokyonight").load({
       green = p.green,
       green1 = p.green_hover,
       green2 = p.cyan,
-      cyan = p.green,
+      cyan = p.lavender,
       teal = p.cyan,
-      magenta = p.green,
+      magenta = p.lavender,
       magenta2 = p.lavender,
       purple = p.lavender,
       orange = p.amber,
@@ -71,18 +73,18 @@ require("tokyonight").load({
       red1 = p.error,
       error = p.error,
       warning = p.amber,
-      info = p.cyan,
+      info = p.blue,
       hint = p.green,
       todo = p.green,
       git = { add = p.green, change = p.amber, delete = p.error, ignore = p.muted },
       diff = { add = "#102516", change = "#172522", delete = "#2b1717", text = p.pressed },
-      rainbow = { p.green, p.amber, p.cyan, p.lavender, p.text, p.error },
+      rainbow = { p.green, p.amber, p.blue, p.cyan, p.lavender, p.error },
       terminal = {
         black = p.black, black_bright = p.border,
         red = p.error, red_bright = p.error,
         green = p.green, green_bright = p.green_hover,
         yellow = p.amber, yellow_bright = p.amber,
-        blue = p.cyan, blue_bright = p.cyan,
+        blue = p.blue, blue_bright = p.blue,
         magenta = p.lavender, magenta_bright = p.lavender,
         cyan = p.cyan, cyan_bright = p.cyan,
         white = p.muted, white_bright = p.text,
@@ -93,6 +95,8 @@ require("tokyonight").load({
   end,
   on_highlights = function(h)
     h.Identifier = { fg = p.text }
+    h["@function.builtin"] = { fg = p.blue }
+    h.Directory = { fg = p.green_hover }
     h.CursorLineNr = { fg = p.green, bg = p.surface, bold = true }
     h.Folded = { fg = p.green, bg = p.surface }
     h.Visual = { fg = p.text, bg = p.pressed }
@@ -120,7 +124,7 @@ require("tokyonight").load({
     h.DiagnosticUnnecessary = { fg = p.muted }
     h.DiagnosticVirtualTextError = { fg = p.error, bg = p.surface }
     h.DiagnosticVirtualTextWarn = { fg = p.amber, bg = p.surface }
-    h.DiagnosticVirtualTextInfo = { fg = p.cyan, bg = p.surface }
+    h.DiagnosticVirtualTextInfo = { fg = p.blue, bg = p.surface }
     h.DiagnosticVirtualTextHint = { fg = p.green, bg = p.surface }
   end,
 })
