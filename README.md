@@ -15,6 +15,7 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Terminal startup summary | Fastfetch |
 | Linux environment | Arch Linux on WSL2 |
 | File search | Everything |
+| Media player | [PotPlayer](https://potplayer.daum.net/) |
 | Git & GitHub | Git, GitHub CLI |
 | SSH & commit signing | 1Password |
 | Fonts | JetBrainsMono Nerd Font Mono (terminal), Inter (bar) |
@@ -31,7 +32,7 @@ Package lists: [Windows](system/windows/packages.winget) · [Arch](system/wsl/pr
 
 Requires Windows with WSL2 support, internet access, and [WinGet 1.11+](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create-v3). Open PowerShell as your regular user; setup requests elevation when needed and installs PowerShell 7, chezmoi, and DSC as needed.
 
-These are personal defaults. Bootstrap applies managed files automatically, disables Windows Search indexing and window shadows, hides desktop icons, shows hidden files and extensions, and enables taskbar auto-hide. Review the [Windows preferences](system/windows/preferences.winget) first. For your own fork, also change the [Git identity](home/dot_config/git/config.tmpl) and [SSH public key](home/dot_config/git/github.pub).
+These are personal defaults. Bootstrap applies managed files automatically, disables Windows Search indexing and window shadows, hides desktop icons, shows hidden files and extensions, enables taskbar auto-hide, and removes the apps listed under [Windows debloating](#windows-debloating). Review the [Windows preferences](system/windows/preferences.winget) and [removal list](system/windows/scripts/Debloat.ps1) first. For your own fork, also change the [Git identity](home/dot_config/git/config.tmpl) and [SSH public key](home/dot_config/git/github.pub).
 
 Run [bootstrap.ps1](bootstrap.ps1) directly from the web, without saving a script file:
 
@@ -42,6 +43,28 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& ([scriptblock]::Cr
 Setup installs the Windows apps and Canopy, applies dotfiles, configures sign-in startup, and provisions Arch Linux on WSL2 with Fish as the login shell. Arch becomes the default WSL distribution. The default Linux user is `holybaechu`; add `-WslUser yourname` before `; exit` in the command to change it, or `-Repository https://github.com/yourname/dotfiles.git` to use a fork.
 
 If setup requests a Windows restart, restart and rerun the same bootstrap command. Set the Linux password when prompted.
+
+### Windows debloating
+
+Bootstrap installs PotPlayer, then applies the [debloat module](system/windows/debloat.winget). The removal list is explicit:
+
+- Microsoft Family, Bing, Clipchamp, Edge, OneDrive, Teams, To Do, and Outlook for Windows.
+- Power Automate, Start Experiences App, Windows Sound Recorder, Xbox and Xbox Live components (including Game Bar), Weather, and News.
+- Media Player (replaced with PotPlayer), Quick Assist, Sticky Notes (Sticker Memo), and Feedback Hub.
+
+Store apps are removed for all users and deprovisioned for new accounts. WinGet removes standalone OneDrive, classic Teams, Power Automate, and Edge installations visible to the current user or installed machine-wide. Other users' per-user desktop installations are outside this scope. Classic Outlook bundled with Microsoft Office is not removed. Start Menu, Microsoft Store, WinGet, shared frameworks/codecs, and Edge WebView2 remain available.
+
+Missing apps are skipped on reruns. Inventory errors, blocked uninstalls, and apps still present after removal fail the module; the other removals are attempted before reporting failures. [Windows can restrict Edge removal by device and region](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-update-policies#uninstall). Setup uses its registered uninstaller and does not delete browser files or change protected Windows policies. If removal requires a restart, restart and rerun setup; debloating never restarts Windows automatically.
+
+Removing an app can remove its local app data. OneDrive's synced folders are not deleted by this script. Reinstall an app through Microsoft Store or its original installer if needed, and remove its identity from the removal list before running bootstrap again. Choose PotPlayer's file associations in **Settings → Apps → Default apps**; setup does not overwrite existing associations.
+
+To check or apply only this module from PowerShell 7 (Windows requests elevation):
+
+```powershell
+.\system\windows\Configure.ps1 -Module debloat
+.\system\windows\Configure.ps1 -Action Apply -Module packages  # Includes PotPlayer
+.\system\windows\Configure.ps1 -Action Apply -Module debloat
+```
 
 ### First launch
 

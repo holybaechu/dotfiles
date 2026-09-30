@@ -1,0 +1,19 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+
+resources:
+  - name: RemoveUnwantedWindowsApps
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\Debloat.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
