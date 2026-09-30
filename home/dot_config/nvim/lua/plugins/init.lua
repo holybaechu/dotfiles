@@ -1,0 +1,6 @@
+require("plugins.colorscheme")
+require("plugins.navigation")
+require("plugins.completion")
+require("plugins.lsp")
+require("plugins.formatting")
+require("plugins.git")

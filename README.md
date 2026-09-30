@@ -115,7 +115,7 @@ The shared [Starship configuration](home/dot_config/starship.toml) uses two line
 
 ## Making changes
 
-Configuration files use application-native formats: YAML for YASB, GitHub CLI, Ansible, and WinGet (`.winget`); TOML for Starship and Python project settings; and JSON/JSONC for Komorebi, Windows Terminal, and Fastfetch. Git, SSH, systemd, whkd, shell scripts, and stylesheets retain their own native syntax. Chezmoi templates are used only where substitution or partial-file updates are needed.
+Configuration files use application-native formats: Lua for Neovim; YAML for YASB, GitHub CLI, Ansible, and WinGet (`.winget`); TOML for Starship and Python project settings; and JSON/JSONC for Komorebi, Windows Terminal, and Fastfetch. Git, SSH, systemd, whkd, shell scripts, and stylesheets retain their own native syntax. Chezmoi templates are used only where substitution or partial-file updates are needed.
 
 Edit application settings in [home/](home/), then preview and apply them:
 
@@ -142,4 +142,37 @@ Setup installs WSL when needed and uses the existing version on configured machi
 
 ## Neovim
 
-Bootstrap installs Neovim on Windows and Arch WSL; run `nvim` to open it. Editor settings, plugins, and keybindings remain to be configured.
+Neovim 0.12+ uses a personal Lua configuration and its built-in `vim.pack` plugin manager. The shared source is [home/dot_config/nvim/](home/dot_config/nvim/): `init.lua` loads editor settings from `lua/config/`, then `lua/plugins/init.lua` loads each feature explicitly. Plugin declarations and setup stay together in their feature modules.
+
+Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On Windows, a small entry point in `%LOCALAPPDATA%\nvim` loads those files, and a template copies the shared plugin lockfile into that native configuration directory. Each OS keeps its own installed plugins and tools in Neovim's data directory.
+
+| Feature | Configuration |
+| --- | --- |
+| Theme | Tokyo Night (night) |
+| File search and browser | MiniPick and MiniFiles; ripgrep for project search |
+| Completion | MiniCompletion, with native snippet support |
+| Language support | Native LSP and nvim-lspconfig; Mason installs Lua Language Server |
+| Formatting | Conform and StyLua, installed through Mason |
+| Git | Gitsigns |
+
+Bootstrap installs the editor, ripgrep, and the archive tools Mason needs. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, then Mason installs Lua Language Server and StyLua. Check `:Mason` for installation progress. Lua is the initial supported language; add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
+
+Space is the leader key. Formatting runs when requested, rather than automatically on save.
+
+| Shortcut | Action |
+| --- | --- |
+| `Space ff` / `Space fg` | Find files / search project text |
+| `Space fb` / `Space fh` | Find buffers / search help |
+| `Space e` | Browse files; press `g?` for browser help |
+| `Space w` | Save the current buffer |
+| `Ctrl+h/j/k/l` | Move between split windows |
+| `Ctrl+n` / `Ctrl+p` / `Ctrl+y` | Next completion / previous completion / accept |
+| `gd` / `K` | Go to definition / show hover documentation |
+| `Space cr` / `Space ca` / `Space cd` | Rename symbol / code action / line diagnostics |
+| `Space cf` | Format the buffer or selected range |
+| `]h` / `[h` | Next / previous Git hunk |
+| `Space gp` / `Space gb` | Preview Git hunk / toggle line blame |
+
+Use `:PackUpdate` to review plugin updates, then `:write` in the review buffer to apply them. Keep the generated lockfile in version control. Update it from WSL and capture it with `chezmoi re-add ~/.config/nvim/nvim-pack-lock.json`, then commit the source change. After applying that lockfile on another installation, use `:PackRestore` to review and synchronize existing plugins to its revisions. Mason's external tools are managed separately from the plugin lockfile.
+
+Use `:checkhealth vim.pack`, `:checkhealth vim.lsp`, `:Mason`, and `:ConformInfo` to inspect the setup.

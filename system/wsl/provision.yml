@@ -52,6 +52,7 @@
         name:
           - base-devel
           - chezmoi
+          - curl
           - fastfetch
           - fish
           - git
@@ -59,8 +60,10 @@
           - less
           - neovim
           - openssh
+          - ripgrep
           - starship
           - sudo
+          - unzip
           - util-linux # provides more
         state: present
 
