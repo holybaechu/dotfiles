@@ -1,6 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/dev/doc/json_schema.json",
-  "display": { "showErrors": false },
+  "display": {
+    "showErrors": false
+{{- if eq .chezmoi.os "windows" }},
+    // Match the small Windows logo's blue accent.
+    "color": "blue"
+{{- end }}
+  },
   "logo": {
     "type": "small",
     "padding": {

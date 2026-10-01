@@ -4,15 +4,15 @@
 {{- $powerShellGuid := "{773a475f-cc7c-4bf6-a0a4-987f2adcb069}" -}}
 {{- $schemeName := "Canopy" -}}
 
-{{- /* Canopy's dark tint and terminal palette; preserve unrelated schemes. */ -}}
+{{- /* Match home/dot_config/nvim/colors/canopy.lua; preserve unrelated schemes. */ -}}
 {{- $scheme := dict
     "name" $schemeName
-    "background" "#060c08" "foreground" "#b2b2b2"
-    "cursorColor" "#52ad70" "selectionBackground" "#433950"
-    "black" "#000000" "red" "#cc5555" "green" "#55cc55" "yellow" "#cdcd55"
-    "blue" "#5455cb" "purple" "#cc55cc" "cyan" "#7acaca" "white" "#cccccc"
-    "brightBlack" "#555555" "brightRed" "#ff5555" "brightGreen" "#55ff55" "brightYellow" "#ffff55"
-    "brightBlue" "#5555ff" "brightPurple" "#ff55ff" "brightCyan" "#55ffff" "brightWhite" "#ffffff"
+    "background" "#111a13" "foreground" "#f1f6f0"
+    "cursorColor" "#f1f6f0" "selectionBackground" "#3a5540"
+    "black" "#000000" "red" "#f2a59e" "green" "#a6e3a1" "yellow" "#f2d08f"
+    "blue" "#adcfff" "purple" "#d6c4ee" "cyan" "#9ee0d1" "white" "#a6b6a6"
+    "brightBlack" "#728673" "brightRed" "#f2a59e" "brightGreen" "#b7edb3" "brightYellow" "#f2d08f"
+    "brightBlue" "#adcfff" "brightPurple" "#d6c4ee" "brightCyan" "#9ee0d1" "brightWhite" "#f1f6f0"
 -}}
 {{- $schemes := list -}}
 {{- range (get $settings "schemes" | default (list)) -}}
@@ -27,7 +27,7 @@
 {{- $defaults := mergeOverwrite (get $profiles "defaults" | default (dict)) (dict
     "colorScheme" $schemeName
     "useAcrylic" true "opacity" 70
-    "unfocusedAppearance" (dict "colorScheme" $schemeName "background" "#060c08"
+    "unfocusedAppearance" (dict "colorScheme" $schemeName "background" "#111a13"
         "useAcrylic" true "opacity" 70)
     "cursorShape" "filledBox" "scrollbarState" "hidden"
     "font" (dict "face" "JetBrainsMono Nerd Font Mono" "size" 12
