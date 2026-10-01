@@ -64,6 +64,12 @@ Bootstrap installs PotPlayer, then applies the [debloat module](system/windows/d
 - Microsoft Family, Bing, Clipchamp, Edge, OneDrive, Teams, To Do, and Outlook for Windows.
 - Power Automate, Start Experiences App, Windows Sound Recorder, Xbox and Xbox Live components (including Game Bar), Weather, and News.
 - Media Player (replaced with PotPlayer), Quick Assist, Sticky Notes (Sticker Memo), and Feedback Hub.
+- Solitaire, Dev Home, Get Help, Windows Web Experience, Widgets Platform Runtime, standalone Copilot, and Microsoft 365 Office Hub. Phone Link and Cross Device remain installed.
+- Get Started, legacy Mail and Calendar, Maps, Skype, and 3D Viewer.
+
+The privacy module configures supported promotions, setup reminders, Widgets entry points, optional diagnostics, background recording, and update peer sharing. The preferences module disables Windows minimize/restore animations and enables transparency, leaving other animation preferences alone. The graphics module enables windowed-game optimizations and supported GPU scheduling while preserving VRR and HDR. Optional servicing targets Recall, legacy Media Player, fax, and handwriting. Click to Do removal is reported as unsupported when Windows exposes no standalone removable feature. See [Windows setup and recovery](system/windows/README.md) for verification, rollback, restart handling, the read-only startup audit, and the manual Samsung power comparison.
+
+The [selected preferences](system/windows/OPTIMIZATION-PLAN.md) also open Explorer at This PC, hide Home/Gallery, use dark mode and windows-only Alt+Tab, hide Search/Task View/Chat, and disable native snapping and the Sticky Keys shortcut. They disable selected search/promotional/input-data features, DiagTrack, location and Find My Device; enable long paths; configure supported Notepad/Paint AI controls; and enable Defender PUA/network protection after prerequisite checks. PowerShell, .NET CLI and WinGet telemetry are opted out. Newly added settings do not create backups or restore points. Some appearance changes need a sign-out; existing tools need restarting to read the saved telemetry environment variables.
 
 Store apps are removed for all users and deprovisioned for new accounts in an elevated resource. A separate resource runs WinGet in the normal user session to remove standalone OneDrive, classic Teams, Power Automate, and Edge installations visible to that user or installed machine-wide; individual machine-wide uninstallers can request elevation. This separation is required because WinGet rejects user-scope uninstalls from an administrator session. Other users' per-user desktop installations are outside this scope. Classic Outlook bundled with Microsoft Office is not removed. Start Menu, Microsoft Store, WinGet, shared frameworks/codecs, and Edge WebView2 remain available.
 
@@ -122,6 +128,8 @@ In the launcher, type an app name or `file report.pdf` to search files. Use `↑
 Terminal opens separate windows in focus mode, with its title bar and tabs hidden. Tab shortcuts are disabled; copy, paste, and pane shortcuts remain available. Fish provides autosuggestions, syntax highlighting, and completions, with Starship as the prompt.
 
 Fastfetch shows a compact summary with a small logo and OS, shell, uptime, and memory when a new interactive Fish, Bash, or PowerShell terminal starts. Windows and Arch provisioning install it automatically. Startup hooks skip redirected sessions, PowerShell script/command invocations, and non-interactive shells so automation and whkd stay quiet.
+
+On Windows, the WSL memory row is queried only when Arch is already running. A stopped/unavailable distro or failed/timed-out query produces no WSL text or label and does not start Arch just for the display.
 
 The shared [Starship configuration](home/dot_config/starship.toml) uses two lines: a shell label (`pwsh`, `fish`, or `bash`), folder, and Git details above a clean prompt arrow. Git markers show counts (`+` staged, `!` modified, `?` untracked, `↑` ahead, `↓` behind). Commands taking at least three seconds show their duration; failures show an exit code and turn the arrow red. Chezmoi renders the configuration to `~/.config/starship.toml` on each platform.
 

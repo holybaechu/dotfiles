@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/dev/doc/json_schema.json",
+  "display": { "showErrors": false },
   "logo": {
     "type": "small",
     "padding": {
@@ -20,11 +21,12 @@
 {{- end }}
     "memory",
 {{- if eq .chezmoi.os "windows" }}
-    // Query Arch explicitly, regardless of which WSL distribution is the default.
+{{- $wslMemoryScript := joinPath .chezmoi.homeDir ".config" "fastfetch" "wsl-memory.ps1" }}
+    // No output (including the label) when Arch is stopped or the query fails.
     {
       "type": "command",
       "key": "Memory (WSL)",
-      "text": "wsl.exe --distribution archlinux --exec fastfetch --config memory-only.jsonc"
+      "text": {{ printf "if exist \"%s\" pwsh.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File \"%s\"" $wslMemoryScript $wslMemoryScript | toJson }}
     }
 {{- end }}
   ]

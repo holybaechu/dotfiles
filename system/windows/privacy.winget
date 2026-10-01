@@ -1,0 +1,27 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+resources:
+  - name: UserPrivacy
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\Privacy.ps1" -Operation Get -Context User
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\Privacy.ps1" -Operation Test -Context User
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\Privacy.ps1" -Operation Set -Context User
+  - name: MachinePrivacy
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\Privacy.ps1" -Operation Get -Context Machine
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\Privacy.ps1" -Operation Test -Context Machine
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\Privacy.ps1" -Operation Set -Context Machine
+    metadata:
+      winget:
+        securityContext: elevated
