@@ -64,7 +64,9 @@ The inspected Arc B390 driver already reports active scheduling. No FPS improvem
 
 ## Visual preferences
 
-The `preferences` module disables Windows client-area, minimize/maximize, taskbar, menu, combo-box, list-box scrolling, selection-fade, and tooltip animations. Transparency is explicitly enabled. It changes individual [Windows animation parameters](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-systemparametersinfow) rather than replacing the whole `UserPreferencesMask` or selecting a performance preset. Font smoothing, hover highlighting, and the existing shadow preferences are retained.
+The `preferences` module disables only the Windows minimize/restore animation preference using [SPI_SETANIMATION and ANIMATIONINFO](https://learn.microsoft.com/windows/win32/api/winuser/ns-winuser-animationinfo). The journal retains its original `MinimizeMaximize` name. Transparency is explicitly enabled. Client-area, taskbar, menu, combo-box, list-box scrolling, selection-fade, and tooltip preferences are otherwise unmanaged. Komorebi's own movement animations remain disabled in its existing configuration. App opening/closing behavior has not been verified; this setting is not a promise to suppress every app's transitions.
+
+When upgrading from the earlier broad animation preset, Set first restores those other preferences from `visual-effects-user.json` and removes only the consumed rollback entries. Test reports false while that migration is pending, even if window animations and transparency already match. Fresh setups without those records leave other animation choices untouched. Font smoothing, hover highlighting, and the existing shadow preferences are retained.
 
 The helper persists and broadcasts these preferences, then reads them back. Applications that cache appearance settings may need reopening or a sign-out; it does not restart Explorer automatically. Apply or inspect only this setting from normal PowerShell 7:
 
@@ -73,7 +75,7 @@ The helper persists and broadcasts these preferences, then reads them back. Appl
 .\system\windows\scripts\VisualEffects.ps1 -Operation Get
 ```
 
-Original animation API values and touched registry values are saved before their first change in `%LOCALAPPDATA%\dotfiles\rollback\visual-effects-user.json`. Restore them with `VisualEffects.ps1 -Operation Restore`; only the recorded animation, taskbar, and transparency preferences are restored. Change bootstrap's desired configuration before applying again if you want to retain the restored choices.
+Original window-animation and touched transparency values are saved before their first change in `%LOCALAPPDATA%\dotfiles\rollback\visual-effects-user.json`. Restore them with `VisualEffects.ps1 -Operation Restore`, which also restores any unconsumed records from the older broad preset. Change bootstrap's desired configuration before applying again if you want to retain the restored choices.
 
 ## Startup audit
 
