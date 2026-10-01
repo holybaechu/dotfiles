@@ -1,5 +1,5 @@
 {{- /* chezmoi:modify-template */ -}}
-{{- $content := .chezmoi.stdin | replaceAllRegex `(?ms)^# >>> chezmoi starship >>>\r?\n.*?^# <<< chezmoi starship <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi fastfetch >>>\r?\n.*?^# <<< chezmoi fastfetch <<<\r?\n?` "" -}}
+{{- $content := .chezmoi.stdin | replaceAllRegex `(?ms)^# >>> chezmoi starship >>>\r?\n.*?^# <<< chezmoi starship <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi fastfetch >>>\r?\n.*?^# <<< chezmoi fastfetch <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi (?:nvm|fnm|mise) >>>\r?\n.*?^# <<< chezmoi (?:nvm|fnm|mise) <<<\r?\n?` "" -}}
 {{- $content -}}
 {{- if and $content (not (hasSuffix "\n" $content)) }}{{ "\n" }}{{ end -}}
 # >>> chezmoi starship >>>
@@ -7,6 +7,11 @@ if (Get-Command starship -ErrorAction SilentlyContinue) {
     Invoke-Expression (&starship init powershell)
 }
 # <<< chezmoi starship <<<
+# >>> chezmoi mise >>>
+if (Get-Command mise -CommandType Application -ErrorAction SilentlyContinue) {
+    (& mise env --shell pwsh) | Out-String | Invoke-Expression
+}
+# <<< chezmoi mise <<<
 # >>> chezmoi fastfetch >>>
 # Only plain console launches; -Command/-File workers must stay quiet.
 $fastfetchStartupArgs = @([Environment]::GetCommandLineArgs() | Select-Object -Skip 1 |

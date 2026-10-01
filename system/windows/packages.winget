@@ -219,36 +219,23 @@ resources:
       useLatest: false
       acceptAgreements: true
 
-  - name: Bun
+  - name: Mise
     type: Microsoft.WinGet/Package
     properties:
-      id: Oven-sh.Bun
+      id: jdx.mise
       source: winget
       useLatest: false
       acceptAgreements: true
 
-  - name: Nvm
-    type: Microsoft.WinGet/Package
-    properties:
-      id: CoreyButler.NVMforWindows
-      source: winget
-      useLatest: false
-      acceptAgreements: true
-    metadata:
-      winget:
-        securityContext: elevated
-
-  - name: NodeLts
+  - name: JavaScriptRuntimes
     type: Microsoft.DSC.Transitional/PowerShellScript
+    # WinGet resolves dependencies by name before invoking the DSC processor.
     dependsOn:
-      - "[resourceId('Microsoft.WinGet/Package', 'Nvm')]"
+      - Mise
     properties:
       getScript: |
-        & "${WinGetConfigRoot}\scripts\Node.ps1" -Operation Get
+        & "${WinGetConfigRoot}\scripts\Runtimes.ps1" -Operation Get
       testScript: |
-        & "${WinGetConfigRoot}\scripts\Node.ps1" -Operation Test
+        & "${WinGetConfigRoot}\scripts\Runtimes.ps1" -Operation Test
       setScript: |
-        & "${WinGetConfigRoot}\scripts\Node.ps1" -Operation Set
-    metadata:
-      winget:
-        securityContext: elevated
+        & "${WinGetConfigRoot}\scripts\Runtimes.ps1" -Operation Set
