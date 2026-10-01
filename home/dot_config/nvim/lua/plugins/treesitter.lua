@@ -15,10 +15,13 @@ if vim.fn.has("win32") == 1 and not vim.env.CC then
 end
 vim.treesitter.language.register("json", "jsonc")
 
--- Languages used by this dotfiles repository; extend this list for other projects.
+-- Dotfiles and JavaScript/web project languages; extend this list as needed.
 local languages = {
   "bash",
+  "css",
   "fish",
+  "html",
+  "javascript",
   "json",
   "lua",
   "markdown",
@@ -27,6 +30,8 @@ local languages = {
   "python",
   "query",
   "toml",
+  "tsx",
+  "typescript",
   "vim",
   "vimdoc",
   "yaml",

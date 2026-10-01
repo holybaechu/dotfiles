@@ -1,7 +1,11 @@
 {{- /* chezmoi:modify-template */ -}}
-{{- $content := .chezmoi.stdin | replaceAllRegex `(?ms)^# >>> chezmoi starship >>>\r?\n.*?^# <<< chezmoi starship <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi fastfetch >>>\r?\n.*?^# <<< chezmoi fastfetch <<<\r?\n?` "" -}}
+{{- $content := .chezmoi.stdin | replaceAllRegex `(?ms)^# >>> chezmoi starship >>>\r?\n.*?^# <<< chezmoi starship <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi fastfetch >>>\r?\n.*?^# <<< chezmoi fastfetch <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi nvm >>>\r?\n.*?^# <<< chezmoi nvm <<<\r?\n?` "" -}}
 {{- $content -}}
 {{- if and $content (not (hasSuffix "\n" $content)) }}{{ "\n" }}{{ end -}}
+# >>> chezmoi nvm >>>
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+# <<< chezmoi nvm <<<
 # >>> chezmoi starship >>>
 if [[ $- == *i* ]] && command -v starship >/dev/null 2>&1; then
     eval "$(starship init bash)"

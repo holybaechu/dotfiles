@@ -3,3 +3,13 @@
     type = "file"
     url = "https://w.wallhaven.cc/full/og/wallhaven-oggvw9.jpg"
 {{ end }}
+
+{{ if eq .chezmoi.os "linux" }}
+# Bass bridges nvm-sh's Bash environment changes into Fish (pinned upstream).
+[".config/fish/functions/bass.fish"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/edc/bass/79b62958ecf4e87334f24d6743e5766475bcf4d0/functions/bass.fish"
+[".config/fish/functions/__bass.py"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/edc/bass/79b62958ecf4e87334f24d6743e5766475bcf4d0/functions/__bass.py"
+{{ end }}

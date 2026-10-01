@@ -28,8 +28,14 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Windows provisioning | WinGet + DSC v3 |
 | Linux provisioning | Ansible + pacman; yay for AUR packages |
 | Python environment | uv |
+| JavaScript runtime & package manager | [Bun](https://bun.sh/) (Windows and Arch WSL) |
+| Node.js & npm | Latest Node.js LTS via nvm-windows (Windows) and nvm-sh (Arch WSL) |
 
 Package lists: [Windows](system/windows/packages.winget) · [Arch](system/wsl/provision.yml).
+
+Bootstrap and provisioning install Bun on both platforms. WinGet adds the Windows command aliases to PATH; bootstrap refreshes the current session's PATH and verifies `bun --version`. Arch installs `bun` and `bunx` in `/usr/bin`, already on PATH for Fish and Bash. Open a new Windows terminal after provisioning to pick up the persistent PATH changes.
+
+Provisioning also installs nvm and the latest Node.js LTS release, including its bundled npm. Windows uses [nvm-windows](https://github.com/coreybutler/nvm-windows), with an elevated DSC resource installing and activating Node; bootstrap then verifies Node and npm on PATH. Remove any conflicting standalone Windows Node.js installation before provisioning. Arch uses [nvm-sh](https://github.com/nvm-sh/nvm) in `~/.nvm`, with `lts/*` as the default. Bash sources nvm, and Fish uses a pinned [Bass](https://github.com/edc/bass) bridge to share the same versions and PATH changes, including non-interactive Fish launches. Rerunning provisioning selects the newest LTS; `nvm install` and `nvm use` let you manage other versions afterward.
 
 Windows setup installs Helium through WinGet and Aside through its official signed Windows installer (x64). Existing installations are retained on reruns. Both browsers install before the debloat step removes Edge. Choose your default browser in **Settings → Apps → Default apps**; setup leaves that choice to you.
 
@@ -203,17 +209,17 @@ Apply the Windows configuration from a regular PowerShell terminal. Packaged des
 | Undo history | Undotree with a diff preview and persistent Neovim undo history |
 | Syntax and folding | nvim-treesitter parsers and native Tree-sitter highlighting/folds |
 | AI suggestions | copilot.lua with automatic inline suggestions |
-| Language support | Native LSP and nvim-lspconfig; Mason installs Lua Language Server |
+| Language support | Native LSP and nvim-lspconfig; Mason installs Lua, TypeScript/JavaScript, ESLint, JSON, HTML, and CSS servers |
 | Formatting | Conform and StyLua, installed through Mason |
 | Git | Gitsigns |
 
-Bootstrap installs the editor, ripgrep, and Tree-sitter CLI on both platforms. Windows also gets LLVM MinGW for the C compiler and make; Arch uses the existing base-devel tools, curl, and unzip. Bandizip is the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Restart the terminal after installing tools so Neovim inherits the updated PATH. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, builds LuaSnip's regex support and missing Tree-sitter parsers, then Mason installs Lua Language Server and StyLua. Check `:Mason` for language-tool installation progress. Lua is the initial language with LSP and formatting support; add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
+Bootstrap installs the editor, ripgrep, and Tree-sitter CLI on both platforms. Windows also gets LLVM MinGW for the C compiler and make; Arch uses the existing base-devel tools, curl, and unzip. Bandizip is the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Restart the terminal after installing tools so Neovim inherits the updated PATH. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, builds LuaSnip's regex support and missing Tree-sitter parsers, then Mason installs the configured language servers and StyLua. Node and npm from nvm support the JavaScript-based servers. TypeScript Language Server covers JavaScript, TypeScript, JSX, and TSX; ESLint attaches to projects with an ESLint configuration and installed ESLint dependency. Check `:Mason` for language-tool installation progress. Add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
 
 Completion offers LSP, file-path, and friendly-snippets suggestions, with current-buffer words as a fallback. Each menu item shows its source; `[Snippet]` entries are templates loaded for the current language. LuaSnip expands both templates and language-server snippets. After accepting a snippet, use Tab / Shift+Tab to move between its fields; Tab otherwise retains its normal behavior. Signature help is available on request with `Ctrl+s` in Insert mode.
 
-Tree-sitter installs parsers for Bash, Fish, JSON (including JSONC), Lua, Markdown, PowerShell, Python, TOML, Vim, Vim help, and queries. Highlighting and folding start when a supported buffer's parser is available; folds start open, and `za` toggles one. Add languages in `lua/plugins/treesitter.lua`. Parser updates follow nvim-treesitter plugin updates automatically; use `:TSUpdate` to retry manually. These parsers provide syntax support independently of language servers.
+Tree-sitter installs parsers for Bash, CSS, Fish, HTML, JavaScript, JSON (including JSONC), Lua, Markdown, PowerShell, Python, TOML, TypeScript/TSX, Vim, Vim help, YAML, and queries. Highlighting and folding start when a supported buffer's parser is available; folds start open, and `za` toggles one. Add languages in `lua/plugins/treesitter.lua`. Parser updates follow nvim-treesitter plugin updates automatically; use `:TSUpdate` to retry manually. These parsers provide syntax support independently of language servers.
 
 MiniSurround uses `sa` to add, `sd` to delete, and `sr` to replace surroundings: `saiw"` quotes a word, `sd"` removes its quotes, and `sr"'` changes double quotes to single quotes. MiniAi adds argument and function-call text objects; for example, `cia` changes an argument and `vif` selects the inside of a function call. Its next/previous-object shortcuts are disabled to preserve Neovim 0.12's native incremental selection. MiniPairs closes brackets and quotes, removes empty pairs with Backspace, and handles newlines inside pairs through cmp's Enter fallback. MiniMove moves the current line or visual selection with `Space m` followed by `h/j/k/l`, avoiding the desktop's Alt shortcuts.
 
