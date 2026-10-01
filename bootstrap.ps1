@@ -62,6 +62,10 @@ if ($LASTEXITCODE -ne 0) { throw 'chezmoi apply failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Applying Windows preferences failed.' }
 & $configure -Action Apply -Module startup
 if ($LASTEXITCODE -ne 0) { throw 'Configuring Windows startup failed.' }
+& $configure -Action Apply -Module privacy
+if ($LASTEXITCODE -ne 0) { throw 'Applying Windows privacy settings failed.' }
+& $configure -Action Apply -Module graphics
+if ($LASTEXITCODE -ne 0) { throw 'Configuring Windows graphics failed.' }
 & $configure -Action Apply -Module debloat
 if ($LASTEXITCODE -ne 0) { throw 'Removing unwanted Windows apps failed.' }
 
@@ -73,5 +77,6 @@ if ($LASTEXITCODE -eq 3010) {
 if ($LASTEXITCODE -ne 0) { throw 'Configuring Arch Linux on WSL failed.' }
 
 Write-Host 'Windows and Arch WSL provisioning and dotfile application are complete.'
+Write-Host 'Review any warnings for unsupported removals or pending restarts; recheck those items after restarting.'
 Write-Host 'Open a new terminal to pick up persistent environment changes.'
 Write-Host 'Start the bar with apps\yasb\Start.ps1, or sign out and back in.'
