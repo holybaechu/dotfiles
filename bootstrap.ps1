@@ -8,12 +8,20 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Update-SessionPath {
+    foreach ($name in 'NVM_HOME', 'NVM_SYMLINK') {
+        $value = [Environment]::GetEnvironmentVariable($name, 'User')
+        if (-not $value) { $value = [Environment]::GetEnvironmentVariable($name, 'Machine') }
+        if ($value) { [Environment]::SetEnvironmentVariable($name, $value, 'Process') }
+    }
     $paths = @(
+        $env:NVM_HOME
+        $env:NVM_SYMLINK
         $env:PATH
         [Environment]::GetEnvironmentVariable('PATH', 'Machine')
         [Environment]::GetEnvironmentVariable('PATH', 'User')
     )
-    $env:PATH = (($paths -join ';').Split(';') | Where-Object { $_ } | Select-Object -Unique) -join ';'
+    $env:PATH = ([Environment]::ExpandEnvironmentVariables($paths -join ';').Split(';') |
+        Where-Object { $_ } | Select-Object -Unique) -join ';'
 }
 
 Update-SessionPath
@@ -53,6 +61,12 @@ $configure = Join-Path $repositoryRoot 'system\windows\Configure.ps1'
 & $configure -Action Apply -Module packages
 if ($LASTEXITCODE -ne 0) { throw 'Installing Windows packages failed.' }
 Update-SessionPath
+bun --version
+if ($LASTEXITCODE -ne 0) { throw 'Bun verification failed.' }
+node.exe --version
+if ($LASTEXITCODE -ne 0) { throw 'Node.js verification failed.' }
+npm.cmd --version
+if ($LASTEXITCODE -ne 0) { throw 'npm verification failed.' }
 & (Join-Path $repositoryRoot 'apps\yasb\Setup.ps1')
 
 chezmoi.exe apply --force --no-tty
