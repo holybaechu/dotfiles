@@ -50,13 +50,35 @@ public class FakeWsl {
         if ($mode -eq 'timeout' -and $watch.Elapsed.TotalSeconds -gt 3) { throw 'Timed-out query blocked the prompt.' }
         Write-Output "PASS: $mode"
     }
-    $env:DOTFILES_WSL_TEST_MODE = 'stopped'
+    # Render the real command with a spaced path to catch Windows quoting regressions.
+    $mockHome = Join-Path $scratch 'home with spaces'
+    $mockHelper = Join-Path $mockHome '.config\fastfetch\wsl-memory.ps1'
+    [void](New-Item -ItemType Directory -Path (Split-Path $mockHelper) -Force)
+    Copy-Item -LiteralPath $target -Destination $mockHelper
+    $dataFile = Join-Path $scratch 'data.json'
+    $data = @{chezmoi=@{os='windows';homeDir=$mockHome}} | ConvertTo-Json -Depth 4
+    [IO.File]::WriteAllText($dataFile, $data, (New-Object Text.UTF8Encoding($false)))
+    $template = Join-Path (Split-Path $target) 'config.jsonc.tmpl'
+    $rendered = & chezmoi.exe execute-template --override-data-file $dataFile --file $template
+    if ($LASTEXITCODE -ne 0) { throw 'Fastfetch template did not render.' }
+    $renderedConfig = ($rendered | Where-Object { $_ -notmatch '^\s*//' }) -join "`n" | ConvertFrom-Json
+    $module = @($renderedConfig.modules | Where-Object { $_.type -eq 'command' -and $_.key -eq 'Memory (WSL)' })
+    if ($module.Count -ne 1) { throw 'Expected one WSL memory module.' }
     $config = Join-Path $scratch 'fastfetch.json'
-    $json = @{ logo=@{type='none'}; display=@{showErrors=$false}; modules=@(@{type='command';key='Memory (WSL)';text="pwsh.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File `"$target`""}) } | ConvertTo-Json -Depth 6
+    $json = @{logo=@{type='none'};display=@{showErrors=$false};modules=$module} | ConvertTo-Json -Depth 6
     [IO.File]::WriteAllText($config, $json, (New-Object Text.UTF8Encoding($false)))
-    $output = & fastfetch.exe --config $config
-    if ($LASTEXITCODE -ne 0 -or -not [string]::IsNullOrWhiteSpace(($output -join ''))) { throw 'Fastfetch must omit the entire WSL row, including its key.' }
-    Write-Output 'PASS: Fastfetch prints no WSL text or label when stopped'
+    foreach ($mode in @('stopped','running')) {
+        $env:DOTFILES_WSL_TEST_MODE = $mode
+        [IO.File]::WriteAllText($env:DOTFILES_WSL_TEST_TRACE, '')
+        $output = (& fastfetch.exe --config $config --pipe true) -join ''
+        if ($LASTEXITCODE -ne 0) { throw 'Fastfetch command failed.' }
+        $trace = Get-Content -LiteralPath $env:DOTFILES_WSL_TEST_TRACE
+        if ('list' -notin $trace) { throw 'Fastfetch did not run the WSL helper.' }
+        if ($mode -eq 'stopped') {
+            if (-not [string]::IsNullOrWhiteSpace($output) -or 'query' -in $trace) { throw 'Stopped WSL must remain stopped and have no row or label.' }
+        } elseif ($output -ne 'Memory (WSL): 1 GiB / 4 GiB') { throw 'Fastfetch lost the running WSL memory row.' }
+        Write-Output "PASS: Fastfetch WSL row when $mode"
+    }
 } finally {
     $env:PATH = $savedPath
     $env:DOTFILES_WSL_TEST_MODE = $savedMode

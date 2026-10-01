@@ -26,7 +26,9 @@
     {
       "type": "command",
       "key": "Memory (WSL)",
-      "text": {{ printf "if exist \"%s\" pwsh.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File \"%s\"" $wslMemoryScript $wslMemoryScript | toJson }}
+      "shell": "powershell.exe",
+      "param": "-NoProfile",
+      "text": {{ printf "& '%s'" $wslMemoryScript | toJson }}
     }
 {{- end }}
   ]
