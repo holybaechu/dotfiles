@@ -90,11 +90,15 @@ try {
 
     $visual = Join-Path $scripts 'VisualEffects.ps1'
     $personalize = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+    $advanced = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
     $global:SettingsFixture.Registry[$personalize] = @{ EnableTransparency=@{Kind='DWord';Value=0}; AppsUseLightTheme=@{Kind='DWord';Value=0} }
+    $global:SettingsFixture.Registry[$advanced].TaskbarAnimations = @{Kind='DWord';Value=0}
+    [Dotfiles.VisualEffects]::Values[0x1002] = $false
     $state = & $visual -Operation Get
-    Assert (-not $state.AnimationsDisabled -and -not $state.TransparencyEnabled -and [Dotfiles.VisualEffects]::Writes -eq 0) 'Visual Get must read without applying.'
+    Assert (-not $state.WindowAnimationsDisabled -and -not $state.TransparencyEnabled -and [Dotfiles.VisualEffects]::Writes -eq 0) 'Visual Get must read without applying.'
     & $visual -Operation Set
-    Assert (& $visual -Operation Test) 'Disable animations while explicitly enabling transparency.'
+    Assert (& $visual -Operation Test) 'Disable window animations while explicitly enabling transparency.'
+    Assert ([Dotfiles.VisualEffects]::Writes -eq 1 -and [Dotfiles.VisualEffects]::Read(0x1042) -and -not [Dotfiles.VisualEffects]::Read(0x1002)) 'A fresh apply must change only the window animation preference, preserving other on/off choices.'
     $visualWrites = [Dotfiles.VisualEffects]::Writes
     $registryWrites = $global:SettingsFixture.Writes
     & $visual -Operation Set
@@ -102,14 +106,44 @@ try {
     Assert ([Dotfiles.VisualEffects]::Read(0x004a) -and $global:SettingsFixture.Registry[$personalize].AppsUseLightTheme.Value -eq 0) 'Preserve font smoothing and theme selection.'
     & $visual -Operation Restore
     $state = & $visual -Operation Get
-    Assert ($state.EnabledAnimations.Count -eq 7 -and -not $state.TransparencyEnabled) 'Restore the recorded animation and transparency preferences.'
-    Assert (-not $global:SettingsFixture.Registry['HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'].ContainsKey('TaskbarAnimations')) 'Restore an originally absent taskbar value by removing it.'
+    Assert (-not $state.WindowAnimationsDisabled -and -not $state.TransparencyEnabled) 'Restore the recorded window animation and transparency preferences.'
+    Assert ($global:SettingsFixture.Registry[$advanced].TaskbarAnimations.Value -eq 0) 'Preserve the taskbar preference when no old journal owns it.'
     [Dotfiles.VisualEffects]::Deny = $true
     $caught = $false
     try { & $visual -Operation Set } catch { $caught = $_.Exception.Message -like '*access denied*' }
     Assert $caught 'A failed Windows animation API must not be reported as success.'
     [Dotfiles.VisualEffects]::Deny = $false
-    Write-Output 'PASS: animations off with transparency on, retained appearance, idempotence, restoration, and denied API writes'
+
+    # Upgrade a machine that already applied the earlier broad preset.
+    $legacy = @{ ClientArea=0x1042; Menu=0x1002; ComboBox=0x1004; ListBoxSmoothScroll=0x1006; SelectionFade=0x1014; Tooltip=0x1016 }
+    $journalPath = Join-Path $scratch 'dotfiles\rollback\visual-effects-user.json'
+    $legacyJournal = @{ 'Animation:MinimizeMaximize'=$true }
+    foreach ($entry in $legacy.GetEnumerator()) {
+        [Dotfiles.VisualEffects]::Values[$entry.Value] = $false
+        $legacyJournal['Animation:' + $entry.Key] = ($entry.Key -ne 'Menu')
+    }
+    $legacyJournal[$advanced + '\TaskbarAnimations'] = @{ Exists=$false; Kind=$null; Value=$null }
+    $legacyJournal[$personalize + '\EnableTransparency'] = @{ Exists=$true; Kind='DWord'; Value=0 }
+    $legacyJournal | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $journalPath
+    [Dotfiles.VisualEffects]::Values[0x0048] = $false
+    $global:SettingsFixture.Registry[$personalize].EnableTransparency.Value = 1
+    $visualWrites = [Dotfiles.VisualEffects]::Writes
+    Assert (-not (& $visual -Operation Test)) 'Legacy records must trigger migration even when the new settings already match.'
+    Assert ([Dotfiles.VisualEffects]::Writes -eq $visualWrites) 'Migration Test must remain read-only.'
+    & $visual -Operation Set
+    Assert (& $visual -Operation Test) 'Migration must restore the broader preferences before reporting success.'
+    foreach ($entry in $legacy.GetEnumerator()) {
+        Assert ([Dotfiles.VisualEffects]::Read($entry.Value) -eq ($entry.Key -ne 'Menu')) 'Restore saved values rather than turning all other animations on.'
+    }
+    Assert (-not $global:SettingsFixture.Registry[$advanced].ContainsKey('TaskbarAnimations')) 'Migration must remove a taskbar value that was originally absent.'
+    $remainingJournal = Get-Content -LiteralPath $journalPath -Raw | ConvertFrom-Json
+    Assert ($remainingJournal.'Animation:MinimizeMaximize' -eq $true -and $remainingJournal.PSObject.Properties.Name.Count -eq 2) 'Keep original window/transparency rollback values and consume legacy records.'
+    [Dotfiles.VisualEffects]::Values[0x1042] = $false
+    & $visual -Operation Set
+    Assert (-not [Dotfiles.VisualEffects]::Read(0x1042)) 'Later user choices outside window animations must remain unmanaged.'
+    & $visual -Operation Restore
+    Assert ([Dotfiles.VisualEffects]::Read(0x0048) -and $global:SettingsFixture.Registry[$personalize].EnableTransparency.Value -eq 0) 'Restore must retain the original snapshot across migration.'
+    Write-Output 'PASS: window-only animations, preserved effects, migration, restoration, idempotence, and denied API writes'
 
     $gpuKey = 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences'
     $global:SettingsFixture.Registry[$gpuKey] = @{ DirectXUserGlobalSettings=@{Kind='String';Value='VRROptimizeEnable=1;AutoHDREnable=0;SwapEffectUpgradeEnable=0;'} }
