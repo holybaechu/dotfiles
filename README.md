@@ -1,278 +1,44 @@
 # Dotfiles
 
-My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www.chezmoi.io/). Tiling windows, a keyboard-driven workflow, and Canopy: a custom status bar and launcher built on YASB.
+My Windows desktop and Arch Linux WSL2 configuration, managed with
+[chezmoi](https://www.chezmoi.io/). The desktop uses komorebi for tiling, whkd for shortcuts,
+and Canopy, a custom YASB bar and launcher.
 
-## Software
+## Start here
 
-| Purpose | Software |
-| --- | --- |
-| Window manager | [komorebi](https://github.com/LGUG2Z/komorebi) |
-| Status bar & launcher | [Canopy](apps/yasb/) / [YASB](https://github.com/amnweb/yasb) |
-| Global keybindings | [whkd](https://github.com/LGUG2Z/whkd) |
-| Mouse window movement & resizing | [AltSnap](https://github.com/RamonUnch/AltSnap) |
-| Terminal | Windows Terminal |
-| Text editor | Neovim (Windows and Arch WSL) |
-| Archive manager | [Bandizip](https://www.bandisoft.com/bandizip/) (Windows) |
-| Shells | PowerShell 7 (Windows), Fish (WSL), Bash (fallback) |
-| Prompt | Starship |
-| Terminal startup summary | Fastfetch |
-| Linux environment | Arch Linux on WSL2 |
-| File search | Everything |
-| Browsers | [Aside](https://aside.com/) and [Helium](https://helium.computer/) |
-| Media player | [PotPlayer](https://potplayer.daum.net/) |
-| Git & GitHub | Git, GitHub CLI |
-| SSH & commit signing | 1Password |
-| YubiKey authentication | [Yubico Authenticator](https://www.yubico.com/products/yubico-authenticator/) |
-| Fonts | JetBrainsMono Nerd Font Mono (terminal), Inter (bar) |
-| Dotfile management | chezmoi |
-| Windows provisioning | WinGet + DSC v3 |
-| Linux provisioning | Ansible + pacman; yay for AUR packages |
-| Python environment | uv |
-| JavaScript runtime & package manager | Latest [Bun](https://bun.sh/) through mise (Windows and Arch WSL) |
-| Node.js & npm | Latest Node.js LTS with bundled npm through [mise](https://mise.jdx.dev/) (Windows and Arch WSL) |
+These are personal defaults. Bootstrap applies dotfiles, changes Windows preferences, removes
+selected apps (including Edge and OneDrive), and provisions Arch WSL2. Review the [setup
+guide](docs/setup.md) and [Windows removal details](system/windows/debloat.md) before running
+it. For a fork, update the Git identity and SSH public key first.
 
-Package lists: [Windows](system/windows/packages.winget) · [Arch](system/wsl/provision.yml).
-
-Bootstrap and provisioning install mise through WinGet on Windows and pacman on Arch WSL. Mise installs `bun@latest` and `node@lts` as global defaults, including Node's bundled npm, while preserving other mise configuration. The Windows runtime resource runs as your regular user and depends on the `Mise` package by its WinGet resource name. Bootstrap loads the mise environment and verifies Bun, Node, and npm.
-
-Managed PowerShell, Fish, and Bash hooks put mise's selected tools on PATH. Interactive shells support project-specific `mise.toml` settings; non-interactive Fish and the Windows PowerShell fallback load the environment without prompt hooks. Open a new terminal after provisioning. Use `mise use -g bun@latest node@lts` to install the defaults manually and `mise upgrade bun node` to update them later.
-
-Mise replaces nvm and fnm. Chezmoi removes the retired Fish hooks and the managed Bass bridge; Bash removes the old managed nvm/fnm blocks when it adds mise. Uninstall standalone Bun and any installed nvm/fnm packages before switching, so a second runtime manager does not remain on PATH. Old manager data and global npm packages are not automatically migrated or deleted.
-
-Windows setup installs Helium through WinGet and Aside through its official signed Windows installer (x64). Existing installations are retained on reruns. Both browsers install before the debloat step removes Edge. Choose your default browser in **Settings → Apps → Default apps**; setup leaves that choice to you.
-
-## Getting started
-
-### Bootstrap
-
-Requires Windows with WSL2 support, internet access, and [WinGet 1.11+](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create-v3). Open PowerShell as your regular user; setup requests elevation when needed and installs PowerShell 7, chezmoi, and DSC as needed.
-
-These are personal defaults. Bootstrap applies managed files automatically, disables Windows Search indexing, window shadows, and mouse acceleration (Enhance pointer precision), hides desktop icons, shows hidden files and extensions, enables taskbar auto-hide, and removes the apps listed under [Windows debloating](#windows-debloating). Review the [Windows preferences](system/windows/preferences.winget) and [removal list](system/windows/scripts/Debloat.ps1) first. For your own fork, also change the [Git identity](home/dot_config/git/config.tmpl) and [SSH public key](home/dot_config/git/github.pub).
-
-Run [bootstrap.ps1](bootstrap.ps1) directly from the web, without saving a script file:
+On Windows with WSL2 support, internet access, and WinGet 1.11+, open a normal PowerShell window
+and run:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& ([scriptblock]::Create((irm https://raw.githubusercontent.com/holybaechu/dotfiles/main/bootstrap.ps1 -ErrorAction Stop))); exit $LASTEXITCODE'
 ```
 
-Setup installs the Windows apps and Canopy, applies dotfiles, configures sign-in startup, and provisions Arch Linux on WSL2 with Fish as the login shell. Arch becomes the default WSL distribution. The default Linux user is `holybaechu`; add `-WslUser yourname` before `; exit` in the command to change it, or `-Repository https://github.com/yourname/dotfiles.git` to use a fork.
+Setup requests elevation when needed. If it requests a restart, restart and rerun the command.
+Sign out and back in after setup to start the desktop tools.
 
-If setup requests a Windows restart, restart and rerun the same bootstrap command. Set the Linux password when prompted.
+## Guides
 
-### Windows debloating
-
-Bootstrap installs PotPlayer, then applies the [debloat module](system/windows/debloat.winget). The removal list is explicit:
-
-- Microsoft Family, Bing, Clipchamp, Edge, OneDrive, Teams, To Do, and Outlook for Windows.
-- Power Automate, Start Experiences App, Windows Sound Recorder, Xbox and Xbox Live components (including Game Bar), Weather, and News.
-- Media Player (replaced with PotPlayer), Quick Assist, Sticky Notes (Sticker Memo), and Feedback Hub.
-- Solitaire, Dev Home, Get Help, Windows Web Experience, Widgets Platform Runtime, standalone Copilot, and Microsoft 365 Office Hub. Phone Link and Cross Device remain installed.
-- Get Started, legacy Mail and Calendar, Maps, Skype, and 3D Viewer.
-
-The privacy module configures supported promotions, setup reminders, Widgets entry points, optional diagnostics, background recording, and update peer sharing. The preferences module disables Windows minimize/restore animations and enables transparency, leaving other animation preferences alone. The graphics module enables windowed-game optimizations and supported GPU scheduling while preserving VRR and HDR. Optional servicing targets Recall, legacy Media Player, fax, and handwriting. Click to Do removal is reported as unsupported when Windows exposes no standalone removable feature. See [Windows setup and recovery](system/windows/README.md) for verification, rollback, restart handling, the read-only startup audit, and the manual Samsung power comparison.
-
-The [selected preferences](system/windows/OPTIMIZATION-PLAN.md) also open Explorer at This PC, hide Home/Gallery, use dark mode and windows-only Alt+Tab, hide Search/Task View/Chat, and disable native snapping and the Sticky Keys shortcut. They disable selected search/promotional/input-data features, DiagTrack, location and Find My Device; enable long paths; configure supported Notepad/Paint AI controls; and enable Defender PUA/network protection after prerequisite checks. PowerShell, .NET CLI and WinGet telemetry are opted out. Newly added settings do not create backups or restore points. Some appearance changes need a sign-out; existing tools need restarting to read the saved telemetry environment variables.
-
-Store apps are removed for all users and deprovisioned for new accounts in an elevated resource. A separate resource runs WinGet in the normal user session to remove standalone OneDrive, classic Teams, Power Automate, and Edge installations visible to that user or installed machine-wide; individual machine-wide uninstallers can request elevation. This separation is required because WinGet rejects user-scope uninstalls from an administrator session. Other users' per-user desktop installations are outside this scope. Classic Outlook bundled with Microsoft Office is not removed. Start Menu, Microsoft Store, WinGet, shared frameworks/codecs, and Edge WebView2 remain available.
-
-Missing apps are skipped on reruns. Inventory errors, blocked uninstalls, and apps still present after removal fail the module; the other removals are attempted before reporting failures. [Windows can restrict Edge removal by device and region](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-update-policies#uninstall). Setup uses its registered uninstaller and does not delete browser files or change protected Windows policies. If removal requires a restart, restart and rerun setup; debloating never restarts Windows automatically.
-
-Removing an app can remove its local app data. OneDrive's synced folders are not deleted by this script. Reinstall an app through Microsoft Store or its original installer if needed, and remove its identity from the removal list before running bootstrap again. Choose PotPlayer's file associations in **Settings → Apps → Default apps**; setup does not overwrite existing associations.
-
-To check or apply only this module, use a **normal, non-administrator PowerShell 7 window**. Windows requests elevation for the Store-app resource:
-
-```powershell
-.\system\windows\Configure.ps1 -Module debloat
-.\system\windows\Configure.ps1 -Action Apply -Module packages  # Includes PotPlayer
-.\system\windows\Configure.ps1 -Action Apply -Module debloat
-```
-
-For troubleshooting, the helper requires an explicit `-AppType Store` or `-AppType Desktop`. Store operations require administrator Windows PowerShell 5.1; desktop operations run in a normal PowerShell session. Prefer the configuration commands above to run both with the correct privileges.
-
-### First launch
-
-Sign out and back in to start komorebi, whkd, AltSnap, and Canopy. To start them immediately, open a new PowerShell 7 window and run:
-
-```powershell
-Set-Location (chezmoi execute-template '{{ .chezmoi.workingTree }}')
-komorebic start --whkd
-Start-Process "$env:APPDATA\AltSnap\AltSnap.exe" -WindowStyle Hidden
-.\apps\yasb\Start.ps1
-```
-
-Use this launcher for Canopy; it loads the custom widget. Keep Everything running for file search.
-
-For Git authentication and signing, sign in to 1Password for Windows and enable **Settings → Developer → Use the SSH Agent**. The configured public key must match a key in 1Password and be registered on GitHub for both authentication and signing. WSL uses the Windows 1Password integration.
-
-Authenticate GitHub CLI once in each environment you use (Windows and WSL):
-
-```sh
-gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key
-```
-
-## Keybindings
-
-Global shortcuts are defined in [whkdrc](home/dot_config/whkdrc.tmpl). `H / J / K / L` means left / down / up / right; punctuation keys below use US keyboard labels.
-
-### Apps
-
-| Shortcut | Action |
+| I want to… | Read |
 | --- | --- |
-| `Alt + Space` | Toggle Canopy launcher |
-| `Alt + Enter` | Open Windows Terminal in the default WSL distribution |
-| `Ctrl + Alt + Enter` | Open PowerShell 7 |
-| `Ctrl + Alt + Shift + Enter` | Open PowerShell 7 as administrator |
-| `Alt + E` | Open File Explorer |
-| `Alt + B` | Open the default browser |
+| Set up a machine or fork | [Setup](docs/setup.md) |
+| Use the launcher and desktop shortcuts | [Daily use](docs/desktop.md) |
+| Use and configure the editor | [Neovim](docs/neovim.md) |
+| Change dotfiles or update tools | [Maintenance](docs/maintenance.md) |
+| See the software and runtime setup | [Software](docs/software.md) |
+| Check Windows settings or recover changes | [Windows setup and recovery](system/windows/README.md) |
 
-In the launcher, type an app name or `file report.pdf` to search files. Use `↑ / ↓` to select, `Enter` to open, `Esc` to dismiss, and `Ctrl + R` to refresh the app list.
+## Repository layout
 
-Terminal opens separate windows in focus mode, with its title bar and tabs hidden. Tab shortcuts are disabled; copy, paste, and pane shortcuts remain available. Fish provides autosuggestions, syntax highlighting, and completions, with Starship as the prompt.
+- [home/](home/) — application configuration deployed by chezmoi.
+- [apps/yasb/](apps/yasb/) — Canopy's launcher, widgets, and styling.
+- [system/windows/](system/windows/) — Windows packages, preferences, and startup.
+- [system/wsl/](system/wsl/) — Arch WSL provisioning.
+- [docs/](docs/) — usage and maintenance guides.
 
-Fastfetch shows a compact summary with a small logo and OS, shell, uptime, and memory when a new interactive Fish, Bash, or PowerShell terminal starts. Windows and Arch provisioning install it automatically. Startup hooks skip redirected sessions, PowerShell script/command invocations, and non-interactive shells so automation and whkd stay quiet.
-
-On Windows, the WSL memory row is queried only when Arch is already running. A stopped/unavailable distro or failed/timed-out query produces no WSL text or label and does not start Arch just for the display.
-
-The shared [Starship configuration](home/dot_config/starship.toml) uses two lines: a shell label (`pwsh`, `fish`, or `bash`), folder, and Git details above a clean prompt arrow. Git markers show counts (`+` staged, `!` modified, `?` untracked, `↑` ahead, `↓` behind). Commands taking at least three seconds show their duration; failures show an exit code and turn the arrow red. Chezmoi renders the configuration to `~/.config/starship.toml` on each platform.
-
-### Windows & workspaces
-
-| Shortcut | Action |
-| --- | --- |
-| `Alt + H / J / K / L` | Focus a window in that direction |
-| `Alt + Shift + H / J / K / L` | Move a window in that direction |
-| `Alt + Shift + [ / ]` | Focus the previous / next window |
-| `Alt + Shift + Enter` | Promote the focused window to the main position |
-| `Alt + Q` | Close the focused window |
-| `Alt + M` | Minimize the focused window |
-| `Alt + Arrow keys` | Stack the focused window in that direction |
-| `Alt + ;` | Unstack the focused window |
-| `Alt + [ / ]` | Select the previous / next window in a stack |
-| `Alt + = / -` | Increase / decrease window width |
-| `Alt + Shift + = / -` | Increase / decrease window height |
-| `Alt + left mouse drag` | Move the window under the pointer |
-| `Alt + right mouse drag` | Resize from the nearest side or corner |
-| `Alt + T` | Toggle floating |
-| `Alt + Shift + F` | Toggle monocle (one window fills the workspace) |
-| `Alt + 1–8` | Switch workspace |
-| `Alt + Shift + 1–8` | Move the focused window to a workspace |
-| `Alt + X / Y` | Flip the layout horizontally / vertically |
-| `Alt + Shift + R` | Retile windows |
-| `Alt + P` | Pause / resume window management |
-| `Alt + I` | Show / hide the komorebi shortcut helper |
-| `Alt + O` | Reload whkd keybindings |
-| `Alt + Shift + O` | Reload komorebi configuration |
-
-AltSnap handles the mouse gestures using [its managed settings](home/AppData/Roaming/AltSnap/AltSnap.ini). Its own snapping is disabled, and move/resize notifications let komorebi update the tiled layout. Komorebi animations are disabled for smooth mouse resizing. Use `Alt + T` for free movement of a floating window.
-
-## Making changes
-
-Configuration files use application-native formats: Lua for Neovim; YAML for YASB, GitHub CLI, Ansible, and WinGet (`.winget`); TOML for Starship and Python project settings; and JSON/JSONC for Komorebi, Windows Terminal, and Fastfetch. Git, SSH, systemd, whkd, shell scripts, and stylesheets retain their own native syntax. Chezmoi templates are used only where substitution or partial-file updates are needed.
-
-Edit application settings in [home/](home/), then preview and apply them:
-
-```sh
-chezmoi diff
-chezmoi apply
-```
-
-Press `Alt + O` after changing keybindings, or `Alt + Shift + O` after changing komorebi settings. After changing AltSnap settings, run `& "$env:APPDATA\AltSnap\AltSnap.exe" -r` to reload them. Windows and WSL have separate chezmoi checkouts; update and apply changes in each environment.
-
-Keep personal Fish settings in `~/.config/fish/config.fish`; chezmoi manages [conf.d/chezmoi.fish](home/dot_config/fish/conf.d/chezmoi.fish). For an existing Bash setup, install Fish with `sudo pacman -Syu --needed fish starship`, apply the updated dotfiles, then run `chsh -s /usr/bin/fish` and open a new terminal.
-
-System setup is separate from `chezmoi apply`. From the repository root in PowerShell 7:
-
-```powershell
-.\system\windows\Configure.ps1                         # Check Windows configuration
-.\system\windows\Configure.ps1 -Action Apply -Module preferences
-.\system\wsl\Setup.ps1 -LinuxUser holybaechu            # Reprovision Arch, including a system upgrade
-```
-
-Use `-Module packages` or `-Module startup` to apply those Windows settings separately. Replace `holybaechu` with your Linux username if customized.
-
-Setup installs WSL when needed and uses the existing version on configured machines. Update WSL separately with `wsl --update --web-download`; wait for any other Windows installations to finish first.
-
-## Neovim
-
-Neovim 0.12+ uses a personal Lua configuration and its built-in `vim.pack` plugin manager. The shared source is [home/dot_config/nvim/](home/dot_config/nvim/): `init.lua` loads editor settings from `lua/config/`, then `lua/plugins/init.lua` loads each feature explicitly. Plugin declarations and setup stay together in their feature modules.
-
-Chezmoi deploys the shared Lua files to `~/.config/nvim` on both platforms. On Windows, a small entry point in `%LOCALAPPDATA%\nvim` loads those files, and a template copies the shared plugin lockfile into that native configuration directory. Each OS keeps its own installed plugins and tools in Neovim's data directory.
-
-Apply the Windows configuration from a regular PowerShell terminal. Packaged desktop automation can redirect AppData writes into an application-specific cache, leaving the normal Neovim config directory empty. If Neovim opens with defaults, check `:echo stdpath('config')` and `:echo $MYVIMRC` in that same terminal, then apply the managed Neovim files there.
-
-| Feature | Configuration |
-| --- | --- |
-| Theme | Standalone Canopy High Contrast colorscheme |
-| File search and browser | MiniPick and MiniFiles; ripgrep for project search |
-| Completion | nvim-cmp with LSP, file-path, LuaSnip, and current-buffer sources |
-| Snippets | LuaSnip and friendly-snippets, with cmp_luasnip for completion |
-| Editing | MiniSurround, MiniAi text objects, and MiniPairs automatic pairs |
-| Motion practice | Hardtime with repeated-key restrictions and motion hints |
-| Keybinding help | WhichKey with Canopy styling and leader-key groups |
-| Statusline | MiniStatusline with mode, Git changes, diagnostics, LSP, and file information |
-| Extended search | MiniExtra pickers for diagnostics, symbols, references, recent files, and Git history |
-| Sessions | MiniSessions with explicit project snapshots in each OS's local state directory |
-| Undo history | Undotree with a diff preview and persistent Neovim undo history |
-| Syntax and folding | nvim-treesitter parsers and native Tree-sitter highlighting/folds |
-| AI suggestions | copilot.lua with automatic inline suggestions |
-| Language support | Native LSP and nvim-lspconfig; Mason installs Lua, TypeScript/JavaScript, ESLint, JSON, HTML, and CSS servers |
-| Formatting | Conform and StyLua, installed through Mason |
-| Git | Gitsigns |
-
-Bootstrap installs the editor, ripgrep, and Tree-sitter CLI on both platforms. Windows also gets LLVM MinGW for the C compiler and make; Arch uses the existing base-devel tools, curl, and unzip. Bandizip is the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Restart the terminal after installing tools so Neovim inherits the updated PATH. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, builds LuaSnip's regex support and missing Tree-sitter parsers, then Mason installs the configured language servers and StyLua. Node and npm from mise support the JavaScript-based servers. TypeScript Language Server covers JavaScript, TypeScript, JSX, and TSX; ESLint attaches to projects with an ESLint configuration and installed ESLint dependency. Check `:Mason` for language-tool installation progress. Add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
-
-Space is the leader key. Formatting runs when requested, rather than automatically on save.
-
-Hardtime starts enabled with its default repeated-key restrictions and motion hints. It disables arrow keys and mouse support to encourage Vim motions. Use `:Hardtime toggle` to pause or resume it, `:Hardtime disable` to turn it off, and `:Hardtime report` to review common hints.
-
-Completion offers LSP, file-path, and friendly-snippets suggestions, with current-buffer words as a fallback. Each menu item shows its source; `[Snippet]` entries are templates loaded for the current language. LuaSnip expands both templates and language-server snippets. After accepting a snippet, use Tab / Shift+Tab to move between its fields; Tab otherwise retains its normal behavior. Signature help is available on request with `Ctrl+s` in Insert mode.
-
-Tree-sitter installs parsers for Bash, CSS, Fish, HTML, JavaScript, JSON (including JSONC), Lua, Markdown, PowerShell, Python, TOML, TypeScript/TSX, Vim, Vim help, YAML, and queries. Highlighting and folding start when a supported buffer's parser is available; folds start open, and `za` toggles one. Add languages in `lua/plugins/treesitter.lua`. Parser updates follow nvim-treesitter plugin updates automatically; use `:TSUpdate` to retry manually. These parsers provide syntax support independently of language servers.
-
-MiniSurround uses `sa` to add, `sd` to delete, and `sr` to replace surroundings: `saiw"` quotes a word, `sd"` removes its quotes, and `sr"'` changes double quotes to single quotes. MiniAi adds argument and function-call text objects; for example, `cia` changes an argument and `vif` selects the inside of a function call. Its next/previous-object shortcuts are disabled to preserve Neovim 0.12's native incremental selection. MiniPairs closes brackets and quotes, removes empty pairs with Backspace, and handles newlines inside pairs through cmp's Enter fallback. MiniMove moves the current line or visual selection with `Space m` followed by `h/j/k/l`, avoiding the desktop's Alt shortcuts.
-
-MiniSessions stores named project snapshots under `stdpath("state")/sessions`, separately on Windows and WSL. `Space ss` saves the current files, tabs, folds, and split layout; `Space sr` restores the saved snapshot for the current working directory's Git root (or the working directory outside Git). Names include a path hash so identically named projects do not collide. `Space sl` selects a saved session and `Space sd` selects one to delete. Saving and restoration are explicit; restoring refuses to discard unsaved buffers. Sessions do not back up unsaved file contents, terminal processes, or plugin scratch panels, and they are not synchronized through chezmoi.
-
-MiniExtra extends the existing picker UI. Its Git branch and commit pickers browse history and diffs; they do not switch branches or change the repository. `Space u` opens Undotree, where `j/k` and Enter select a history state, `u` undoes, and `D` toggles the diff panel. Windows uses the GNU diff bundled with Git for Windows; Arch's base-devel includes diffutils.
-
-GitHub Copilot uses [copilot.lua](https://github.com/zbirenbaum/copilot.lua)'s native server, downloaded and checksum-verified on first use (about 75–110 MB per OS); Node.js is not required on Windows or Arch WSL. Open a code file and run `:Copilot auth` to sign in with a GitHub account that has Copilot access. Authenticate separately in Windows and WSL; credentials remain local and are excluded from chezmoi. Suggestions appear automatically as italic teal inline text and hide while the cmp menu is open. Accept them with the dedicated shortcuts below; Enter and Tab keep their existing behavior. Use `:Copilot disable` / `:Copilot enable` to turn Copilot off / on for the session. The separate suggestion panel is disabled.
-
-The standalone `canopy` colorscheme defines its own editor, syntax, Tree-sitter, semantic-token, and plugin highlights. It uses Canopy's forest-green surfaces, mint interface accents, and warm-white text. Syntax roles are separated: lavender keywords, blue functions, mint strings, teal types, and amber numbers. Errors are red, warnings amber, information blue, and hints green; diagnostic signs and messages also identify severity.
-
-The main editor canvas is transparent so the managed Windows Terminal profile's acrylic blur shows through, including when Neovim runs in WSL. Terminal already uses `useAcrylic: true` at 70% opacity. Floating panels, menus, selections, and diagnostic text backgrounds remain solid for readability. Canvas contrast depends on the content behind the terminal; opacity can be increased in Terminal for stronger contrast. Other terminals supply their own background effects. The palette and highlight definitions live in [colors/canopy.lua](home/dot_config/nvim/colors/canopy.lua); reload with `:colorscheme canopy` after editing.
-
-| Shortcut | Action |
-| --- | --- |
-| `Space ff` / `Space fg` | Find files / search project text |
-| `Space fb` / `Space fh` | Find buffers / search help |
-| `Space fd` / `Space fo` | Find diagnostics / recent files |
-| `Space fs` / `Space fS` / `Space fr` | Find document symbols / workspace symbols / references |
-| `Space e` | Browse files; press `g?` for browser help |
-| `Space w` | Save the current buffer |
-| `Space` then pause / `Space ?` | Show leader shortcuts / buffer-local shortcuts |
-| `Ctrl+h/j/k/l` | Move between split windows |
-| `Ctrl+n` / `Ctrl+p` | Select the next / previous completion |
-| `Ctrl+y` / `Enter` | Accept an explicitly selected completion; Enter otherwise inserts a newline |
-| `Ctrl+Space` / `Ctrl+e` | Open / dismiss completion |
-| `Ctrl+b` / `Ctrl+f` | Scroll completion documentation |
-| `Tab` / `Shift+Tab` (Insert or Select mode) | Next / previous field in the active LuaSnip snippet |
-| `sa` / `sd` / `sr` | Add / delete / replace surroundings |
-| `Space mh/j/k/l` (Normal or Visual mode) | Move line or selection left / down / up / right |
-| `Space ss` / `Space sr` | Save / restore the project session |
-| `Space sl` / `Space sd` | Select / delete a saved session |
-| `Space u` | Toggle undo history |
-| `za` / `zo` / `zc` | Toggle / open / close a fold |
-| `Alt+a` / `Alt+w` / `Alt+s` (Insert mode) | Accept the Copilot suggestion / next word / next line |
-| `Alt+.` / `Alt+,` (Insert mode) | Next / previous Copilot suggestion |
-| `Ctrl+]` (Insert mode) | Dismiss the Copilot suggestion |
-| `Ctrl+s` (Insert mode) | Show LSP signature help |
-| `gd` / `K` | Go to definition / show hover documentation |
-| `Space cr` / `Space ca` / `Space cd` | Rename symbol / code action / line diagnostics |
-| `Space cf` | Format the buffer or selected range |
-| `]h` / `[h` | Next / previous Git hunk |
-| `Space gp` / `Space gb` | Preview Git hunk / toggle line blame |
-| `Space gB` / `Space gc` / `Space gh` | Browse Git branches / commits / hunks |
-
-Use `:PackUpdate` to review plugin updates, then `:write` in the review buffer to apply them. Keep the generated lockfile in version control. Update it from WSL and capture it with `chezmoi re-add ~/.config/nvim/nvim-pack-lock.json`, then commit the source change. After applying that lockfile on another installation, use `:PackRestore` to review and synchronize existing plugins to its revisions. Mason's external tools are managed separately from the plugin lockfile.
-
-Use `:checkhealth vim.pack`, `:checkhealth vim.lsp`, `:checkhealth nvim-treesitter`, `:checkhealth which-key`, `:checkhealth luasnip`, `:CmpStatus`, `:Mason`, and `:ConformInfo` to inspect the setup.
+`chezmoi apply` deploys application configuration. System provisioning runs separately; see
+[Maintenance](docs/maintenance.md).
