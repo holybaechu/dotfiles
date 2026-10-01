@@ -1,0 +1,5 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $config := .chezmoi.stdin | fromToml -}}
+{{- $config = setValueAtPath "tools.bun" "latest" $config -}}
+{{- $config = setValueAtPath "tools.node" "lts" $config -}}
+{{- $config | toToml -}}
