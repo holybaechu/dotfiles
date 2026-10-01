@@ -218,3 +218,37 @@ resources:
       source: winget
       useLatest: false
       acceptAgreements: true
+
+  - name: Bun
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Oven-sh.Bun
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: Nvm
+    type: Microsoft.WinGet/Package
+    properties:
+      id: CoreyButler.NVMforWindows
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: NodeLts
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    dependsOn:
+      - "[resourceId('Microsoft.WinGet/Package', 'Nvm')]"
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\Node.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\Node.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\Node.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
