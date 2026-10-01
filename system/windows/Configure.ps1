@@ -4,13 +4,24 @@
 param(
     [ValidateSet('Test', 'Apply')]
     [string]$Action = 'Test',
-    [string]$Module = '*'
+    [string[]]$Module = '*'
 )
 
 $ErrorActionPreference = 'Stop'
-# Install replacements before removing apps when applying all modules.
-$modules = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter "$Module.winget" -File |
-    Sort-Object @{ Expression = { if ($_.BaseName -eq 'packages') { 0 } elseif ($_.BaseName -eq 'debloat') { 2 } else { 1 } } }, Name)
+# Keep bootstrap and explicit configuration runs in the same order.
+# Install replacements before removing apps; preserve each resource's privileges.
+$moduleOrder = @('packages', 'preferences', 'startup', 'privacy', 'graphics', 'debloat')
+$modules = @(foreach ($pattern in $Module) {
+    $matches = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter "$pattern.winget" -File)
+    if (-not $matches.Count) { throw "No DSC module matches '$pattern'." }
+    $matches
+})
+$modules = @($modules | Sort-Object FullName -Unique | Sort-Object @{
+    Expression = {
+        $index = [Array]::IndexOf($moduleOrder, $_.BaseName)
+        if ($index -lt 0) { $moduleOrder.Count } else { $index }
+    }
+}, Name)
 if (-not $modules.Count) {
     throw "No DSC module matches '$Module'."
 }

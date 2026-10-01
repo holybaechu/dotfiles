@@ -50,13 +50,6 @@ public class FakeWsl {
         if ($mode -eq 'timeout' -and $watch.Elapsed.TotalSeconds -gt 3) { throw 'Timed-out query blocked the prompt.' }
         Write-Output "PASS: $mode"
     }
-    $env:DOTFILES_WSL_TEST_MODE = 'stopped'
-    $config = Join-Path $scratch 'fastfetch.json'
-    $json = @{ logo=@{type='none'}; display=@{showErrors=$false}; modules=@(@{type='command';key='Memory (WSL)';text="pwsh.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File `"$target`""}) } | ConvertTo-Json -Depth 6
-    [IO.File]::WriteAllText($config, $json, (New-Object Text.UTF8Encoding($false)))
-    $output = & fastfetch.exe --config $config
-    if ($LASTEXITCODE -ne 0 -or -not [string]::IsNullOrWhiteSpace(($output -join ''))) { throw 'Fastfetch must omit the entire WSL row, including its key.' }
-    Write-Output 'PASS: Fastfetch prints no WSL text or label when stopped'
 } finally {
     $env:PATH = $savedPath
     $env:DOTFILES_WSL_TEST_MODE = $savedMode

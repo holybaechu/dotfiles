@@ -68,16 +68,8 @@ if ($LASTEXITCODE -ne 0) { throw 'npm verification failed.' }
 chezmoi.exe apply --force --no-tty
 if ($LASTEXITCODE -ne 0) { throw 'chezmoi apply failed.' }
 
-& $configure -Action Apply -Module preferences
-if ($LASTEXITCODE -ne 0) { throw 'Applying Windows preferences failed.' }
-& $configure -Action Apply -Module startup
-if ($LASTEXITCODE -ne 0) { throw 'Configuring Windows startup failed.' }
-& $configure -Action Apply -Module privacy
-if ($LASTEXITCODE -ne 0) { throw 'Applying Windows privacy settings failed.' }
-& $configure -Action Apply -Module graphics
-if ($LASTEXITCODE -ne 0) { throw 'Configuring Windows graphics failed.' }
-& $configure -Action Apply -Module debloat
-if ($LASTEXITCODE -ne 0) { throw 'Removing unwanted Windows apps failed.' }
+& $configure -Action Apply -Module preferences, startup, privacy, graphics, debloat
+if ($LASTEXITCODE -ne 0) { throw 'Applying Windows configuration failed.' }
 
 & (Join-Path $repositoryRoot 'system\wsl\Setup.ps1') -Repository $Repository -LinuxUser $WslUser
 if ($LASTEXITCODE -eq 3010) {

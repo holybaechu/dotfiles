@@ -49,25 +49,18 @@ def test_default_off_covers_all_monitors_without_disabling_canopy_tray_and_resto
         assert native.state[0] == 2
         controller.set_enabled(False)
         assert native.driver.read() is False
+        # Explorer can recreate a taskbar while Canopy is running.
+        native.windows[100][3] = True
+        native.windows[400] = ['Shell_SecondaryTrayWnd', 7, True, True]
+        controller.refresh()
+        assert native.windows[100][2:] == [False, False]
+        assert native.windows[400][2:] == [False, False]
     finally:
         controller.shutdown()
     assert native.driver.read() is True
     assert native.state[0] == 3
-    assert not controller.timer.isActive()
-
-
-def test_recreated_and_reshown_taskbars_are_disabled_again(app, native):
-    controller = taskbar.TaskbarController(driver=native.driver)
-    try:
-        controller.refresh()
-        native.windows[100][3] = True
-        native.windows[400] = ['Shell_SecondaryTrayWnd', 7, True, True]
-        controller.refresh()
-        assert native.driver.read() is False
-        assert native.windows[400][2:] == [False, False]
-    finally:
-        controller.shutdown()
     assert native.windows[400][2:] == [True, True]
+    assert not controller.timer.isActive()
 
 
 def test_denied_taskbar_change_reports_actual_state_and_can_be_restored(app, native, monkeypatch):

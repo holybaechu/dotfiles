@@ -1,5 +1,5 @@
 {{- /* chezmoi:modify-template */ -}}
-{{- $content := .chezmoi.stdin | replaceAllRegex `(?ms)^# >>> chezmoi starship >>>\r?\n.*?^# <<< chezmoi starship <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi fastfetch >>>\r?\n.*?^# <<< chezmoi fastfetch <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi (?:nvm|fnm|mise) >>>\r?\n.*?^# <<< chezmoi (?:nvm|fnm|mise) <<<\r?\n?` "" -}}
+{{- $content := .chezmoi.stdin | replaceAllRegex `(?ms)^# >>> chezmoi starship >>>\r?\n.*?^# <<< chezmoi starship <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi fastfetch >>>\r?\n.*?^# <<< chezmoi fastfetch <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi (?:nvm|fnm|mise) >>>\r?\n.*?^# <<< chezmoi (?:nvm|fnm|mise) <<<\r?\n?` "" | replaceAllRegex `(?ms)^# >>> chezmoi agents >>>\r?\n.*?^# <<< chezmoi agents <<<\r?\n?` "" | replaceAllRegex `(?m)^\[\[ -r "\$HOME/\.config/shell/agents\.sh" \]\] && source "\$HOME/\.config/shell/agents\.sh"\r?\n?` "" -}}
 {{- $content -}}
 {{- if and $content (not (hasSuffix "\n" $content)) }}{{ "\n" }}{{ end -}}
 # >>> chezmoi mise >>>
@@ -21,3 +21,6 @@ if [[ $- == *i* && -t 0 && -t 1 ]] && command -v fastfetch >/dev/null 2>&1; then
     fastfetch
 fi
 # <<< chezmoi fastfetch <<<
+# >>> chezmoi agents >>>
+[[ -r "$HOME/.config/shell/agents.sh" ]] && source "$HOME/.config/shell/agents.sh"
+# <<< chezmoi agents <<<

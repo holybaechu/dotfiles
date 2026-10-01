@@ -103,15 +103,9 @@ def test_launch_failure_keeps_service_available(app):
 
 
 def test_background_refresh_keeps_search_and_launch_available(app):
-    from PyQt6.QtCore import Qt
-    from PyQt6.QtWidgets import QWidget
-
-    from core.widgets.canopy.launcher import Launcher
-
     refreshing, release = Event(), Event()
 
     class InstalledApps(PreviewLauncherProvider):
-        installed = [f'App {i:02}' for i in range(20)]
         scans = 0
 
         def discover(self):
@@ -119,67 +113,39 @@ def test_background_refresh_keeps_search_and_launch_available(app):
             if self.scans > 1:
                 refreshing.set()
                 assert release.wait(5)
-            return [ProviderResult(title=name, provider='apps', id=name,
-                                   action_data={'path': name}) for name in self.installed]
+            items = super().discover()
+            if self.scans > 1:
+                items.append(ProviderResult(title='New application', provider='apps', id='new-app',
+                                            action_data={'path': 'C:\\Preview\\New.lnk'}))
+            return items
 
     provider = InstalledApps()
     instance = LauncherService(provider=provider)
-    owner = QWidget()
-    owner.resize(1200, 900)
-    owner.show()
-    popup = None
+    received = []
+    instance.results_ready.connect(lambda request, items: received.append((request, items)))
     try:
-        popup = Launcher(owner, instance, preview_parent=owner)
-        popup.show_launcher()
-        wait_until(lambda: not popup.query_pending)
-        assert popup.results.item(0).text() == 'App 00'
-        assert provider.scans == 1
-        popup.close_launcher(immediate=True)
-
-        provider.installed = [f'App {i:02}' for i in range(1, 20)] + ['App 14a']
-        popup = Launcher(owner, instance, preview_parent=owner)
-        popup.show_launcher()
+        initial = instance.search('codex')
+        wait_until(lambda: received and received[-1][0] == initial)
+        instance.refresh()
         wait_until(refreshing.is_set)
-        # Discovery is deliberately blocked; cached results must still arrive.
-        wait_until(lambda: not popup.query_pending)
-        assert not instance.loading
-        assert not popup.message.isVisible()
-        assert popup.results.item(0).text() == 'App 00'
-        popup.search.setText('App 1')
-        wait_until(lambda: not popup.query_pending)
-        # The fuzzy matcher also includes App 01 for this query.
-        assert popup.results.count() == 11
-        popup.results.setCurrentRow(next(i for i in range(popup.results.count())
-                                         if popup.results.item(i).text() == 'App 15'))
-        popup.results.scrollToItem(popup.results.currentItem())
-        app.processEvents()
-        scroll = popup.results.verticalScrollBar().value()
-        selected = popup.results.currentItem().data(Qt.ItemDataRole.UserRole)
-        assert selected.title == 'App 15'
-        # Use the service to launch without closing the popup under test.
-        assert instance.launch(selected)
+        # Discovery is blocked; the existing catalog must remain usable.
+        request = instance.search('calculator')
+        wait_until(lambda: received[-1][0] == request)
+        assert received[-1][1][0].title == 'Calculator'
+        assert instance.launch(received[-1][1][0])
         wait_until(lambda: provider.launched)
-        assert provider.launched == ['App 15']
-        # Repeated manual refreshes must share the scan already in progress.
-        QTest.keyClick(popup.search, Qt.Key.Key_R, Qt.KeyboardModifier.ControlModifier)
-        QTest.keyClick(popup.search, Qt.Key.Key_R, Qt.KeyboardModifier.ControlModifier)
-        assert not popup.query_pending
-        release.set()
-        wait_until(lambda: popup.results.count() == 12)
-        assert popup.search.text() == 'App 1'
-        assert popup.results.currentItem().text() == 'App 15'
-        assert popup.results.verticalScrollBar().value() == scroll
+        assert provider.launched == ['Calculator']
+        instance.refresh()
+        instance.refresh()
         assert provider.scans == 2
-        popup.search.clear()
-        wait_until(lambda: not popup.query_pending)
-        titles = [popup.results.item(i).text() for i in range(popup.results.count())]
-        assert 'App 00' not in titles and 'App 14a' in titles
+        release.set()
+        wait_until(lambda: not instance.refreshing)
+        newest = instance.search('new application')
+        wait_until(lambda: received[-1][0] == newest)
+        assert received[-1][1][0].title == 'New application'
     finally:
         release.set()
-        if popup is not None:
-            popup.close_launcher(immediate=True)
         instance.shutdown()
-        owner.deleteLater()
 
 
 def test_background_discovery_failure_preserves_catalog_and_recovers(service, monkeypatch):

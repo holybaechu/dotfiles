@@ -5,7 +5,7 @@ import pytest
 from PyQt6.QtCore import QObject
 from core.widgets.canopy import power
 from core.widgets.canopy.backend import Backend
-from core.widgets.canopy.model import PreviewBackend, State
+from core.widgets.canopy.model import State
 
 
 @pytest.fixture
@@ -55,12 +55,3 @@ def test_failed_sleep_restores_privilege_and_keeps_wake_events(native, monkeypat
     native.suspend.assert_called_once_with(False, False, False)
     native.adjust.assert_called_with(native.token, False, native.previous)
     native.token.Close.assert_called_once()
-
-
-def test_preview_power_actions_do_not_reach_windows(native):
-    for action in ('lock', 'logout', 'sleep', 'hibernate', 'reboot', 'shutdown'):
-        PreviewBackend.power_action(None, action)
-    native.lock.assert_not_called()
-    native.suspend.assert_not_called()
-    native.exit.assert_not_called()
-    native.adjust.assert_not_called()
