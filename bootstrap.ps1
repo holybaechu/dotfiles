@@ -8,14 +8,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Update-SessionPath {
-    foreach ($name in 'NVM_HOME', 'NVM_SYMLINK') {
-        $value = [Environment]::GetEnvironmentVariable($name, 'User')
-        if (-not $value) { $value = [Environment]::GetEnvironmentVariable($name, 'Machine') }
-        if ($value) { [Environment]::SetEnvironmentVariable($name, $value, 'Process') }
-    }
     $paths = @(
-        $env:NVM_HOME
-        $env:NVM_SYMLINK
         $env:PATH
         [Environment]::GetEnvironmentVariable('PATH', 'Machine')
         [Environment]::GetEnvironmentVariable('PATH', 'User')
@@ -61,6 +54,9 @@ $configure = Join-Path $repositoryRoot 'system\windows\Configure.ps1'
 & $configure -Action Apply -Module packages
 if ($LASTEXITCODE -ne 0) { throw 'Installing Windows packages failed.' }
 Update-SessionPath
+$runtimeEnvironment = mise.exe env --shell pwsh
+if ($LASTEXITCODE -ne 0) { throw 'Loading mise runtimes failed.' }
+Invoke-Expression ($runtimeEnvironment -join "`n")
 bun --version
 if ($LASTEXITCODE -ne 0) { throw 'Bun verification failed.' }
 node.exe --version

@@ -51,7 +51,6 @@
       community.general.pacman:
         name:
           - base-devel
-          - bun
           - chezmoi
           - curl
           - fastfetch
@@ -59,6 +58,7 @@
           - git
           - github-cli
           - less
+          - mise
           - neovim
           - openssh
           - ripgrep
@@ -132,35 +132,25 @@
       # A dry run cannot execute commands as an account it has not created.
       when: not ansible_check_mode or ansible_facts['getent_passwd'][linux_user] is not none
       block:
-        - name: Check for an existing nvm installation
-          ansible.builtin.stat:
-            path: "{{ linux_home }}/.nvm/nvm.sh"
-          register: nvm_script
-
-        - name: Install nvm without modifying shell profiles
-          ansible.builtin.git:
-            repo: https://github.com/nvm-sh/nvm.git
-            dest: "{{ linux_home }}/.nvm"
-            version: v0.40.8
-            update: false
-          when: not nvm_script.stat.exists
-
-        - name: Install the latest Node.js LTS with npm and select it by default
+        - name: Install Bun and Node.js LTS with bundled npm through mise
           ansible.builtin.shell: |
             set -e
-            export NVM_DIR="$HOME/.nvm"
-            source "$NVM_DIR/nvm.sh" --no-use
-            previous=$(nvm version default 2>/dev/null || true)
-            nvm install --lts --no-progress >&2
-            nvm alias default 'lts/*' >&2
-            nvm use --silent default
-            printf '%s\n' "$previous" "$(node --version)"
-            npm --version >&2
+            previous=$(mise ls --global --installed --json bun node)
+            mise use --global bun@latest node@lts >&2
+            current=$(mise ls --global --installed --json bun node)
+            if [[ "$previous" != "$current" ]]; then
+                printf '%s\n' changed
+            else
+                printf '%s\n' unchanged
+            fi
+            mise exec bun@latest node@lts -- bun --version >&2
+            mise exec bun@latest node@lts -- node --version >&2
+            mise exec bun@latest node@lts -- npm --version >&2
           args:
             executable: /bin/bash
             chdir: "{{ linux_home }}"
-          register: node_install
-          changed_when: node_install.stdout_lines[0] != node_install.stdout_lines[1]
+          register: runtime_install
+          changed_when: runtime_install.stdout == 'changed'
           when: not ansible_check_mode
 
         - name: Check for an existing Linux chezmoi checkout

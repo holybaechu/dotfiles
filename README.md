@@ -28,14 +28,16 @@ My Windows desktop and Arch Linux WSL2 setup, managed with [chezmoi](https://www
 | Windows provisioning | WinGet + DSC v3 |
 | Linux provisioning | Ansible + pacman; yay for AUR packages |
 | Python environment | uv |
-| JavaScript runtime & package manager | [Bun](https://bun.sh/) (Windows and Arch WSL) |
-| Node.js & npm | Latest Node.js LTS via nvm-windows (Windows) and nvm-sh (Arch WSL) |
+| JavaScript runtime & package manager | Latest [Bun](https://bun.sh/) through mise (Windows and Arch WSL) |
+| Node.js & npm | Latest Node.js LTS with bundled npm through [mise](https://mise.jdx.dev/) (Windows and Arch WSL) |
 
 Package lists: [Windows](system/windows/packages.winget) · [Arch](system/wsl/provision.yml).
 
-Bootstrap and provisioning install Bun on both platforms. WinGet adds the Windows command aliases to PATH; bootstrap refreshes the current session's PATH and verifies `bun --version`. Arch installs `bun` and `bunx` in `/usr/bin`, already on PATH for Fish and Bash. Open a new Windows terminal after provisioning to pick up the persistent PATH changes.
+Bootstrap and provisioning install mise through WinGet on Windows and pacman on Arch WSL. Mise installs `bun@latest` and `node@lts` as global defaults, including Node's bundled npm, while preserving other mise configuration. The Windows runtime resource runs as your regular user and depends on the `Mise` package by its WinGet resource name. Bootstrap loads the mise environment and verifies Bun, Node, and npm.
 
-Provisioning also installs nvm and the latest Node.js LTS release, including its bundled npm. Windows uses [nvm-windows](https://github.com/coreybutler/nvm-windows), with an elevated DSC resource installing and activating Node; bootstrap then verifies Node and npm on PATH. Remove any conflicting standalone Windows Node.js installation before provisioning. Arch uses [nvm-sh](https://github.com/nvm-sh/nvm) in `~/.nvm`, with `lts/*` as the default. Bash sources nvm, and Fish uses a pinned [Bass](https://github.com/edc/bass) bridge to share the same versions and PATH changes, including non-interactive Fish launches. Rerunning provisioning selects the newest LTS; `nvm install` and `nvm use` let you manage other versions afterward.
+Managed PowerShell, Fish, and Bash hooks put mise's selected tools on PATH. Interactive shells support project-specific `mise.toml` settings; non-interactive Fish and the Windows PowerShell fallback load the environment without prompt hooks. Open a new terminal after provisioning. Use `mise use -g bun@latest node@lts` to install the defaults manually and `mise upgrade bun node` to update them later.
+
+Mise replaces nvm and fnm. Chezmoi removes the retired Fish hooks and the managed Bass bridge; Bash removes the old managed nvm/fnm blocks when it adds mise. Uninstall standalone Bun and any installed nvm/fnm packages before switching, so a second runtime manager does not remain on PATH. Old manager data and global npm packages are not automatically migrated or deleted.
 
 Windows setup installs Helium through WinGet and Aside through its official signed Windows installer (x64). Existing installations are retained on reruns. Both browsers install before the debloat step removes Edge. Choose your default browser in **Settings → Apps → Default apps**; setup leaves that choice to you.
 
@@ -217,7 +219,7 @@ Apply the Windows configuration from a regular PowerShell terminal. Packaged des
 | Formatting | Conform and StyLua, installed through Mason |
 | Git | Gitsigns |
 
-Bootstrap installs the editor, ripgrep, and Tree-sitter CLI on both platforms. Windows also gets LLVM MinGW for the C compiler and make; Arch uses the existing base-devel tools, curl, and unzip. Bandizip is the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Restart the terminal after installing tools so Neovim inherits the updated PATH. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, builds LuaSnip's regex support and missing Tree-sitter parsers, then Mason installs the configured language servers and StyLua. Node and npm from nvm support the JavaScript-based servers. TypeScript Language Server covers JavaScript, TypeScript, JSX, and TSX; ESLint attaches to projects with an ESLint configuration and installed ESLint dependency. Check `:Mason` for language-tool installation progress. Add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
+Bootstrap installs the editor, ripgrep, and Tree-sitter CLI on both platforms. Windows also gets LLVM MinGW for the C compiler and make; Arch uses the existing base-devel tools, curl, and unzip. Bandizip is the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Restart the terminal after installing tools so Neovim inherits the updated PATH. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, builds LuaSnip's regex support and missing Tree-sitter parsers, then Mason installs the configured language servers and StyLua. Node and npm from mise support the JavaScript-based servers. TypeScript Language Server covers JavaScript, TypeScript, JSX, and TSX; ESLint attaches to projects with an ESLint configuration and installed ESLint dependency. Check `:Mason` for language-tool installation progress. Add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
 
