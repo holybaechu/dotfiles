@@ -144,3 +144,75 @@ resources:
       setScript: |
         param($settings)
         & "${WinGetConfigRoot}\scripts\TaskbarAutoHide.ps1" -Operation Set -Enabled $settings.enabled
+
+  - name: SelectedUserPreferences
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Get -Context User
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Test -Context User
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Set -Context User
+
+  - name: CurrentUserSearchPolicy
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Get -Context UserPolicy
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Test -Context UserPolicy
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Set -Context UserPolicy
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: SelectedMachinePreferences
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Get -Context Machine
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Test -Context Machine
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Set -Context Machine
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: ToolTelemetryOptOut
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        @{
+          PowerShell = [Environment]::GetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'User')
+          DotNet = [Environment]::GetEnvironmentVariable('DOTNET_CLI_TELEMETRY_OPTOUT', 'User')
+        }
+      testScript: |
+        [Environment]::GetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'User') -eq '1' -and
+          [Environment]::GetEnvironmentVariable('DOTNET_CLI_TELEMETRY_OPTOUT', 'User') -eq '1'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        foreach ($name in @('POWERSHELL_TELEMETRY_OPTOUT', 'DOTNET_CLI_TELEMETRY_OPTOUT')) {
+          if ([Environment]::GetEnvironmentVariable($name, 'User') -ne '1') {
+            [Environment]::SetEnvironmentVariable($name, '1', 'User')
+          }
+          [Environment]::SetEnvironmentVariable($name, '1', 'Process')
+          if ([Environment]::GetEnvironmentVariable($name, 'User') -ne '1') {
+            throw "Windows did not retain $name."
+          }
+        }
+
+  - name: DefenderProtection
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\DefenderProtection.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\DefenderProtection.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\DefenderProtection.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
