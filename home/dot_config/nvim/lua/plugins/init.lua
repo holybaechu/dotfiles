@@ -1,6 +1,7 @@
 require("plugins.colorscheme")
 require("plugins.navigation")
 require("plugins.editing")
+require("plugins.hardtime")
 require("plugins.snippets")
 require("plugins.completion")
 require("plugins.copilot")

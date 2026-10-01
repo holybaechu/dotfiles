@@ -191,6 +191,7 @@ Apply the Windows configuration from a regular PowerShell terminal. Packaged des
 | Completion | nvim-cmp with LSP, file-path, LuaSnip, and current-buffer sources |
 | Snippets | LuaSnip and friendly-snippets, with cmp_luasnip for completion |
 | Editing | MiniSurround, MiniAi text objects, and MiniPairs automatic pairs |
+| Motion practice | Hardtime with repeated-key restrictions and motion hints |
 | Keybinding help | WhichKey with Canopy styling and leader-key groups |
 | Statusline | MiniStatusline with mode, Git changes, diagnostics, LSP, and file information |
 | Extended search | MiniExtra pickers for diagnostics, symbols, references, recent files, and Git history |
@@ -205,6 +206,8 @@ Apply the Windows configuration from a regular PowerShell terminal. Packaged des
 Bootstrap installs the editor, ripgrep, and Tree-sitter CLI on both platforms. Windows also gets LLVM MinGW for the C compiler and make; Arch uses the existing base-devel tools, curl, and unzip. Bandizip is the Windows archive app. Mason uses PowerShell to extract this starter's Windows Lua tool downloads; it does not call Bandizip directly. Restart the terminal after installing tools so Neovim inherits the updated PATH. Open `nvim` with internet access on first launch: it installs the plugins recorded in `nvim-pack-lock.json`, builds LuaSnip's regex support and missing Tree-sitter parsers, then Mason installs Lua Language Server and StyLua. Check `:Mason` for language-tool installation progress. Lua is the initial language with LSP and formatting support; add more servers in `lua/plugins/lsp.lua` and formatters in `lua/plugins/formatting.lua` as needed.
 
 Space is the leader key. Formatting runs when requested, rather than automatically on save.
+
+Hardtime starts enabled with its default repeated-key restrictions and motion hints. It disables arrow keys and mouse support to encourage Vim motions. Use `:Hardtime toggle` to pause or resume it, `:Hardtime disable` to turn it off, and `:Hardtime report` to review common hints.
 
 Completion offers LSP, file-path, and friendly-snippets suggestions, with current-buffer words as a fallback. Each menu item shows its source; `[Snippet]` entries are templates loaded for the current language. LuaSnip expands both templates and language-server snippets. After accepting a snippet, use Tab / Shift+Tab to move between its fields; Tab otherwise retains its normal behavior. Signature help is available on request with `Ctrl+s` in Insert mode.
 
