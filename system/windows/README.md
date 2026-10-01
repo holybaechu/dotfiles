@@ -1,10 +1,7 @@
-# Windows setup and recovery
+# Windows setup
 
-Run commands from the repository root in a normal PowerShell 7 window. WinGet requests elevation
-for machine resources. For an elevated user-policy resource, approve as the same Windows
-account.
-
-## Check or apply settings
+Run from the repository root in normal PowerShell 7. WinGet requests elevation
+for machine resources; approve user-policy elevation as the same Windows account.
 
 ```powershell
 .\system\windows\Configure.ps1                              # Check all modules
@@ -12,8 +9,7 @@ account.
 .\system\windows\Configure.ps1 -Action Apply -Module preferences
 ```
 
-The default action is `Test`; add `-Action Apply` to change the machine. Applying all modules
-installs packages first and removes apps last. Bootstrap also runs these modules.
+Bootstrap runs these modules, installing packages before removing apps.
 
 | Module | Purpose |
 | --- | --- |
@@ -24,20 +20,13 @@ installs packages first and removes apps last. Bootstrap also runs these modules
 | `graphics` | Windowed-game optimization and supported GPU scheduling |
 | `debloat` | Remove selected apps and optional components |
 
-## Details by task
+## Guides
 
-| I want to… | Read |
-| --- | --- |
-| Understand settings and verify their effect | [Preferences and verification](preferences.md) |
-| Review removed apps, component limits, or restart handling | [App and component removal](debloat.md) |
-| Restore earlier settings or run manual audits | [Recovery and manual checks](recovery.md) |
-
-Some appearance changes need an app restart or sign-out. GPU scheduling and component servicing
-can need a Windows restart. Check the helper's output and rerun the check afterward; setup does
-not restart Windows automatically.
+- [Preferences](preferences.md)
+- [App removal](debloat.md)
+- [Recovery and manual checks](recovery.md)
 
 ## Focused checks
-
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\system\windows\tests\Debloat.Tests.ps1
@@ -47,6 +36,4 @@ pwsh.exe -NoProfile -File .\system\windows\tests\PrivacyGraphics.Tests.ps1
 pwsh.exe -NoProfile -File .\system\windows\tests\SelectedPreferences.Tests.ps1
 ```
 
-Fixtures isolate system mutations and use temporary files. They do not uninstall apps, write
-real registry settings, or start real WSL distributions. The Fastfetch fixture requires
-Fastfetch to be installed.
+Fixtures isolate system changes. The Fastfetch check requires Fastfetch installed.

@@ -1,36 +1,30 @@
-# Maintain the setup
+# Maintenance
 
-Edit files in their application-native formats. Chezmoi templates are used where substitution or
-partial-file updates are needed. Windows and WSL have separate checkouts; update and apply each
-environment.
+## Dotfiles
 
-## Edit and apply dotfiles
-
-Edit application settings in [home/](../home/), then preview and apply them:
+Edit [home/](../home/), then preview and apply:
 
 ```sh
 chezmoi diff
 chezmoi apply
 ```
 
-## Reload desktop tools
+Windows and WSL have separate checkouts. Update and apply both.
 
-| Changed configuration | Reload |
+| Tool | Reload |
 | --- | --- |
-| whkd keybindings | `Alt + O` |
+| whkd | `Alt + O` |
 | komorebi | `Alt + Shift + O` |
 | AltSnap | Run `& "$env:APPDATA\AltSnap\AltSnap.exe" -r` in PowerShell |
 
-## Shell configuration
+Keep personal Fish settings in `~/.config/fish/config.fish`;
+chezmoi manages [conf.d/chezmoi.fish](../home/dot_config/fish/conf.d/chezmoi.fish).
+To migrate an existing Bash setup, install Fish with `sudo pacman -Syu --needed fish starship`,
+apply dotfiles, then run `chsh -s /usr/bin/fish` and open a new terminal.
 
-Keep personal Fish settings in `~/.config/fish/config.fish`; chezmoi manages
-[conf.d/chezmoi.fish](../home/dot_config/fish/conf.d/chezmoi.fish). For an existing Bash setup,
-install Fish with `sudo pacman -Syu --needed fish starship`, apply the updated dotfiles, then
-run `chsh -s /usr/bin/fish` and open a new terminal.
+## System setup
 
-## Reapply system setup
-
-System setup is separate from `chezmoi apply`. From the repository root in PowerShell 7:
+Run from the repository root in PowerShell 7:
 
 ```powershell
 .\system\windows\Configure.ps1                         # Check Windows configuration
@@ -38,22 +32,11 @@ System setup is separate from `chezmoi apply`. From the repository root in Power
 .\system\wsl\Setup.ps1 -LinuxUser holybaechu            # Reprovision Arch, including a system upgrade
 ```
 
-Use `-Module packages` or `-Module startup` to apply those Windows settings separately. Replace
-`holybaechu` with your Linux username if customized.
+Use `-Module packages` or `-Module startup` to apply those modules separately.
+Replace `holybaechu` if you chose another Linux username.
 
-## Update WSL
+## Updates
 
-Setup installs WSL when needed and uses the existing version on configured machines. Update WSL
-separately with `wsl --update --web-download`; wait for any other Windows installations to
-finish first.
-
-## Update JavaScript runtimes
-
-Run `mise upgrade bun node` to update the managed runtimes. See
-[Software](software.md#javascript-runtimes) for environment hooks and migration from older
-runtime managers.
-
-## Update Neovim
-
-See [plugin and language-tool updates](neovim.md#update-plugins-and-language-tools) for the
-lockfile workflow shared between Windows and WSL.
+- WSL: `wsl --update --web-download`. Wait for other Windows installations to finish first.
+- Bun and Node: `mise upgrade bun node`.
+- Neovim: follow the [lockfile workflow](neovim.md#update-plugins-and-language-tools).

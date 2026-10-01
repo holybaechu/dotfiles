@@ -1,7 +1,7 @@
-# Daily use
+# Desktop shortcuts
 
-Global shortcuts are defined in [whkdrc](../home/dot_config/whkdrc.tmpl). `H / J / K / L` means
-left / down / up / right; punctuation keys below use US keyboard labels.
+Defined in [whkdrc](../home/dot_config/whkdrc.tmpl).
+`H / J / K / L` means left / down / up / right. Punctuation uses US keyboard labels.
 
 ## Apps and launcher
 
@@ -16,31 +16,6 @@ left / down / up / right; punctuation keys below use US keyboard labels.
 
 In the launcher, type an app name or `file report.pdf` to search files. Use `↑ / ↓` to select,
 `Enter` to open, `Esc` to dismiss, and `Ctrl + R` to refresh the app list.
-
-## Terminal and shell
-
-Terminal opens separate windows in focus mode, with its title bar and tabs hidden. Tab shortcuts
-are disabled; copy, paste, and pane shortcuts remain available. Fish provides autosuggestions,
-syntax highlighting, and completions, with Starship as the prompt.
-
-### Startup summary
-
-Fastfetch shows a compact summary with a small logo and OS, shell, uptime, and memory when a new
-interactive Fish, Bash, or PowerShell terminal starts. Windows and Arch provisioning install it
-automatically. Startup hooks skip redirected sessions, PowerShell script/command invocations,
-and non-interactive shells so automation and whkd stay quiet.
-
-On Windows, the WSL memory row is queried only when Arch is already running. A
-stopped/unavailable distro or failed/timed-out query produces no WSL text or label and does not
-start Arch just for the display.
-
-### Prompt
-
-The shared [Starship configuration](../home/dot_config/starship.toml) uses two lines: a shell
-label (`pwsh`, `fish`, or `bash`), folder, and Git details above a clean prompt arrow. Git
-markers show counts (`+` staged, `!` modified, `?` untracked, `↑` ahead, `↓` behind). Commands
-taking at least three seconds show their duration; failures show an exit code and turn the arrow
-red. Chezmoi renders the configuration to `~/.config/starship.toml` on each platform.
 
 ## Windows and workspaces
 
@@ -70,10 +45,13 @@ red. Chezmoi renders the configuration to `~/.config/starship.toml` on each plat
 | `Alt + O` | Reload whkd keybindings |
 | `Alt + Shift + O` | Reload komorebi configuration |
 
-AltSnap handles the mouse gestures using [its managed
-settings](../home/AppData/Roaming/AltSnap/AltSnap.ini). Its own snapping is disabled, and
-move/resize notifications let komorebi update the tiled layout. Komorebi animations are disabled
-for smooth mouse resizing. Use `Alt + T` for free movement of a floating window.
+Use `Alt + T` for free movement of a floating window.
 
-Editor shortcuts are in [Neovim](neovim.md). Reload commands are in
-[Maintenance](maintenance.md).
+## Terminal
+
+Windows Terminal hides tabs and the title bar; tab shortcuts are disabled.
+Fastfetch shows a startup summary. Its WSL memory display only queries a running Arch instance.
+
+[Starship](../home/dot_config/starship.toml) shows the shell, folder, and Git status.
+Git counts: `+` staged, `!` modified, `?` untracked, `↑` ahead, `↓` behind.
+Failures turn the prompt red; commands lasting three seconds show their duration.
