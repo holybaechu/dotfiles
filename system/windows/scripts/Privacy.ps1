@@ -37,7 +37,8 @@ if ($Context -eq 'User') {
 } else {
     $journalPath = Join-Path $env:ProgramData 'dotfiles\rollback\privacy-machine.json'
     $rows = @(
-        ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection', 'AllowTelemetry', 1)
+        # Diagnostic data off is supported on Enterprise/Education; Pro/Home retain required data.
+        ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection', 'AllowTelemetry', $(if ($version.EditionID -match 'Enterprise|Education') { 0 } else { 1 }))
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization', 'DODownloadMode', 0)
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR', 'AllowGameDVR', 0)
     )

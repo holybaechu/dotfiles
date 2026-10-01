@@ -2,7 +2,7 @@
 # Registry writes, visual-effects APIs, and DxDiag are mocked; only temporary journal files are written.
 $ErrorActionPreference = 'Stop'
 $scripts = Join-Path (Split-Path $PSScriptRoot) 'scripts'
-$global:SettingsFixture = @{ Registry = @{}; Writes = 0; Deny = $false; Hardware = 'DriverSupportState:Stable Enabled:True' }
+$global:SettingsFixture = @{ Registry = @{}; Writes = 0; Deny = $false; Hardware = 'DriverSupportState:Stable Enabled:True'; Edition = 'Professional' }
 $scratch = Join-Path ([IO.Path]::GetTempPath()) ('dotfiles-settings-test-' + [guid]::NewGuid().ToString('N'))
 [void](New-Item -ItemType Directory -Path $scratch)
 $savedLocal = $env:LOCALAPPDATA
@@ -37,7 +37,7 @@ function Get-Item {
 }
 function Get-ItemProperty {
     [CmdletBinding()]param([string]$Path)
-    @{ CurrentBuild = '26200'; UBR = 9457; EditionID = 'Professional' }
+    @{ CurrentBuild = '26200'; UBR = 9457; EditionID = $global:SettingsFixture.Edition }
 }
 function New-Item {
     [CmdletBinding()]param([string]$Path,[string]$ItemType,[switch]$Force)
@@ -165,6 +165,14 @@ try {
     $caught = $false
     try { & $graphics -Operation Set -Context Machine } catch { $caught = $_.Exception.Message -like '*support could not be confirmed*' }
     Assert ($caught -and $global:SettingsFixture.Writes -eq $writes) 'Unsupported HAGS must never be forced.'
+    $diagnostics = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
+    & $privacy -Operation Set -Context Machine -WarningAction SilentlyContinue
+    Assert ($global:SettingsFixture.Registry[$diagnostics].AllowTelemetry.Value -eq 1) 'Pro must retain the minimum supported required diagnostic level.'
+    $global:SettingsFixture.Edition = 'Enterprise'
+    & $privacy -Operation Set -Context Machine -WarningAction SilentlyContinue
+    Assert ($global:SettingsFixture.Registry[$diagnostics].AllowTelemetry.Value -eq 0) 'Enterprise supports diagnostic data off.'
+    $global:SettingsFixture.Edition = 'Professional'
+    Write-Output 'PASS: edition-aware minimum diagnostic data'
     $global:SettingsFixture.Deny = $true
     $caught = $false
     try { & $privacy -Operation Set -Context Machine } catch { $caught = $_.Exception.Message -like '*access denied*' }
