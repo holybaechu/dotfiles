@@ -22,5 +22,8 @@ if [[ $- == *i* && -t 0 && -t 1 ]] && command -v fastfetch >/dev/null 2>&1; then
 fi
 # <<< chezmoi fastfetch <<<
 # >>> chezmoi agents >>>
-[[ -r "$HOME/.config/shell/agents.sh" ]] && source "$HOME/.config/shell/agents.sh"
+if [[ $- == *i* ]]; then
+    alias ssh='/mnt/c/Windows/System32/OpenSSH/ssh.exe'
+    alias ssh-add='/mnt/c/Windows/System32/OpenSSH/ssh-add.exe'
+fi
 # <<< chezmoi agents <<<

@@ -38,5 +38,27 @@ Replace `holybaechu` if you chose another Linux username.
 ## Updates
 
 - WSL: `wsl --update --web-download`. Wait for other Windows installations to finish first.
-- Bun and Node: `mise upgrade bun node`.
+- Bun, Node, and uv: from your home directory, run `mise upgrade bun node uv`.
+  See [runtime setup and migration](software.md#runtimes-and-uv).
 - Neovim: follow the [lockfile workflow](neovim.md#update-plugins-and-language-tools).
+
+## Configuration ownership
+
+| Responsibility | Location |
+| --- | --- |
+| Installation order and failure guidance | [bootstrap.ps1](../bootstrap.ps1) |
+| Application settings and runtime version policy | [home/](../home/) |
+| Windows packages, privileges, and setting checks | [Windows setup](../system/windows/README.md) |
+| Arch packages, accounts, interop, and yay | [WSL provisioning](../system/wsl/README.md) |
+| Canopy runtime and upstream integration | [Canopy](../apps/yasb/README.md) |
+
+`.chezmoiroot` limits chezmoi to `home/`; the ignore template selects OS-specific targets.
+Shared templates and Windows Neovim's entry file keep common configuration in one place.
+`chezmoi apply` deploys application settings; system provisioning remains separate.
+
+The OS package manager installs mise. Chezmoi owns its tool selection, and bootstrap or
+Ansible installs those tools after applying dotfiles. Change the [mise defaults](../home/dot_config/mise/modify_config.toml),
+apply in both environments, then run `mise install bun node uv` from your home directory.
+
+Windows DSC keeps user/machine privileges and rollback journals with their setting helpers.
+WSL retains Ansible for declarative maintenance and yay for optional AUR use.

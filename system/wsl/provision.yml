@@ -122,7 +122,7 @@
       ansible.builtin.include_tasks: yay.yml
       when: not yay_binary.stat.exists
 
-    - name: Configure the Linux user's Node.js and dotfiles
+    - name: Configure the Linux user's dotfiles and mise tools
       become: true
       become_user: "{{ linux_user }}"
       become_method: su
@@ -132,27 +132,6 @@
       # A dry run cannot execute commands as an account it has not created.
       when: not ansible_check_mode or ansible_facts['getent_passwd'][linux_user] is not none
       block:
-        - name: Install Bun and Node.js LTS with bundled npm through mise
-          ansible.builtin.shell: |
-            set -e
-            previous=$(mise ls --global --installed --json bun node)
-            mise use --global bun@latest node@lts >&2
-            current=$(mise ls --global --installed --json bun node)
-            if [[ "$previous" != "$current" ]]; then
-                printf '%s\n' changed
-            else
-                printf '%s\n' unchanged
-            fi
-            mise exec bun@latest node@lts -- bun --version >&2
-            mise exec bun@latest node@lts -- node --version >&2
-            mise exec bun@latest node@lts -- npm --version >&2
-          args:
-            executable: /bin/bash
-            chdir: "{{ linux_home }}"
-          register: runtime_install
-          changed_when: runtime_install.stdout == 'changed'
-          when: not ansible_check_mode
-
         - name: Check for an existing Linux chezmoi checkout
           ansible.builtin.stat:
             path: "{{ linux_home }}/.local/share/chezmoi/.git"
@@ -184,6 +163,28 @@
             chdir: "{{ linux_home }}"
           when: chezmoi_diff.stdout | default('') | length > 0
           changed_when: true
+
+        - name: Install the configured Bun, Node.js LTS, and uv through mise
+          ansible.builtin.shell: |
+            set -e
+            previous=$(mise ls --global --installed --json bun node uv)
+            mise install bun node uv >&2
+            current=$(mise ls --global --installed --json bun node uv)
+            if [[ "$previous" != "$current" ]]; then
+                printf '%s\n' changed
+            else
+                printf '%s\n' unchanged
+            fi
+            mise exec -- bun --version >&2
+            mise exec -- node --version >&2
+            mise exec -- npm --version >&2
+            mise exec -- uv --version >&2
+          args:
+            executable: /bin/bash
+            chdir: "{{ linux_home }}"
+          register: runtime_install
+          changed_when: runtime_install.stdout == 'changed'
+          when: not ansible_check_mode
 
   handlers:
     - name: Reload systemd and restart WSL interop

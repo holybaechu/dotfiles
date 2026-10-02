@@ -2,5 +2,4 @@ apps/yasb/.upstream/
 apps/yasb/.venv/
 apps/yasb/.pytest_cache/
 apps/yasb/.artifacts/
-apps/yasb/.design-backups/
 apps/yasb/**/__pycache__/

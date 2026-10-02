@@ -9,8 +9,8 @@
 {{ if eq .chezmoi.os "windows" }}
     program = {{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WindowsApps" "op-ssh-sign.exe" | replace "\\" "/" | quote }}
 {{ else }}
-{{ $signer := lookPath "op-ssh-sign-wsl.exe" }}{{ if not $signer }}{{ fail "Install 1Password for Windows and enable its WSL signer before applying this Git config." }}{{ end }}
-    program = {{ $signer | quote }}
+{{- /* Authentication is completed after bootstrap; resolve on PATH at commit time if unavailable now. */}}
+    program = {{ lookPath "op-ssh-sign-wsl.exe" | default "op-ssh-sign-wsl.exe" | quote }}
 {{ end }}
     allowedSignersFile = ~/.config/git/allowed_signers
 [commit]

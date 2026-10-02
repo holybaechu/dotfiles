@@ -10,6 +10,8 @@ for machine resources; approve user-policy elevation as the same Windows account
 ```
 
 Bootstrap runs these modules, installing packages before removing apps.
+After applying dotfiles, bootstrap installs Bun, Node, and uv through mise;
+see [runtime maintenance](../../docs/maintenance.md#updates).
 
 | Module | Purpose |
 | --- | --- |
@@ -34,6 +36,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\system\windows\tests\O
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\system\windows\tests\FastfetchWsl.Tests.ps1
 pwsh.exe -NoProfile -File .\system\windows\tests\PrivacyGraphics.Tests.ps1
 pwsh.exe -NoProfile -File .\system\windows\tests\SelectedPreferences.Tests.ps1
+pwsh.exe -NoProfile -File .\system\windows\tests\AsideBrowser.Tests.ps1
 ```
 
-Fixtures isolate system changes. The Fastfetch check requires Fastfetch installed.
+Fixtures isolate system changes; they do not uninstall apps, write real registry settings,
+or start real WSL distributions.

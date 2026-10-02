@@ -17,10 +17,6 @@ def test_windows_saver_reads_standard_savings_and_toggles_the_correct_direction(
     callback_type = ctypes.WINFUNCTYPE(wintypes.ULONG, ctypes.c_void_p, wintypes.ULONG, ctypes.c_void_p)
     guid = UUID('550e8400-e29b-41d4-a716-446655440000').bytes_le
 
-    def legacy_status(output):
-        ctypes.cast(output, ctypes.POINTER(wintypes.BYTE))[3] = 0
-        return True
-
     def register(setting, flags, subscription, handle):
         assert ctypes.string_at(setting, 16) == guid
         assert flags == 2
@@ -44,7 +40,6 @@ def test_windows_saver_reads_standard_savings_and_toggles_the_correct_direction(
         return 0
 
     libraries = {
-        'kernel32': SimpleNamespace(GetSystemPowerStatus=legacy_status),
         'powrprof': SimpleNamespace(PowerSettingRegisterNotification=register,
                                    PowerSettingUnregisterNotification=unregister),
         'ntdll': SimpleNamespace(RtlPublishWnfStateData=publish),

@@ -22,9 +22,6 @@ $modules = @($modules | Sort-Object FullName -Unique | Sort-Object @{
         if ($index -lt 0) { $moduleOrder.Count } else { $index }
     }
 }, Name)
-if (-not $modules.Count) {
-    throw "No DSC module matches '$Module'."
-}
 if ($Action -eq 'Apply' -and 'debloat' -in $modules.BaseName) {
     $principal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
     if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {

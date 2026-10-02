@@ -3,7 +3,8 @@
 .glzr/zebar
 {{ end }}
 {{ if eq .chezmoi.os "linux" }}
-# Retire the old Node-manager hooks and the managed nvm/Bass bridge.
+# Retire the managed Bash alias helper and old Node-manager hooks.
+.config/shell/agents.sh
 .config/fish/conf.d/nvm.fish
 .config/fish/conf.d/fnm.fish
 .config/fish/functions/nvm.fish

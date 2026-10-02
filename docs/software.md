@@ -23,26 +23,35 @@
 | Dotfile management | chezmoi |
 | Windows provisioning | WinGet + DSC v3 |
 | Linux provisioning | Ansible + pacman; yay for AUR packages |
-| Python environment | uv |
+| Python environment | Latest uv through mise (Windows and Arch WSL) |
 | JavaScript runtime & package manager | Latest [Bun](https://bun.sh/) through mise (Windows and Arch WSL) |
 | Node.js & npm | Latest Node.js LTS with bundled npm through [mise](https://mise.jdx.dev/) (Windows and Arch WSL) |
 
 Package lists: [Windows](../system/windows/packages.winget) ·
 [Arch](../system/wsl/provision.yml).
 
-## JavaScript runtimes
+## Runtimes and uv
 
-Mise manages `bun@latest` and `node@lts`, including npm, on Windows and Arch WSL.
+Mise manages Bun, Node.js LTS (including npm), and uv on Windows and Arch WSL. Their versions
+are declared in the [managed mise configuration](../home/dot_config/mise/modify_config.toml).
+Bootstrap and Ansible apply it before installing the tools as your regular user.
+The Windows `packages` module installs mise itself; bootstrap installs its managed tools.
 Shell hooks load its tools and project-specific `mise.toml` settings. Open a new
 terminal after provisioning.
 
 ```sh
-mise use -g bun@latest node@lts  # Install defaults manually
-mise upgrade bun node          # Update
+chezmoi apply
+mise install bun node uv  # Install configured defaults
+mise upgrade bun node uv  # Update
 ```
 
 Before switching, uninstall standalone Bun and nvm/fnm packages. Their data and
 global npm packages are not migrated or deleted automatically.
+
+Run mise commands from your home directory to avoid project overrides. For an existing
+Windows installation, install the managed uv first, then remove the old copy with
+`winget uninstall --id astral-sh.uv --exact`. Existing Python environments and uv's cache
+are retained. Canopy uses `mise exec -- uv`, so shell activation is not required for setup.
 
 ## Browsers
 

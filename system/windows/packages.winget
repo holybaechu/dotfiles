@@ -211,14 +211,6 @@ resources:
       winget:
         securityContext: elevated
 
-  - name: Uv
-    type: Microsoft.WinGet/Package
-    properties:
-      id: astral-sh.uv
-      source: winget
-      useLatest: false
-      acceptAgreements: true
-
   - name: Mise
     type: Microsoft.WinGet/Package
     properties:
@@ -226,16 +218,3 @@ resources:
       source: winget
       useLatest: false
       acceptAgreements: true
-
-  - name: JavaScriptRuntimes
-    type: Microsoft.DSC.Transitional/PowerShellScript
-    # WinGet resolves dependencies by name before invoking the DSC processor.
-    dependsOn:
-      - Mise
-    properties:
-      getScript: |
-        & "${WinGetConfigRoot}\scripts\Runtimes.ps1" -Operation Get
-      testScript: |
-        & "${WinGetConfigRoot}\scripts\Runtimes.ps1" -Operation Test
-      setScript: |
-        & "${WinGetConfigRoot}\scripts\Runtimes.ps1" -Operation Set
