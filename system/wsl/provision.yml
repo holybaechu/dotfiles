@@ -159,6 +159,37 @@
           when: chezmoi_diff.stdout | default('') | length > 0
           changed_when: true
 
+        # An existing Linux checkout may predate the tools this playbook installs.
+        # Apply only mise defaults from the provisioning checkout, preserving the
+        # Linux checkout and unrelated keys through the shared modify template.
+        - name: Preview the current provisioning defaults for mise
+          ansible.builtin.command:
+            argv:
+              - chezmoi
+              - --source
+              - "{{ playbook_dir }}/../.."
+              - diff
+              - --no-tty
+              - "{{ linux_home }}/.config/mise/config.toml"
+            chdir: "{{ linux_home }}"
+          register: mise_config_diff
+          changed_when: false
+          check_mode: false
+
+        - name: Apply the current provisioning defaults for mise
+          ansible.builtin.command:
+            argv:
+              - chezmoi
+              - --source
+              - "{{ playbook_dir }}/../.."
+              - apply
+              - --force
+              - --no-tty
+              - "{{ linux_home }}/.config/mise/config.toml"
+            chdir: "{{ linux_home }}"
+          when: mise_config_diff.stdout | length > 0
+          changed_when: true
+
         - name: Install the configured Bun, Node.js LTS, and uv through mise
           ansible.builtin.shell: |
             set -e

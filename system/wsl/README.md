@@ -21,8 +21,10 @@ applications are automatically installed.
 
 The user block applies Linux dotfiles through chezmoi, then installs the configured Bun, Node
 LTS, and uv through mise. Their versions are declared in
-[home/](../../home/dot_config/mise/modify_config.toml), rather than repeated in Ansible. Windows
-and WSL keep separate checkouts; existing checkouts and account home directories are preserved.
+[home/](../../home/dot_config/mise/modify_config.toml), rather than repeated in Ansible. Mise
+defaults come from the checkout running provisioning, so an older Linux checkout cannot omit
+a required tool. Other dotfiles use the Linux checkout. Windows and WSL keep separate checkouts;
+existing checkouts and account home directories are preserved.
 
 ## Retry or update
 
