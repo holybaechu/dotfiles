@@ -1,5 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/dev/doc/json_schema.json",
+{{- if eq .chezmoi.os "windows" }}
+  "general": { "processingTimeout": 5000 },
+{{- end }}
   "display": {
     "showErrors": false,
     "color": { "keys": "#7cab3d", "title": "#bfdc96", "output": "#f0f3e7", "separator": "#aab69e" }
@@ -30,7 +33,10 @@
     {
       "type": "command",
       "key": "Memory (WSL)",
-      "text": {{ printf "if exist \"%s\" pwsh.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File \"%s\"" $wslMemoryScript $wslMemoryScript | toJson }}
+      // Invoke PowerShell directly: cmd.exe misreads Fastfetch's escaped quotes.
+      "shell": "pwsh.exe",
+      "param": "-NoProfile",
+      "text": {{ $wslMemoryScript | toJson }}
     }
 {{- end }}
   ]
