@@ -87,31 +87,26 @@
         mode: '0440'
         validate: /usr/bin/visudo --check --file %s
 
-    - name: Create the WSL interop service override directory
+    # WSL owns Windows executable registration and protects binfmt_misc/status
+    # from writes. Do not force systemd-binfmt to flush that registry.
+    - name: Remove the obsolete WSL interop service override
       ansible.builtin.file:
-        path: /etc/systemd/system/systemd-binfmt.service.d
-        state: directory
-        owner: root
-        group: root
-        mode: '0755'
+        path: /etc/systemd/system/systemd-binfmt.service.d/10-wsl-interop.conf
+        state: absent
+      notify: Reload systemd
 
-    - name: Keep WSL executable registration active with empty binfmt.d directories
-      ansible.builtin.copy:
-        src: 10-wsl-interop.conf
-        dest: /etc/systemd/system/systemd-binfmt.service.d/10-wsl-interop.conf
-        owner: root
-        group: root
-        mode: '0644'
-      notify: Reload systemd and restart WSL interop
-
-    # Chezmoi's Linux templates use Windows executables via WSL interop.
-    - name: Apply the interop override before applying dotfiles
+    - name: Reload systemd before checking WSL interop
       ansible.builtin.meta: flush_handlers
 
-    - name: Ensure WSL executable registration is running
-      ansible.builtin.systemd_service:
-        name: systemd-binfmt.service
-        state: started
+    # Chezmoi's Linux templates use Windows executables via WSL interop.
+    - name: Verify WSL can run Windows executables
+      ansible.builtin.command:
+        # Disable AutoRun and avoid localized output that is not UTF-8, including
+        # cmd's warning when launched from a Linux (UNC) working directory.
+        argv: [/mnt/c/Windows/System32/cmd.exe, /d, /c, 'exit 0']
+        chdir: /mnt/c/Windows
+      changed_when: false
+      check_mode: false
 
     - name: Check whether yay is installed
       ansible.builtin.stat:
@@ -187,8 +182,6 @@
           when: not ansible_check_mode
 
   handlers:
-    - name: Reload systemd and restart WSL interop
+    - name: Reload systemd
       ansible.builtin.systemd_service:
-        name: systemd-binfmt.service
         daemon_reload: true
-        state: restarted

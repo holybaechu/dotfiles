@@ -14,9 +14,10 @@ If Windows returns a restart requirement, restart and rerun with the same argume
 
 [provision.sh](provision.sh) bootstraps Ansible and handles the interactive password prompt.
 [provision.yml](provision.yml) owns official packages, the full Arch upgrade, the account,
-password-required sudo, and the systemd WSL interop override. [yay.yml](yay.yml) builds yay as
-the Linux user and installs it as root; no passwordless sudo is needed. No AUR applications are
-automatically installed.
+password-required sudo, and a Windows executable interop check. WSL manages the executable
+registration; provisioning removes the obsolete systemd-binfmt override. [yay.yml](yay.yml)
+builds yay as the Linux user and installs it as root; no passwordless sudo is needed. No AUR
+applications are automatically installed.
 
 The user block applies Linux dotfiles through chezmoi, then installs the configured Bun, Node
 LTS, and uv through mise. Their versions are declared in
@@ -30,6 +31,10 @@ and installed yay are retained. Reprovisioning includes a full system upgrade; r
 [Arch upgrade guidance](https://wiki.archlinux.org/title/System_maintenance#Upgrading_the_system)
 first on older installations. Setup does not pull the existing Linux dotfiles checkout.
 Update and apply it separately as described in [Maintenance](../../docs/maintenance.md).
+
+If the Windows executable interop check fails, ensure `[interop] enabled=true` in `/etc/wsl.conf`,
+then run `wsl --terminate archlinux` from PowerShell and retry setup. Terminating Arch stops its
+running Linux processes.
 
 For ordinary application-setting changes, use `chezmoi diff` and `chezmoi apply` inside WSL.
 That path does not provision the system or upgrade packages.
