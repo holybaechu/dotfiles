@@ -21,14 +21,12 @@
   "border": true,
   "border_width": 8,
   "border_offset": -1,
-  "theme": {
-    "palette": "Catppuccin",
-    "name": "Mocha",
-    "single_border": "Green",
-    "stack_border": "Teal",
-    "monocle_border": "Mauve",
-    "floating_border": "Peach",
-    "unfocused_border": "Overlay0"
+  "border_colours": {
+    "single": "#7cab3d",
+    "stack": "#9bd1bd",
+    "monocle": "#cfb9dd",
+    "floating": "#ebc98a",
+    "unfocused": "#3c502b"
   },
   "monitors": [
     {

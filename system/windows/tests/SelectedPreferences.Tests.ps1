@@ -26,6 +26,10 @@ public static void DisableStickyShortcut() {
 }
 public static void Notify() { }
 '@
+Add-Type -Namespace Dotfiles -Name AccentColor -MemberDefinition @'
+public static int Notifications = 0;
+public static void Notify() { Notifications++; }
+'@
 function Test-Path {
     [CmdletBinding()]param([string]$LiteralPath)
     Assert ($LiteralPath -match '^HK(CU|LM):') 'Only registry paths may be inspected by this fixture.'
@@ -131,6 +135,27 @@ try {
     Assert ($state.Unsupported.Count -gt 0 -and @($state.Settings | Where-Object Path -like '*Policies\Paint').Count -eq 0) 'Unsupported Paint policies must be reported and excluded.'
     $global:SelectedFixture.Build='26200'; $global:SelectedFixture.UBR=9457
     Write-Output 'PASS: selected preference scope, convergence, denied/ignored changes and unsupported builds'
+
+    $accentScript = Join-Path $scripts 'AccentColor.ps1'
+    $accentPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent'
+    $writes = $global:SelectedFixture.Writes
+    $state = & $accentScript -Operation Get
+    Assert ($global:SelectedFixture.Writes -eq $writes -and -not (& $accentScript -Operation Test)) 'Reading an unset accent must not change Windows.'
+    & $accentScript -Operation Set
+    Assert (& $accentScript -Operation Test) 'Accent colors and the binary palette must converge.'
+    Assert ($global:SelectedFixture.Registry[$accentPath].AccentColorMenu.Value -eq 0xff3dab7c) 'Accent must encode the bright wallpaper green as ABGR.'
+    $writes = $global:SelectedFixture.Writes
+    & $accentScript -Operation Set
+    Assert ($global:SelectedFixture.Writes -eq $writes -and [Dotfiles.AccentColor]::Notifications -eq 1) 'Matching accents must not write or broadcast again.'
+    $global:SelectedFixture.Registry[$accentPath].AccentPalette.Value[8] = 0
+    Assert (-not (& $accentScript -Operation Test)) 'A partially matching binary palette must fail verification.'
+    $global:SelectedFixture.Deny = 'AccentPalette'
+    Assert-Failure { & $accentScript -Operation Set } 'Registry access denied'
+    $global:SelectedFixture.Deny = ''; $global:SelectedFixture.Drop = 'AccentPalette'
+    Assert-Failure { & $accentScript -Operation Set } 'did not retain'
+    $global:SelectedFixture.Drop = ''
+    & $accentScript -Operation Set
+    Write-Output 'PASS: accent encoding, binary palette verification, convergence and denied/ignored writes'
 
     & $defender -Operation Set
     Assert (& $defender -Operation Test) 'Defender protections must converge.'

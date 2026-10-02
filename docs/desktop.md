@@ -55,3 +55,33 @@ Fastfetch shows a startup summary. Its WSL memory display only queries a running
 [Starship](../home/dot_config/starship.toml) shows the shell, folder, and Git status.
 Git counts: `+` staged, `!` modified, `?` untracked, `↑` ahead, `↓` behind.
 Failures turn the prompt red; commands lasting three seconds show their duration.
+
+## Colors
+
+Canopy uses the wallpaper's bright window green for desktop accents and lighter shades for code.
+YASB's bar background is pure black. Windows Terminal keeps acrylic blur at 88% opacity
+with a near-black olive tint; Neovim inherits that canvas and uses solid popups.
+
+| Role | Color |
+| --- | --- |
+| Primary accent | `#7CAB3D` |
+| Coding background / selection | `#11160F` / `#3C502B` |
+| Text / comments | `#F0F3E7` / `#AAB69E` |
+| Strings / success | `#BFDC96` |
+| Numbers / warnings | `#EBC98A` |
+| Functions / information | `#AECDDD` |
+| Types / escapes | `#9BD1BD` |
+| Keywords | `#CFB9DD` |
+| Errors / deletions | `#EEA99A` |
+
+Keep palette edits aligned in [Canopy](../apps/yasb/canopy/theme.py),
+[Neovim](../home/dot_config/nvim/colors/canopy.lua),
+[Windows Terminal](../home/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/modify_settings.json),
+[Starship](../home/dot_config/starship.toml),
+[PowerShell](../home/.chezmoitemplates/powershell-profile.ps1),
+[Fish](../home/dot_config/fish/conf.d/chezmoi.fish),
+[Fastfetch](../home/dot_config/fastfetch/config.jsonc.tmpl), and
+[komorebi](../home/dot_config/komorebi/komorebi.json).
+Apply with `chezmoi apply`, reopen shells, reload Neovim with `:colorscheme canopy`,
+and restart Canopy to load its Python palette. Windows accent setup is in
+[Windows appearance](../system/windows/preferences.md#appearance).

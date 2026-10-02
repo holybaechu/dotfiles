@@ -7,12 +7,12 @@
 {{- /* Match home/dot_config/nvim/colors/canopy.lua; preserve unrelated schemes. */ -}}
 {{- $scheme := dict
     "name" $schemeName
-    "background" "#111a13" "foreground" "#f1f6f0"
-    "cursorColor" "#f1f6f0" "selectionBackground" "#3a5540"
-    "black" "#000000" "red" "#f2a59e" "green" "#a6e3a1" "yellow" "#f2d08f"
-    "blue" "#adcfff" "purple" "#d6c4ee" "cyan" "#9ee0d1" "white" "#a6b6a6"
-    "brightBlack" "#728673" "brightRed" "#f2a59e" "brightGreen" "#b7edb3" "brightYellow" "#f2d08f"
-    "brightBlue" "#adcfff" "brightPurple" "#d6c4ee" "brightCyan" "#9ee0d1" "brightWhite" "#f1f6f0"
+    "background" "#11160f" "foreground" "#f0f3e7"
+    "cursorColor" "#7cab3d" "selectionBackground" "#3c502b"
+    "black" "#11160f" "red" "#eea99a" "green" "#bfdc96" "yellow" "#ebc98a"
+    "blue" "#aecddd" "purple" "#cfb9dd" "cyan" "#9bd1bd" "white" "#aab69e"
+    "brightBlack" "#849575" "brightRed" "#eea99a" "brightGreen" "#d0e7b2" "brightYellow" "#ebc98a"
+    "brightBlue" "#aecddd" "brightPurple" "#cfb9dd" "brightCyan" "#9bd1bd" "brightWhite" "#f0f3e7"
 -}}
 {{- $schemes := list -}}
 {{- range (get $settings "schemes" | default (list)) -}}
@@ -26,9 +26,9 @@
 {{- $profiles := get $settings "profiles" | default (dict) -}}
 {{- $defaults := mergeOverwrite (get $profiles "defaults" | default (dict)) (dict
     "colorScheme" $schemeName
-    "useAcrylic" true "opacity" 70
-    "unfocusedAppearance" (dict "colorScheme" $schemeName "background" "#111a13"
-        "useAcrylic" true "opacity" 70)
+    "useAcrylic" true "opacity" 88
+    "unfocusedAppearance" (dict "colorScheme" $schemeName "background" "#11160f"
+        "useAcrylic" true "opacity" 88)
     "cursorShape" "filledBox" "scrollbarState" "hidden"
     "font" (dict "face" "JetBrainsMono Nerd Font Mono" "size" 12
         "features" (dict "calt" 1 "clig" 1 "liga" 1))

@@ -63,6 +63,20 @@ Disables Windows minimize/restore animation and enables transparency.
 Other animation preferences remain unmanaged. Upgrading from the old broad animation
 preset restores its other settings from the journal.
 
+The preferences module also sets the manual Windows accent to the
+[desktop palette](../../docs/desktop.md#colors), including its light/dark shades.
+Automatic wallpaper accent selection is disabled. To apply only the accent,
+run from the repository root in normal PowerShell 7:
+
+```powershell
+.\system\windows\scripts\AccentColor.ps1 -Operation Set
+.\system\windows\scripts\AccentColor.ps1 -Operation Test
+```
+
+`Test` returns `True` when Windows retains every value. Reopen affected apps or sign out
+if they still show the old accent. This helper has no rollback journal; choose another
+color in Settings → Personalization → Colors to replace it.
+
 Run from the repository root in normal PowerShell 7:
 
 ```powershell

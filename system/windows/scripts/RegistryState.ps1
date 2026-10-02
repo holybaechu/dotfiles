@@ -13,6 +13,10 @@ function Get-RegistryState($Setting) {
 
 function Test-RegistrySetting($Setting) {
     $actual = Get-RegistryState $Setting
+    if ($Setting.Kind -eq 'Binary') {
+        return $actual.Exists -and $actual.Kind -eq 'Binary' -and
+            [BitConverter]::ToString([byte[]]$actual.Value) -ceq [BitConverter]::ToString([byte[]]$Setting.Value)
+    }
     $actual.Exists -and $actual.Kind -eq $Setting.Kind -and $actual.Value -ceq $Setting.Value
 }
 

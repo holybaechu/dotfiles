@@ -130,6 +130,16 @@ resources:
         param($settings)
         & "${WinGetConfigRoot}\scripts\WindowShadows.ps1" -Operation Set -Enabled $settings.enabled
 
+  - name: WindowsAccentColor
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\AccentColor.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\AccentColor.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\AccentColor.ps1" -Operation Set
+
   - name: TaskbarAutoHide
     type: Microsoft.DSC.Transitional/PowerShellScript
     properties:

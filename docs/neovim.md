@@ -43,8 +43,8 @@ Suggestions hide while the completion menu is open; Enter and Tab retain their u
 
 ## Appearance
 
-The [Canopy colorscheme](../home/dot_config/nvim/colors/canopy.lua) uses a transparent
-canvas and solid panels. Increase Windows Terminal opacity for more contrast.
+The [Canopy colorscheme](../home/dot_config/nvim/colors/canopy.lua) follows the
+[desktop palette](desktop.md#colors). Increase Windows Terminal opacity for more contrast.
 Reload with `:colorscheme canopy` after editing.
 
 ## Shortcuts

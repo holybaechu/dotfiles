@@ -7,11 +7,12 @@ continuation_prompt = '[·](muted) '
 palette = 'canopy'
 
 [palettes.canopy]
-green = '#a6e3a1'
-purple = '#cba6f7'
-yellow = '#f9e2af'
-red = '#f38ba8'
-muted = '#87998b'
+accent = '#7cab3d'
+green = '#bfdc96'
+purple = '#cfb9dd'
+yellow = '#ebc98a'
+red = '#eea99a'
+muted = '#aab69e'
 
 [env_var.STARSHIP_SHELL]
 default = 'shell'
@@ -65,9 +66,9 @@ format = '[exit $status]($style) '
 style = 'bold red'
 
 [character]
-success_symbol = '[❯](bold green)'
+success_symbol = '[❯](bold accent)'
 error_symbol = '[❯](bold red)'
-vimcmd_symbol = '[❮](bold green)'
+vimcmd_symbol = '[❮](bold accent)'
 vimcmd_visual_symbol = '[❮](bold yellow)'
 vimcmd_replace_symbol = '[❮](bold purple)'
 vimcmd_replace_one_symbol = '[❮](bold purple)'

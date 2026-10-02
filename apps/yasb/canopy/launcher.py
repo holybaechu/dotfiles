@@ -451,9 +451,9 @@ class Launcher(QWidget):
             painter.setClipPath(path)
             painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
             painter.drawImage(rect, self.backdrop)
-            painter.fillPath(path, QColor(6, 12, 8, 178))
+            painter.fillPath(path, QColor(17, 22, 15, 190))
             painter.restore()
-        painter.setPen(QPen(QColor(89, 112, 91, 120), t.dp(1)))
+        painter.setPen(QPen(QColor(132, 149, 117, 120), t.dp(1)))
         painter.drawPath(path)
 
     def closeEvent(self, event):

@@ -31,16 +31,16 @@ def rect(x, y, width, height):
 
 
 BLACK = '#000000'
-SURFACE = '#111a13'
-RAISED = '#293b2d'
-PRESSED = '#3a5540'
-GREEN = '#a6e3a1'
-GREEN_PRESSED = '#8dcc89'
-GREEN_HOVER = '#b7edb3'
-TEXT = '#f1f6f0'
-MUTED = '#a6b6a6'
-DISABLED = '#728673'
-ERROR = '#f2a59e'
+SURFACE = '#11160f'
+RAISED = '#293522'
+PRESSED = '#3c502b'
+GREEN = '#7cab3d'
+GREEN_PRESSED = '#719c37'
+GREEN_HOVER = '#92bd56'
+TEXT = '#f0f3e7'
+MUTED = '#aab69e'
+DISABLED = '#849575'
+ERROR = '#eea99a'
 BAR_HEIGHT = px(40)
 BAR_BUTTON_HEIGHT = px(32)
 WORKSPACE_HEIGHT = px(26)

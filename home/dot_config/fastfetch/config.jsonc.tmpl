@@ -1,14 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/dev/doc/json_schema.json",
   "display": {
-    "showErrors": false
-{{- if eq .chezmoi.os "windows" }},
-    // Match the small Windows logo's blue accent.
-    "color": "blue"
-{{- end }}
+    "showErrors": false,
+    "color": { "keys": "#7cab3d", "title": "#bfdc96", "output": "#f0f3e7", "separator": "#aab69e" }
   },
   "logo": {
     "type": "small",
+    "color": { "1": "#7cab3d", "2": "#7cab3d", "3": "#7cab3d", "4": "#7cab3d", "5": "#7cab3d", "6": "#7cab3d", "7": "#7cab3d", "8": "#7cab3d", "9": "#7cab3d" },
     "padding": {
       "right": 2
     }
