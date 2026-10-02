@@ -1,0 +1,10 @@
+{
+  "__ver": 2,
+  "rate_control": "ICQ",
+  "icq_quality": 14,
+  "target_usage": "TU4",
+  "profile": "main",
+  "keyint_sec": 2,
+  "latency": "normal",
+  "bframes": 3
+}

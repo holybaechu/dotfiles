@@ -1,0 +1,43 @@
+{
+  "name": "Rhythm Games",
+  "current_scene": "Game",
+  "current_program_scene": "Game",
+  "scene_order": [{ "name": "Game" }],
+  "sources": [
+    {
+      "name": "Rhythm Game",
+      "id": "game_capture",
+      "versioned_id": "game_capture",
+      "settings": {
+        "capture_mode": "any_fullscreen",
+        "capture_cursor": false,
+        "capture_overlays": false,
+        "limit_framerate": true,
+        "capture_audio": true
+      },
+      "mixers": 1,
+      "volume": 1.0,
+      "muted": false
+    },
+    {
+      "name": "Game",
+      "id": "scene",
+      "versioned_id": "scene",
+      "settings": {
+        "items": [
+          {
+            "name": "Rhythm Game",
+            "visible": true,
+            "locked": true,
+            "pos": { "x": 0.0, "y": 0.0 },
+            "scale": { "x": 1.0, "y": 1.0 },
+            "align": 5,
+            "bounds_type": 2,
+            "bounds_align": 0,
+            "bounds": { "x": 2880.0, "y": 1800.0 }
+          }
+        ]
+      }
+    }
+  ]
+}
