@@ -16,7 +16,6 @@
 | File search | Everything |
 | Browsers | [Aside](https://aside.com/) and [Helium](https://helium.computer/) |
 | Media player | [PotPlayer](https://potplayer.daum.net/) |
-| Screen recording & streaming | [OBS Studio](https://obsproject.com/) (Windows; [recording setup](obs.md)) |
 | Git & GitHub | Git, GitHub CLI |
 | SSH & commit signing | 1Password |
 | YubiKey authentication | [Yubico Authenticator](https://www.yubico.com/products/yubico-authenticator/) |
