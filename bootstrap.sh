@@ -2,22 +2,16 @@
 set -euo pipefail
 
 if (( EUID == 0 )); then
-    printf '%s\n' 'Run bootstrap as your normal user; package installation uses sudo.' >&2
+    printf '%s\n' 'Run bootstrap as your normal user; Ansible uses sudo for system tasks.' >&2
     exit 1
 fi
-if ! command -v pacman >/dev/null || ! command -v yay >/dev/null; then
-    printf '%s\n' 'This package helper requires pacman and yay. See docs/setup.md for other Linux distributions.' >&2
-    exit 1
-fi
+for program in ansible-playbook ansible-galaxy pacman yay; do
+    if ! command -v "$program" >/dev/null; then
+        printf 'Install %s before running bootstrap. See docs/setup.md.\n' "$program" >&2
+        exit 1
+    fi
+done
 
 repository=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-"$repository/system/linux/setup-cider.sh"
-mapfile -t packages < "$repository/system/linux/packages.arch"
-sudo pacman -Syu --needed "${packages[@]}"
-sudo pacman -D --asexplicit "${packages[@]}"
-mapfile -t packages < "$repository/system/linux/packages.aur"
-yay -S --needed "${packages[@]}"
-sudo pacman -D --asexplicit "${packages[@]}"
-chezmoi init --source "$repository"
-
-printf '%s\n' 'Package setup finished. Review chezmoi diff, then run chezmoi apply.'
+ansible-galaxy collection install -r "$repository/system/linux/requirements.yml"
+exec ansible-playbook -i localhost, "$repository/system/linux/playbook.yml" --ask-become-pass "$@"

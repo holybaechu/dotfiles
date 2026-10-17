@@ -1,0 +1,147 @@
+- name: Read the bundled Cider signing key
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --batch
+      - --homedir
+      - /etc/pacman.d/gnupg
+      - --lock-never
+      - --no-auto-check-trustdb
+      - --with-colons
+      - --show-keys
+      - "{{ playbook_dir }}/cider.asc"
+  register: cider_key
+  changed_when: false
+  check_mode: false
+
+- name: Verify Cider's published primary key fingerprint
+  ansible.builtin.assert:
+    that:
+      - (cider_key.stdout_lines | select('match', '^pub:') | list | length) == 1
+      - (cider_key.stdout_lines | select('match', '^fpr:') | first).split(':')[9] == cider_fingerprint
+
+- name: Inspect the installed Cider signing key
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --batch
+      - --homedir
+      - /etc/pacman.d/gnupg
+      - --lock-never
+      - --no-auto-check-trustdb
+      - --with-colons
+      - --list-keys
+      - "{{ cider_fingerprint }}"
+  become: true
+  register: cider_installed_key
+  changed_when: false
+  failed_when: cider_installed_key.rc not in [0, 2]
+  check_mode: false
+
+- name: Import the Cider signing key
+  become: true
+  ansible.builtin.command:
+    argv: [pacman-key, --add, "{{ playbook_dir }}/cider.asc"]
+  when: cider_installed_key.rc != 0
+  changed_when: true
+
+- name: Trust the Cider signing key
+  become: true
+  ansible.builtin.command:
+    argv: [pacman-key, --lsign-key, "{{ cider_fingerprint }}"]
+  when: "'pub:f:' not in cider_installed_key.stdout and 'pub:u:' not in cider_installed_key.stdout"
+  changed_when: true
+
+- name: Configure the signed Cider repository
+  become: true
+  community.general.ini_file:
+    path: /etc/pacman.conf
+    section: cidercollective
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    mode: '0644'
+  loop:
+    - {option: SigLevel, value: Required TrustedOnly}
+    - {option: Server, value: 'https://repo.cider.sh/arch'}
+
+- name: Refresh repositories and upgrade the system
+  become: true
+  community.general.pacman:
+    update_cache: true
+    upgrade: true
+
+- name: Install the pacman package list as explicit packages
+  become: true
+  community.general.pacman:
+    name: "{{ arch_packages }}"
+    state: present
+    reason: explicit
+    reason_for: all
+
+- name: Read the pinned fingerprint driver package version
+  ansible.builtin.command:
+    argv: [makepkg, --printsrcinfo]
+    chdir: "{{ playbook_dir }}/libfprint-egis-05d5"
+  register: fingerprint_source
+  changed_when: false
+  check_mode: false
+
+- name: Determine the expected fingerprint driver version
+  ansible.builtin.set_fact:
+    fingerprint_version: >-
+      {{ (fingerprint_source.stdout | regex_findall('(?m)^\s+pkgver = (.+)$') | first)
+         ~ '-' ~ (fingerprint_source.stdout | regex_findall('(?m)^\s+pkgrel = (.+)$') | first) }}
+
+- name: Read installed package versions
+  ansible.builtin.command:
+    argv: [pacman, -Q]
+  register: installed_packages
+  changed_when: false
+  check_mode: false
+
+- name: Build and install user packages
+  when: >-
+    (aur_packages | difference(installed_packages.stdout_lines
+      | map('regex_replace', ' .*$', '') | list) | length > 0)
+    or ('libfprint-egis-05d5 ' ~ fingerprint_version) not in installed_packages.stdout_lines
+  block:
+    - name: Allow package builds to install through pacman
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/dotfiles-build
+        content: "{{ ansible_facts['user_id'] }} ALL=(root) NOPASSWD: /usr/bin/pacman\n"
+        owner: root
+        group: root
+        mode: '0440'
+        validate: /usr/bin/visudo -cf %s
+
+    - name: Install AUR packages as the normal user
+      kewlfft.aur.aur:
+        name: "{{ aur_packages }}"
+        use: yay
+        state: present
+
+    - name: Build and install the Egis fingerprint driver as the normal user
+      kewlfft.aur.aur:
+        name: libfprint-egis-05d5
+        use: makepkg
+        local_pkgbuild: "{{ playbook_dir }}/libfprint-egis-05d5"
+        state: latest
+      when: >-
+        ('libfprint-egis-05d5 ' ~ fingerprint_version) not in installed_packages.stdout_lines
+      notify: Restart fprintd
+
+  always:
+    - name: Remove temporary package build permissions
+      become: true
+      ansible.builtin.file:
+        path: /etc/sudoers.d/dotfiles-build
+        state: absent
+
+- name: Keep AUR packages explicitly installed
+  become: true
+  community.general.pacman:
+    name: "{{ aur_packages }}"
+    state: present
+    reason: explicit
+    reason_for: all

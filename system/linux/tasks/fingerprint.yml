@@ -1,0 +1,39 @@
+- name: Configure fingerprint-first authentication
+  become: true
+  block:
+    - name: Install the fingerprint PAM rules
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/pam-fingerprint"
+        dest: /etc/pam.d/dotfiles-fingerprint
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Create the local Polkit PAM configuration
+      ansible.builtin.copy:
+        src: /usr/lib/pam.d/polkit-1
+        dest: /etc/pam.d/polkit-1
+        remote_src: true
+        force: false
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Use fingerprints with password fallback in SDDM, sudo, and Polkit
+      ansible.builtin.replace:
+        path: "/etc/pam.d/{{ item.service }}"
+        regexp: "^auth[ \\t]+include[ \\t]+{{ item.include }}[ \\t]*$"
+        replace: "{{ item.rules }}"
+      loop:
+        - service: sddm
+          include: system-login
+          rules: |-
+            auth required pam_shells.so
+            auth requisite pam_nologin.so
+            auth substack dotfiles-fingerprint
+        - service: sudo
+          include: system-auth
+          rules: auth substack dotfiles-fingerprint
+        - service: polkit-1
+          include: system-auth
+          rules: auth substack dotfiles-fingerprint

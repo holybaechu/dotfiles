@@ -5,25 +5,34 @@ Hyprland 0.56+ (Lua configuration) and Quickshell 0.3.2+; Neovim requires 0.12+.
 See [Software](software.md) for applications and package lists. Other Wayland
 compositors need their own desktop configuration.
 
-## Install packages
+## System setup
 
-On Arch or a derivative, install `git`, `curl`, and `yay`, then run from the checkout:
+On Arch or a derivative, install `git`, `ansible-core`, `curl`, and `yay`, then run
+from the checkout as your normal user in a graphical session:
 
 ```sh
 cd ~/.local/share/chezmoi
 ./bootstrap.sh
 ```
 
-The helper adds the signed [Cider repository](https://repo.cider.sh/), runs a full
-pacman upgrade, installs the listed repository/AUR packages,
-marks them explicitly installed to protect them from dependency cleanup, and
-registers this checkout with chezmoi. Review AUR build prompts. It does not
-apply dotfiles or enable system services. If a package step fails, resolve the error
-and rerun the helper.
+Bootstrap installs the required Ansible collections and runs the
+[local playbook](../system/linux/playbook.yml), asking for your Linux password
+for privileged tasks. It configures the signed [Cider repository](https://repo.cider.sh/),
+upgrades the system, installs the package lists and patched Egis fingerprint
+driver, enables desktop services, installs SDDM's theme and monitors, configures
+fingerprint authentication, and registers this checkout with chezmoi.
+Fingerprint enrollment and applying home files remain manual.
 
-To configure only Cider's repository, run `./system/linux/setup-cider.sh`.
-The setup pins its signing key fingerprint and can be rerun without adding
-duplicate repository entries.
+AUR packages and the fingerprint driver build as your normal user. During those
+tasks, Ansible grants that user passwordless access to pacman through
+`/etc/sudoers.d/dotfiles-build`, then removes the rule when the build block finishes.
+The playbook manages system files directly, without creating backup copies.
+
+Preview supported changes with `./bootstrap.sh --check --diff`. Package builds
+and commands that change system state are skipped in check mode. To rerun one
+part, use `./bootstrap.sh --tags packages`, `services`, `sddm`, `fingerprint`, or
+`dotfiles`; the packages tag includes the fingerprint driver build. The `power`
+and `brightness` tags select those service settings alone.
 
 On another distribution, install the equivalent packages from the
 [Arch list](../system/linux/packages.arch) and [AUR list](../system/linux/packages.aur),
@@ -36,8 +45,7 @@ chezmoi init --source ~/.local/share/chezmoi
 
 ## Review and apply
 
-Back up any existing configuration you want to keep, especially `~/.config/hypr`
-and `~/.config/fish`. For a fork, first change the
+For a fork, first change the
 [Git identity](../home/dot_config/git/config.tmpl) and
 [public key](../home/dot_config/git/github.pub).
 
@@ -60,24 +68,16 @@ its startup configuration is not managed. See [Fish shortcuts](maintenance.md#fi
 
 ## Desktop services
 
-Use NetworkManager for network connections, BlueZ for Bluetooth, PipeWire with
-WirePlumber for audio, and power-profiles-daemon for power profiles. On a systemd
-installation, after checking that no competing network manager is configured:
-
-```sh
-sudo systemctl enable --now NetworkManager bluetooth power-profiles-daemon
-systemctl --user enable --now pipewire.socket pipewire-pulse.socket wireplumber
-```
+Ansible enables and starts NetworkManager, BlueZ, power-profiles-daemon, and the
+user's PipeWire sockets and WirePlumber service. It enables SDDM for the next
+boot without restarting the current login session. Use SDDM as the system's
+display manager and disable any competing network or display manager first.
 
 Log out and select Hyprland at the login screen. Its startup launches Canopy,
 hyprpaper, hypridle, Fcitx5, the Polkit agent, and 1Password. Do not run another
 notification daemon alongside Canopy. Idle locking starts after five minutes; displays turn off
 after ten. Save work before signing out: applying the new Hyprland settings can
 reload shortcuts immediately, while startup programs need a new session.
-
-If the desktop fails, use a TTY (`Ctrl+Alt+F3`) to restore your configuration backup
-before logging in again. Individual configuration recovery is covered in
-[Maintenance](maintenance.md#recovery).
 
 ## Login keyring
 
@@ -99,13 +99,12 @@ the keyring. Keep its password set to preserve encryption.
 
 ## Login screen
 
-See [SDDM setup](sddm.md) to install the Canopy login theme and match the desktop's
-monitor layout. Its system configuration is installed separately from chezmoi.
+See [SDDM setup](sddm.md) for the Canopy login theme and monitor layout.
 
 ## Fingerprint authentication
 
-See [Fingerprint setup](fingerprint.md) for the experimental Egis `1c7a:05d5`
-driver, enrollment, and SDDM/sudo/Polkit configuration. Hyprlock has native
+See [Fingerprint setup](fingerprint.md) for manual enrollment with the Egis
+`1c7a:05d5` reader. Hyprlock has native
 fingerprint authentication enabled; password unlocking remains available.
 
 ## Git authentication

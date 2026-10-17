@@ -1,0 +1,94 @@
+- name: Enable and start desktop system services
+  become: true
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop: [NetworkManager.service, bluetooth.service]
+
+- name: Detect Plymouth's boot waiter
+  ansible.builtin.stat:
+    path: /usr/lib/systemd/system/plymouth-quit-wait.service
+  register: plymouth_wait
+  tags: power
+
+- name: Bound the boot splash wait before power profiles start
+  become: true
+  when: plymouth_wait.stat.exists
+  tags: power
+  block:
+    - name: Create the Plymouth waiter override directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/plymouth-quit-wait.service.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Limit the boot splash waiter to thirty seconds
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/plymouth-quit-wait.service.d/timeout.conf
+        content: "[Service]\nTimeoutStartSec=30s\n"
+        owner: root
+        group: root
+        mode: '0644'
+      register: plymouth_timeout
+
+    - name: Reload the boot splash timeout
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+      when: plymouth_timeout.changed
+
+    - name: Inspect the current boot splash wait
+      ansible.builtin.command:
+        argv: [systemctl, show, plymouth-quit-wait.service, --property=SubState, --value]
+      register: plymouth_state
+      changed_when: false
+      check_mode: false
+
+    - name: Release the boot splash waiter in this desktop session
+      ansible.builtin.systemd_service:
+        name: plymouth-quit-wait.service
+        state: stopped
+      when: plymouth_state.stdout == 'start'
+
+- name: Enable and start the power-profile service
+  become: true
+  ansible.builtin.systemd_service:
+    name: power-profiles-daemon.service
+    enabled: true
+    state: started
+  tags: power
+
+- name: Enable and start desktop audio services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    scope: user
+    enabled: true
+    state: started
+  loop: [pipewire.socket, pipewire-pulse.socket, wireplumber.service]
+
+- name: Enable SDDM for the next boot
+  become: true
+  ansible.builtin.systemd_service:
+    name: sddm.service
+    enabled: true
+
+- name: Enable external monitor brightness control
+  become: true
+  tags: brightness
+  block:
+    - name: Load the monitor control kernel interface
+      community.general.modprobe:
+        name: i2c-dev
+        state: present
+
+    - name: Reload monitor access rules
+      ansible.builtin.command:
+        argv: [udevadm, control, --reload-rules]
+      changed_when: false
+
+    - name: Apply monitor access rules to existing devices
+      ansible.builtin.command:
+        argv: [udevadm, trigger, --subsystem-match=i2c-dev, --action=add]
+      changed_when: false

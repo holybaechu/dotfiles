@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 
 
-path = Path(__file__).resolve().parents[1] / 'system/linux/sddm/setup-monitors.py'
+path = Path(__file__).resolve().parents[1] / 'system/linux/sddm/monitors.py'
 spec = importlib.util.spec_from_file_location('sddm_monitors', path)
 monitors = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(monitors)

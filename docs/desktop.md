@@ -112,13 +112,11 @@ lists every connected display from left to right (then top to bottom), in the sa
 order wherever the panel opens. Each slider controls its named display: laptop
 panels use brightnessctl; external monitors use ddcutil over the connector's
 DDC/I²C channel. Enable DDC/CI
-in the monitor's on-screen menu. On Arch, after installing ddcutil, initialize its
-kernel interface and access rules once (later boots load it automatically):
+in the monitor's on-screen menu. Bootstrap initializes ddcutil's kernel interface
+and access rules; later boots load it automatically. To reapply only those settings:
 
 ```sh
-sudo modprobe i2c-dev
-sudo udevadm control --reload-rules
-sudo udevadm trigger --subsystem-match=i2c-dev --action=add
+./bootstrap.sh --tags brightness
 ```
 
 Read or set a specific display without relying on focus:
@@ -133,6 +131,10 @@ unsupported external monitor never falls back to changing the laptop panel.
 Media controls use MPRIS; mpv's integration is supplied by mpv-mpris. Power actions require a second click;
 failed command actions show an error and keep the panel open. Hardware support
 and service permissions determine which controls are available.
+
+Energy saver uses power-profiles-daemon. The `power` Ansible tasks start it and
+limit Plymouth's boot waiter to thirty seconds so a stuck splash cannot block
+power-profile startup indefinitely.
 
 Canopy starts its tray host with the shell so apps can register before the tray
 panel opens. Only apps that publish tray icons appear in the grid; network,
@@ -194,7 +196,7 @@ Hyprland blurs transparent app backgrounds, Canopy's app launcher, and compatibl
 popups and input methods. Kitty uses 88% background opacity. Canopy's islands,
 panels, and notifications have opaque backgrounds. Text and controls stay sharp,
 and ordinary app windows keep their original opacity.
-The original wallpaper is downloaded by [chezmoi externals](../home/.chezmoiexternal.toml).
+The original wallpaper is downloaded by [chezmoi externals](../home/.chezmoiexternal.yaml).
 
 | Role | Color |
 | --- | --- |

@@ -9,8 +9,8 @@ chezmoi diff
 chezmoi apply
 ```
 
-`.chezmoiroot` restricts deployment to `home/`. System packages and services are
-separate from chezmoi.
+`.chezmoiroot` restricts deployment to `home/`. Rerun `./bootstrap.sh` for Ansible
+system setup; see [Setup](setup.md#system-setup) for task tags and check mode.
 
 | Tool | Reload |
 | --- | --- |
@@ -31,6 +31,9 @@ runtimes with the commands in [Software](software.md#runtimes-and-uv).
 Check monitor targeting, failed brightness changes, and hardware timeouts with
 `python3 -m unittest discover -s tests`. These tests use mocked commands and
 temporary device files.
+
+Check `git diff` before committing; use Conventional Commit messages as described
+in [AGENTS.md](../AGENTS.md).
 
 ## Fish
 
@@ -55,21 +58,3 @@ Fish and Hyprland export `SSH_AUTH_SOCK=~/.1password/agent.sock`; SSH also sets
 Kitty supports dragging files directly between Yazi and desktop applications.
 Select multiple files with `Space`, then drag the selection into the destination
 app. See [Yazi's drag-and-drop guide](https://yazi-rs.github.io/docs/dnd/).
-
-## Recovery
-
-Before an initial apply, keep a copy of the existing managed config directories.
-Restore those copies from a TTY if the new desktop cannot start. This repository
-does not automatically remove programs or old unmanaged configuration files.
-
-For a later unwanted source change, save local work, restore the affected source
-file from a known Git revision, inspect `chezmoi diff`, and apply only its target:
-
-```sh
-git restore --source=<known-good-revision> -- home/dot_config/kitty/kitty.conf
-chezmoi diff ~/.config/kitty/kitty.conf
-chezmoi apply ~/.config/kitty/kitty.conf
-```
-
-Check `git diff` before committing; use Conventional Commit messages as described
-in [AGENTS.md](../AGENTS.md).
