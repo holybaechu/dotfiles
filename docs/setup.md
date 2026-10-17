@@ -74,6 +74,24 @@ If the desktop fails, use a TTY (`Ctrl+Alt+F3`) to restore your configuration ba
 before logging in again. Individual configuration recovery is covered in
 [Maintenance](maintenance.md#recovery).
 
+## Login keyring
+
+GNOME Keyring stores desktop application credentials; 1Password remains the SSH
+agent. Arch's SDDM PAM configuration already starts the keyring and unlocks it
+when you log in with your password. After installing `gnome-keyring`, sign out
+and sign back in with your password. An existing login keyring must use the same
+password as your Linux account.
+
+Fingerprint login cannot unlock the encrypted keyring because it does not supply
+your password. After a fingerprint login, an application may ask you to unlock
+the keyring. Keep its password set to preserve encryption.
+
+## Fingerprint authentication
+
+See [Fingerprint setup](fingerprint.md) for the experimental Egis `1c7a:05d5`
+driver, enrollment, and SDDM/sudo/Polkit configuration. Hyprlock has native
+fingerprint authentication enabled; password unlocking remains available.
+
 ## Git authentication
 
 Sign in to [1Password for Linux](https://support.1password.com/install-linux/),

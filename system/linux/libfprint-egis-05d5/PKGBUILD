@@ -1,0 +1,38 @@
+pkgname=libfprint-egis-05d5
+pkgver=1.94.9.e105528
+pkgrel=1
+pkgdesc='Experimental Egis ETU906Axx-E driver for USB 1c7a:05d5'
+arch=('x86_64')
+url='https://github.com/likeablob/libfprint-fmv-etu906axx-e'
+license=('LGPL-2.1-or-later')
+depends=('glib2' 'glibc' 'libgusb' 'openssl')
+makedepends=('glib2-devel' 'meson')
+provides=('libfprint=1.94.9' 'libfprint-2.so')
+conflicts=('libfprint')
+_commit=e105528828a04dffde789cda48742c204183386d
+source=("libfprint-$_commit.tar.gz::https://codeload.github.com/likeablob/libfprint-fmv-etu906axx-e/tar.gz/$_commit"
+        'egis-05d5.patch')
+sha256sums=('ea8b779103436639a2b217379c902c501a3598c1fa022c1eb2db58c39bb51233'
+            '705177b9fb5da698ef61495a938cfeb2999fe8ea1072c97df6c197226641e01d')
+
+prepare() {
+    cd "libfprint-fmv-etu906axx-e-$_commit"
+    patch -Np1 -i "$srcdir/egis-05d5.patch"
+}
+
+build() {
+    meson setup build "libfprint-fmv-etu906axx-e-$_commit" \
+        --prefix=/usr --libdir=lib --buildtype=plain \
+        -Ddrivers=egismoc -Dintrospection=false -Ddoc=false \
+        -Dinstalled-tests=false -Dudev_hwdb=enabled
+    meson compile -C build
+}
+
+check() {
+    meson test -C build --suite unit-tests --suite data --print-errorlogs
+    build/libfprint/fprint-list-udev-hwdb | grep -q '^usb:v1C7Ap05D5\*$'
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install -C build --no-rebuild
+}

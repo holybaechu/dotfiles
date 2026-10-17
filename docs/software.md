@@ -12,6 +12,7 @@
 | Media | mpv with mpv-mpris; playerctl for media keys |
 | Editor | [Neovim](neovim.md) |
 | Git and SSH signing | Git, 1Password |
+| Desktop application credentials | GNOME Keyring |
 | Korean input | [Fcitx5 with Hangul](desktop.md#korean-input) |
 | Fonts | JetBrainsMono Nerd Font Mono, Inter, Noto CJK |
 | Application appearance | adw-gtk3, GTK 4 Canopy colors, qt6ct with a Canopy palette |
