@@ -1,8 +1,7 @@
 #%PAM-1.0
-# Password first; submit an empty password to scan a finger.
+# Fingerprint first; fall back to password if scanning fails or times out.
 auth required pam_faillock.so preauth
-auth [success=1 default=ignore] pam_unix.so try_first_pass
 auth [success=1 default=ignore] pam_fprintd.so max-tries=3 timeout=10
-auth include system-auth
+auth substack system-auth
 auth required pam_env.so
 auth required pam_faillock.so authsucc

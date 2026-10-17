@@ -5,9 +5,16 @@ Inter, and the Canopy palette, with a large clock at the top right and a transpa
 login form at the bottom left. The selected account appears as a fixed label;
 press Left/Right to cycle through users when more than one is available. The last
 account and session are remembered. Press Enter or click the arrow beside the
-password to sign in. The form shows authentication messages and
-accepts an empty password for the configured [fingerprint login](fingerprint.md).
+password to sign in. The Fingerprint action is focused initially: press Enter
+to start the configured [fingerprint login](fingerprint.md) without entering a
+password. A failed scan focuses the password field. The form shows authentication
+messages; Tab from Fingerprint also moves to the password field.
 Power actions require a second click.
+
+The [Hyprlock configuration](../home/dot_config/hypr/hyprlock.conf) shares the
+wallpaper, Inter typography, top-right clock, and bottom-left account and
+transparent password field. Apply lock-screen changes with
+`chezmoi apply ~/.config/hypr/hyprlock.conf`; they appear the next time you lock.
 
 ## Install
 

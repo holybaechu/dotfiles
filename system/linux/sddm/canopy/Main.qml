@@ -51,7 +51,7 @@ Rectangle {
 
     function focusInput() {
         if (loginScreen)
-            password.forceActiveFocus();
+            fingerprint.forceActiveFocus();
     }
 
     function submit() {
@@ -59,8 +59,8 @@ Rectangle {
             return;
         authenticating = true;
         failed = false;
-        statusMessage = "Checking credentials…";
-        // An empty password lets the configured PAM stack request a fingerprint.
+        statusMessage = "Scan your finger…";
+        // PAM tries the fingerprint first, then uses this password if needed.
         sddm.login(selectedUser, password.text, session.currentIndex);
     }
 
@@ -95,7 +95,7 @@ Rectangle {
             root.failed = true;
             root.statusMessage = "Couldn’t sign in. Please try again.";
             password.clear();
-            root.focusInput();
+            password.forceActiveFocus();
         }
         function onLoginSucceeded() { root.statusMessage = "Welcome back."; }
         function onInformationMessage(message) {
@@ -173,16 +173,31 @@ Rectangle {
             }
         }
 
-        Selector {
-            id: session
-            objectName: "session"
-            implicitHeight: 34
-            model: sessionModel
-            currentIndex: Math.max(0, sessionModel.lastIndex)
-            emptyText: "No sessions available"
-            textColor: root.muted
-            font.pixelSize: 13
-            Accessible.name: "Desktop session"
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 16
+            Selector {
+                id: session
+                objectName: "session"
+                implicitHeight: 34
+                model: sessionModel
+                currentIndex: Math.max(0, sessionModel.lastIndex)
+                emptyText: "No sessions available"
+                textColor: root.muted
+                font.pixelSize: 13
+                Accessible.name: "Desktop session"
+            }
+            ActionButton {
+                id: fingerprint
+                objectName: "fingerprint"
+                text: "Fingerprint"
+                enabled: !root.authenticating && root.selectedUser.length > 0 && session.count > 0 && session.currentIndex >= 0
+                Accessible.name: "Sign in with fingerprint"
+                KeyNavigation.tab: password
+                Keys.onReturnPressed: root.submit()
+                Keys.onEnterPressed: root.submit()
+                onClicked: root.submit()
+            }
         }
     }
 
@@ -191,7 +206,8 @@ Rectangle {
         visible: root.loginScreen
         anchors { left: loginForm.left; top: loginForm.bottom; topMargin: 12 }
         width: loginForm.width
-        text: root.statusMessage || (keyboard.capsLock ? "Caps Lock is on" : "")
+        text: root.statusMessage || (keyboard.capsLock ? "Caps Lock is on" :
+              fingerprint.activeFocus ? "Press Enter to scan your finger." : "")
         color: root.failed || keyboard.capsLock ? "#eea99a" : root.muted
         font { family: "Inter"; pixelSize: 12 }
         wrapMode: Text.WordWrap

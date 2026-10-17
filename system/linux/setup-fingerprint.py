@@ -43,7 +43,19 @@ def configure():
     # Keep the first originals; rerunning must not overwrite recovery copies.
     module = PAM / MODULE
     content = (SOURCE / 'pam-fingerprint').read_text()
-    if module.exists() and module.read_text() != content:
+    previous = (
+        '#%PAM-1.0\n'
+        '# Password first; submit an empty password to scan a finger.\n'
+        'auth required pam_faillock.so preauth\n'
+        'auth [success=1 default=ignore] pam_unix.so try_first_pass\n'
+        'auth [success=1 default=ignore] pam_fprintd.so max-tries=3 timeout=10\n'
+        'auth substack system-auth\n'
+        'auth required pam_env.so\n'
+        'auth required pam_faillock.so authsucc\n'
+    )
+    known = (content, previous, previous.replace('auth substack system-auth\n',
+                                               'auth include system-auth\n'))
+    if module.exists() and module.read_text() not in known:
         sys.exit(f'{module} already exists with different contents; no files changed.')
     BACKUP.mkdir(mode=0o700, parents=True, exist_ok=True)
     for target in changes:

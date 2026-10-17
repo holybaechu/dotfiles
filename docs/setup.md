@@ -82,6 +82,12 @@ when you log in with your password. After installing `gnome-keyring`, sign out
 and sign back in with your password. An existing login keyring must use the same
 password as your Linux account.
 
+PAM unlocks the keyring named **Login**. If an application uses a separate
+**Default Keyring**, unlock Login first, then select **Automatically unlock this
+on login** when unlocking Default Keyring. GNOME stores that keyring's unlock
+password inside Login, allowing both to unlock after a password login. Changing
+the default keyring alone does not enable this.
+
 Fingerprint login cannot unlock the encrypted keyring because it does not supply
 your password. After a fingerprint login, an application may ask you to unlock
 the keyring. Keep its password set to preserve encryption.
