@@ -1,0 +1,10 @@
+[SddmGreeterTheme]
+Name=Canopy
+Description=Canopy login screen
+Type=sddm-theme
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=canopy
+Theme-API=2.0
+QtVersion=6

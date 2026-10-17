@@ -56,6 +56,7 @@ python
 qt6ct
 quickshell
 ripgrep
+sddm
 slurp
 starship
 tree-sitter-cli
@@ -67,5 +68,6 @@ wl-clipboard
 xdg-desktop-portal-gtk
 xdg-desktop-portal-hyprland
 xdg-utils
+xorg-xrandr
 yazi
 zstd

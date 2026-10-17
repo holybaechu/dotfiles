@@ -182,6 +182,7 @@ same panel motion as the desktop.
 GTK 3 uses adw-gtk3-dark with the [Canopy colors](../home/dot_config/gtk-3.0/gtk.css).
 GTK 4 and libadwaita use the matching [CSS palette](../home/dot_config/gtk-4.0/gtk.css).
 Qt 6 uses qt6ct, Fusion, and the [Canopy palette](../home/dot_config/qt6ct/colors/Canopy.conf).
+The [SDDM login screen](sddm.md) has a matching theme and display layout.
 The desktop preference is dark with a green accent; GTK and Qt use Inter 11.
 Chezmoi applies these preferences through its desktop-appearance script.
 Restart open applications to pick up the theme. Apps with their own theme

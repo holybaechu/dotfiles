@@ -3,6 +3,7 @@
 | Purpose | Software |
 | --- | --- |
 | Desktop and shortcuts | [Hyprland](https://hypr.land/) |
+| Login screen | [SDDM with Canopy](sddm.md) |
 | Bar, launcher, panels, notifications | Custom [Canopy](desktop.md) with [Quickshell](https://quickshell.org/) |
 | Terminal | [Kitty](https://sw.kovidgoyal.net/kitty/) |
 | Shell and prompt | Fish, Fisher (`done`, `autopair.fish`), Starship |

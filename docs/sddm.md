@@ -1,0 +1,64 @@
+# SDDM login screen
+
+The [Canopy theme](../system/linux/sddm/canopy/Main.qml) uses the desktop wallpaper,
+Inter, and the Canopy palette, with a large clock at the top right and a transparent
+login form at the bottom left. The selected account appears as a fixed label;
+press Left/Right to cycle through users when more than one is available. The last
+account and session are remembered. Press Enter or click the arrow beside the
+password to sign in. The form shows authentication messages and
+accepts an empty password for the configured [fingerprint login](fingerprint.md).
+Power actions require a second click.
+
+## Install
+
+Install the bootstrap packages and apply chezmoi first so the wallpaper exists.
+Then run from the checkout as your normal user:
+
+```sh
+./system/linux/setup-sddm.sh
+```
+
+The helper uses sudo to install the theme and a copy of the wallpaper under
+`/usr/local/share/sddm/themes/canopy`, the monitor helper under
+`/usr/local/libexec`, and settings at `/etc/sddm.conf.d/20-canopy.conf`.
+Rerun it after editing the theme, wallpaper, or monitor settings. These system
+files are separate from `chezmoi apply`.
+
+Reboot when ready to activate the display settings. Restarting SDDM immediately
+would end the current desktop session. On a new system, enable `sddm.service`
+after disabling any other display manager.
+
+## Displays
+
+| Display | Mode | Scale | Login form |
+| --- | --- | --- | --- |
+| Acer XV272U W2 | 2560×1440 at 144 Hz | 100% | Preferred |
+| Laptop eDP-1 | 2880×1800 at 120 Hz | 200% | Fallback |
+
+Both displays stay enabled, with the Acer on the left and their top edges
+aligned. The laptop shows the wallpaper while the Acer has the login form.
+The [monitor helper](../system/linux/sddm/setup-monitors.py) identifies the Acer
+from its EDID instead of a fixed connector. Without it, the laptop becomes
+primary. The configuration applies when the greeter's X server starts.
+
+SDDM retains its X11 greeter; the selected Hyprland desktop still runs on Wayland.
+X11 calls the HDMI connector `HDMI-1`, while Hyprland calls it `HDMI-A-1`.
+[SDDM settings](../system/linux/sddm/sddm.conf) set the Qt scale for each output.
+
+## Preview and recovery
+
+After installation, preview with SDDM's test mode. Login and power actions have
+no effect; the preview closes after twenty seconds:
+
+```sh
+timeout 20s sddm-greeter-qt6 --test-mode --theme /usr/local/share/sddm/themes/canopy
+```
+
+To return to the previous SDDM defaults from a terminal or TTY (`Ctrl+Alt+F3`):
+
+```sh
+sudo rm /etc/sddm.conf.d/20-canopy.conf
+```
+
+Reboot when ready. This removes the theme and monitor override; it leaves the
+installed assets available for reuse and preserves the PAM authentication setup.

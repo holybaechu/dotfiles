@@ -86,6 +86,11 @@ Fingerprint login cannot unlock the encrypted keyring because it does not supply
 your password. After a fingerprint login, an application may ask you to unlock
 the keyring. Keep its password set to preserve encryption.
 
+## Login screen
+
+See [SDDM setup](sddm.md) to install the Canopy login theme and match the desktop's
+monitor layout. Its system configuration is installed separately from chezmoi.
+
 ## Fingerprint authentication
 
 See [Fingerprint setup](fingerprint.md) for the experimental Egis `1c7a:05d5`
