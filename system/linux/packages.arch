@@ -12,6 +12,11 @@ ddcutil
 diffutils
 eza
 fastfetch
+fcitx5
+fcitx5-configtool
+fcitx5-gtk
+fcitx5-hangul
+fcitx5-qt
 fd
 ffmpeg
 file
@@ -40,6 +45,7 @@ mpv
 mpv-mpris
 neovim
 networkmanager
+noto-fonts-cjk
 openssh
 peazip
 pipewire-pulse

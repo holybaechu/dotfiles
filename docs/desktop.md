@@ -53,6 +53,36 @@ the focused display through [screen-brightness](../home/private_dot_local/bin/ex
 Hyprland uses a special workspace for parked windows. Windows-only elevation,
 shortcut/tiling pause, and retile commands have no binding.
 
+## Korean input
+
+The package list includes Fcitx5, its Hangul engine, GTK/Qt integration, the
+configuration tool, and Noto CJK fonts. After installing packages and applying
+dotfiles, log out and back into Hyprland to start Fcitx5 with the session settings.
+
+[Fcitx5 settings](../home/dot_config/fcitx5/) provide English (US) and Korean
+Dubeolsik (두벌식), starting in English. Right Alt sends `Hangul` and toggles
+English/Korean; `Ctrl+Space` also toggles. In Korean mode, `F9` opens Hanja
+conversion. Left Alt keeps its usual behavior.
+
+The language popup and candidate list use the [Canopy Fcitx5 theme](../home/private_dot_local/private_share/fcitx5/themes/canopy/)
+with rounded dark surfaces, green highlights, and Inter text. The tray language
+label uses the same green accent. After applying theme changes, reload Fcitx5
+with `fcitx5-remote -r`.
+
+GTK apps use native Wayland input, with the Fcitx module configured for XWayland;
+Qt apps use the Fcitx module. This follows the
+[Fcitx Wayland setup](https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland).
+The managed Helium and ChatGPT flags enable Wayland input with text-input-v3.
+Fully quit and reopen these apps after applying changes.
+
+Open `fcitx5-configtool` to inspect input methods, or `fcitx5-diagnose` to
+troubleshoot an app that cannot type Korean. Chezmoi creates the input profile
+only when missing; Fcitx5 owns later profile updates and its generated Hangul
+settings. Change these in `fcitx5-configtool`. Hotkeys and theme preferences remain
+managed in `home/dot_config/fcitx5/`.
+To check input, open Kitty or a browser text field, press Right Alt, type
+`gksrmf` (한글), then press Right Alt again to return to English.
+
 ## Canopy
 
 The [Quickshell configuration](../home/dot_config/quickshell/canopy/shell.qml)

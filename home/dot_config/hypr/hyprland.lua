@@ -9,6 +9,8 @@ hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("TERMINAL", "kitty")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
+hl.env("QT_IM_MODULE", "fcitx")
+hl.env("XMODIFIERS", "@im=fcitx")
 hl.env("XCURSOR_SIZE", "24")
 hl.env("SSH_AUTH_SOCK", os.getenv("HOME") .. "/.1password/agent.sock")
 hl.config({
@@ -24,17 +26,21 @@ hl.config({
     },
     animations = { enabled = true },
     dwindle = { preserve_split = true },
-    input = { kb_layout = "us", follow_mouse = 1, accel_profile = "flat" },
+    input = {
+        kb_layout = "us", kb_options = "korean:ralt_hangul",
+        follow_mouse = 1, accel_profile = "flat",
+    },
     misc = { disable_hyprland_logo = true, disable_splash_rendering = true },
 })
 -- Canopy owns its motion; keep layer mapping stationary even before animations settle.
 hl.layer_rule({ match = { namespace = "canopy-.*" }, no_anim = true, animation = "fade" })
 hl.layer_rule({ match = { namespace = "canopy-launcher" }, blur = true, ignore_alpha = 0.3 })
 hl.on("hyprland.start", function()
-    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE SSH_AUTH_SOCK TERMINAL QT_QPA_PLATFORMTHEME")
+    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE SSH_AUTH_SOCK TERMINAL QT_QPA_PLATFORMTHEME QT_IM_MODULE XMODIFIERS")
     hl.exec_cmd("systemctl --user start hyprpolkitagent")
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd("hypridle")
+    hl.exec_cmd("fcitx5 -d")
     hl.exec_cmd("env QML_DISABLE_DISK_CACHE=1 quickshell --no-duplicate --config canopy")
     hl.exec_cmd("1password --silent")
 end)

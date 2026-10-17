@@ -65,8 +65,8 @@ systemctl --user enable --now pipewire.socket pipewire-pulse.socket wireplumber
 ```
 
 Log out and select Hyprland at the login screen. Its startup launches Canopy,
-hyprpaper, hypridle, the Polkit agent, and 1Password. Do not run another notification
-daemon alongside Canopy. Idle locking starts after five minutes; displays turn off
+hyprpaper, hypridle, Fcitx5, the Polkit agent, and 1Password. Do not run another
+notification daemon alongside Canopy. Idle locking starts after five minutes; displays turn off
 after ten. Save work before signing out: applying the new Hyprland settings can
 reload shortcuts immediately, while startup programs need a new session.
 

@@ -13,7 +13,8 @@
 | Editor | [Neovim](neovim.md) |
 | Git and SSH signing | Git, GitHub CLI, 1Password |
 | Hardware authentication | Yubico Authenticator |
-| Fonts | JetBrainsMono Nerd Font Mono, Inter |
+| Korean input | [Fcitx5 with Hangul](desktop.md#korean-input) |
+| Fonts | JetBrainsMono Nerd Font Mono, Inter, Noto CJK |
 | Application appearance | adw-gtk3, GTK 4 Canopy colors, qt6ct with a Canopy palette |
 | File listing, man pages, search | eza, bat, ripgrep, fd |
 | System summary | Fastfetch |
