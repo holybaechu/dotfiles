@@ -3,3 +3,6 @@ Host github.com
     User git
     IdentitiesOnly yes
     IdentityFile ~/.config/git/github.pub
+
+Host *
+    IdentityAgent ~/.1password/agent.sock

@@ -1,63 +1,93 @@
 # Setup
 
-Requires Windows with WSL2 support, internet access, and [WinGet 1.11+](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create-v3).
+Use a normal Linux user account with internet access. The desktop requires
+Hyprland 0.56+ (Lua configuration) and Quickshell 0.3.2+; Neovim requires 0.12+.
+See [Software](software.md) for applications and package lists. Other Wayland
+compositors need their own desktop configuration.
 
-Bootstrap installs the desktop tools and Arch WSL2, applies dotfiles, changes
-[Windows preferences](../system/windows/preferences.winget), and [removes selected apps](../system/windows/debloat.md).
-For a fork, change the [Git identity](../home/dot_config/git/config.tmpl) and
-[SSH public key](../home/dot_config/git/github.pub) first.
+## Install packages
 
-## Bootstrap
+On Arch or a derivative, install `git` and `yay`, then run from the checkout:
 
-Run in a normal PowerShell window. Setup installs PowerShell 7, chezmoi, and DSC,
-and requests elevation when needed. Administrator windows are rejected before installation;
-user-scoped app removals require your normal session.
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command '& ([scriptblock]::Create((irm https://raw.githubusercontent.com/holybaechu/dotfiles/main/bootstrap.ps1 -ErrorAction Stop))); exit $LASTEXITCODE'
+```sh
+cd ~/.local/share/chezmoi
+./bootstrap.sh
 ```
 
-Arch becomes the default WSL distribution, with Fish as the login shell.
-The Linux user defaults to `holybaechu`. Before `; exit`, add `-WslUser yourname`
-to change it, or `-Repository https://github.com/yourname/dotfiles.git` to use a fork.
-Set the Linux password when prompted. If a restart is requested, restart and rerun bootstrap.
+The helper runs a full pacman upgrade, installs the listed repository/AUR packages,
+marks them explicitly installed to protect them from dependency cleanup, and
+registers this checkout with chezmoi. Review AUR build prompts. It does not
+apply dotfiles or enable system services. If a package step fails, resolve the error
+and rerun the helper.
 
-### Retry a failed setup
+On another distribution, install the equivalent packages from the
+[Arch list](../system/linux/packages.arch) and [AUR list](../system/linux/packages.aur),
+including Fisher, the required fonts, 1Password's desktop application, and Helium.
+Then register the checkout:
 
-Resolve the error at the named step and rerun the same command. Existing checkouts are not
-pulled or reset; completed package and setting operations can be reapplied. Reprovisioning
-includes an Arch upgrade, so review the [upgrade guidance](https://wiki.archlinux.org/title/System_maintenance#Upgrading_the_system)
-on older installations.
-
-Running `./bootstrap.ps1` locally uses that checkout, including local edits. To retry only WSL,
-use [WSL setup](../system/wsl/README.md); for individual Windows modules, use
-[Maintenance](maintenance.md#system-setup). Canopy checkout recovery is in [its guide](../apps/yasb/README.md#update-or-recover-the-runtime).
-
-## Start the desktop
-
-Sign out and back in, or run in a new PowerShell 7 window:
-
-```powershell
-Set-Location (chezmoi execute-template '{{ .chezmoi.workingTree }}')
-komorebic start --whkd
-Start-Process "$env:APPDATA\AltSnap\AltSnap.exe" -WindowStyle Hidden
-.\apps\yasb\Start.ps1
+```sh
+chezmoi init --source ~/.local/share/chezmoi
 ```
 
-Start Canopy with this launcher. Keep Everything running for file search.
+## Review and apply
+
+Back up any existing configuration you want to keep, especially `~/.config/hypr`
+and `~/.config/fish`. For a fork, first change the
+[Git identity](../home/dot_config/git/config.tmpl) and
+[public key](../home/dot_config/git/github.pub).
+
+```sh
+chezmoi diff
+chezmoi apply
+```
+
+Chezmoi downloads the wallpaper and deploys settings. Open a new Fish terminal:
+
+```fish
+fisher update
+cd ~
+mise install bun node uv
+```
+
+Fisher installs the managed `done` and `autopair.fish` plugins. Fish does not load
+a distribution's bundled configuration. Bash remains available for scripts;
+its startup configuration is not managed. See [Fish shortcuts](maintenance.md#fish).
+
+## Desktop services
+
+Use NetworkManager for network connections, BlueZ for Bluetooth, PipeWire with
+WirePlumber for audio, and power-profiles-daemon for power profiles. On a systemd
+installation, after checking that no competing network manager is configured:
+
+```sh
+sudo systemctl enable --now NetworkManager bluetooth power-profiles-daemon
+systemctl --user enable --now pipewire.socket pipewire-pulse.socket wireplumber
+```
+
+Log out and select Hyprland at the login screen. Its startup launches Canopy,
+hyprpaper, hypridle, the Polkit agent, and 1Password. Do not run another notification
+daemon alongside Canopy. Idle locking starts after five minutes; displays turn off
+after ten. Save work before signing out: applying the new Hyprland settings can
+reload shortcuts immediately, while startup programs need a new session.
+
+If the desktop fails, use a TTY (`Ctrl+Alt+F3`) to restore your configuration backup
+before logging in again. Individual configuration recovery is covered in
+[Maintenance](maintenance.md#recovery).
 
 ## Git authentication
 
-In 1Password for Windows, enable **Settings → Developer → Use the SSH Agent**.
-The configured public key must match a key in 1Password and be registered on GitHub
-for authentication and signing. WSL uses the Windows agent.
+Sign in to [1Password for Linux](https://support.1password.com/install-linux/),
+then enable **Settings → Developer → Use the SSH Agent**. The managed public key
+must match a key in 1Password and be registered on GitHub for authentication and
+signing. The official Linux install supplies `/opt/1Password/op-ssh-sign`.
 
-Dotfile application can finish before 1Password authentication. If its WSL signer is unavailable
-during setup, Git resolves `op-ssh-sign-wsl.exe` from PATH at commit time. Enable the integration
-and open a new WSL shell before committing.
-
-Authenticate GitHub CLI separately in Windows and WSL:
+In a new Fish terminal, verify the agent and authenticate GitHub CLI:
 
 ```sh
+ssh-add -l
 gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key
 ```
+
+GitHub CLI credentials stay local. Applying these dotfiles does not sign in to
+accounts or copy private keys. Confirm the setup with `ssh -T git@github.com`;
+GitHub reports successful authentication with exit status 1.

@@ -9,56 +9,67 @@ chezmoi diff
 chezmoi apply
 ```
 
-Windows and WSL have separate checkouts. Update and apply both.
+`.chezmoiroot` restricts deployment to `home/`. System packages and services are
+separate from chezmoi. GitHub CLI credentials remain local.
 
 | Tool | Reload |
 | --- | --- |
-| whkd | `Alt + O` |
-| komorebi | `Alt + Shift + O` |
-| AltSnap | Run `& "$env:APPDATA\AltSnap\AltSnap.exe" -r` in PowerShell |
+| Fish | Open a new terminal; `fisher update` updates plugins |
+| Hyprland | `Super+Shift+O` or `hyprctl reload` |
+| Canopy | Quickshell reloads edited QML automatically |
+| Kitty | `Ctrl+Shift+F5` reloads configuration |
+| Yazi | `ya emit-to 0 app:theme` reloads the theme |
+| GTK and Qt | Restart applications after applying appearance changes |
+| Neovim | Restart; see [plugin updates](neovim.md#update-plugins-and-language-tools) |
 
-Keep personal Fish settings in `~/.config/fish/config.fish`;
-chezmoi manages [conf.d/chezmoi.fish](../home/dot_config/fish/conf.d/chezmoi.fish).
-To migrate an existing Bash setup, install Fish with `sudo pacman -Syu --needed fish starship`,
-apply dotfiles, then run `chsh -s /usr/bin/fish` and open a new terminal.
+Canopy commands and its safe preview are documented in [Desktop](desktop.md#canopy).
+Canopy starts with Qt's QML disk cache disabled so edits do not reuse stale code.
+Changes to root shell pragmas, including native-menu support, require restarting Canopy.
+Update packages with your distribution's package manager; update managed language
+runtimes with the commands in [Software](software.md#runtimes-and-uv).
 
-## System setup
+Check monitor targeting, failed brightness changes, and hardware timeouts with
+`python3 -m unittest discover -s tests`. These tests use mocked commands and
+temporary device files.
 
-Run from the repository root in PowerShell 7:
+## Fish
 
-```powershell
-.\system\windows\Configure.ps1                         # Check Windows configuration
-.\system\windows\Configure.ps1 -Action Apply -Module preferences
-.\system\wsl\Setup.ps1 -LinuxUser holybaechu            # Reprovision Arch, including a system upgrade
+| Shortcut | Action |
+| --- | --- |
+| `ls` / `ll` | eza with icons / long listing |
+| `la` | Long listing including hidden files |
+| `lt` | Directory tree with icons |
+| `..` / `...` / `....` | Go up one / two / three directories |
+
+Manual pages use bat. Fish starts with Fastfetch's bundled compact `examples/32`
+preset; Starship renders the prompt and replaces Pure's rendering hook if Pure
+is installed. Autosuggestions use Fish defaults.
+`done` uses Canopy's notification service. The managed plugin list is
+[fish_plugins](../home/dot_config/fish/fish_plugins).
+
+Fish and Hyprland export `SSH_AUTH_SOCK=~/.1password/agent.sock`; SSH also sets
+`IdentityAgent` directly. See [authentication setup](setup.md#git-authentication).
+
+## Yazi
+
+Kitty supports dragging files directly between Yazi and desktop applications.
+Select multiple files with `Space`, then drag the selection into the destination
+app. See [Yazi's drag-and-drop guide](https://yazi-rs.github.io/docs/dnd/).
+
+## Recovery
+
+Before an initial apply, keep a copy of the existing managed config directories.
+Restore those copies from a TTY if the new desktop cannot start. This repository
+does not automatically remove programs or old unmanaged configuration files.
+
+For a later unwanted source change, save local work, restore the affected source
+file from a known Git revision, inspect `chezmoi diff`, and apply only its target:
+
+```sh
+git restore --source=<known-good-revision> -- home/dot_config/kitty/kitty.conf
+chezmoi diff ~/.config/kitty/kitty.conf
+chezmoi apply ~/.config/kitty/kitty.conf
 ```
 
-Use `-Module packages` or `-Module startup` to apply those modules separately.
-Replace `holybaechu` if you chose another Linux username.
-
-## Updates
-
-- WSL: `wsl --update --web-download`. Wait for other Windows installations to finish first.
-- Bun, Node, and uv: from your home directory, run `mise upgrade bun node uv`.
-  See [runtime setup and migration](software.md#runtimes-and-uv).
-- Neovim: follow the [lockfile workflow](neovim.md#update-plugins-and-language-tools).
-
-## Configuration ownership
-
-| Responsibility | Location |
-| --- | --- |
-| Installation order and failure guidance | [bootstrap.ps1](../bootstrap.ps1) |
-| Application settings and runtime version policy | [home/](../home/) |
-| Windows packages, privileges, and setting checks | [Windows setup](../system/windows/README.md) |
-| Arch packages, accounts, interop, and yay | [WSL provisioning](../system/wsl/README.md) |
-| Canopy runtime and upstream integration | [Canopy](../apps/yasb/README.md) |
-
-`.chezmoiroot` limits chezmoi to `home/`; the ignore template selects OS-specific targets.
-Shared templates and Windows Neovim's entry file keep common configuration in one place.
-`chezmoi apply` deploys application settings; system provisioning remains separate.
-
-The OS package manager installs mise. Chezmoi owns its tool selection, and bootstrap or
-Ansible installs those tools after applying dotfiles. Change the [mise defaults](../home/dot_config/mise/modify_config.toml),
-apply in both environments, then run `mise install bun node uv` from your home directory.
-
-Windows DSC keeps user/machine privileges and rollback journals with their setting helpers.
-WSL retains Ansible for declarative maintenance and yay for optional AUR use.
+Check `git diff` before committing; use Conventional Commit messages as described
+in [AGENTS.md](../AGENTS.md).

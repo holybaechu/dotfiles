@@ -20,7 +20,7 @@ easy maintenance by one person.
 ## Validation
 
 - Default to syntax checks, rendered diffs, and focused manual verification for dotfiles and scripts. Use the preview for styling, layout, icons, and animations. Documentation-only edits need a diff review.
-- Keep Canopy's automated suite small and focused on costly regressions: launcher reliability and shutdown, correct monitor targeting, failed or denied Windows-setting changes, and hotkey timeouts.
+- Keep Canopy's automated checks small and focused on costly regressions: launcher reliability and shutdown, correct monitor targeting, failed or denied system-setting changes, and hotkey timeouts.
 - Run the relevant retained tests when changing those behaviors. Add a test only for a concrete regression that is difficult to check manually; reuse existing fixtures and keep machine interactions mocked or isolated.
 - Prefer representative behavior checks over exhaustive combinations or assertions about implementation details. Coverage targets and a new test for every change are unnecessary.
 

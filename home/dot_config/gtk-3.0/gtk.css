@@ -1,0 +1,45 @@
+/* Canopy palette for adw-gtk3; GTK 4 imports these named colors. */
+@define-color accent_color #bfdc96;
+@define-color accent_bg_color #7cab3d;
+@define-color accent_fg_color #11160f;
+@define-color window_bg_color #11160f;
+@define-color window_fg_color #f0f3e7;
+@define-color view_bg_color #11160f;
+@define-color view_fg_color #f0f3e7;
+@define-color headerbar_bg_color #293522;
+@define-color headerbar_fg_color #f0f3e7;
+@define-color headerbar_backdrop_color #11160f;
+@define-color headerbar_border_color #849575;
+@define-color sidebar_bg_color #1b2317;
+@define-color sidebar_fg_color #f0f3e7;
+@define-color sidebar_backdrop_color #11160f;
+@define-color sidebar_border_color #293522;
+@define-color secondary_sidebar_bg_color #11160f;
+@define-color secondary_sidebar_fg_color #f0f3e7;
+@define-color card_bg_color #293522;
+@define-color card_fg_color #f0f3e7;
+@define-color dialog_bg_color #11160f;
+@define-color dialog_fg_color #f0f3e7;
+@define-color popover_bg_color #293522;
+@define-color popover_fg_color #f0f3e7;
+@define-color thumbnail_bg_color #293522;
+@define-color thumbnail_fg_color #f0f3e7;
+@define-color shade_color rgba(0, 0, 0, 0.25);
+@define-color scrollbar_outline_color rgba(0, 0, 0, 0.5);
+@define-color warning_color #ebc98a;
+@define-color warning_bg_color #ebc98a;
+@define-color warning_fg_color #11160f;
+@define-color error_color #eea99a;
+@define-color error_bg_color #eea99a;
+@define-color error_fg_color #11160f;
+@define-color success_color #bfdc96;
+@define-color success_bg_color #7cab3d;
+@define-color success_fg_color #11160f;
+@define-color destructive_color #eea99a;
+@define-color destructive_bg_color #eea99a;
+@define-color destructive_fg_color #11160f;
+
+/* adw-gtk3 hardcodes white on suggested buttons; use Canopy's dark text. */
+button.suggested-action:not(.flat):not(:disabled) {
+  color: @accent_fg_color;
+}

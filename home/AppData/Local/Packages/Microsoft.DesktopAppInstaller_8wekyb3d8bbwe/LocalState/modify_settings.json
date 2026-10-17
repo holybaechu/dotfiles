@@ -1,3 +1,0 @@
-{{- /* chezmoi:modify-template */ -}}
-{{- $settings := .chezmoi.stdin | default "{}" | fromJsonc -}}
-{{ $settings | setValueAtPath "telemetry.disable" true | toPrettyJson }}

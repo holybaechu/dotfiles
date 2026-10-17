@@ -1,0 +1,18 @@
+singleton Theme 1.0 Theme.qml
+singleton CanopyState 1.0 CanopyState.qml
+BarContent 1.0 BarContent.qml
+CalendarContent 1.0 CalendarContent.qml
+CanopyButton 1.0 CanopyButton.qml
+LauncherContent 1.0 LauncherContent.qml
+MediaContent 1.0 MediaContent.qml
+NotificationCard 1.0 NotificationCard.qml
+PanelContent 1.0 PanelContent.qml
+QuickSettings 1.0 QuickSettings.qml
+CanopyIcon 1.0 CanopyIcon.qml
+CanopySurface 1.0 CanopySurface.qml
+CanopyIsland 1.0 CanopyIsland.qml
+CanopySlider 1.0 CanopySlider.qml
+ModeCard 1.0 ModeCard.qml
+TrayContent 1.0 TrayContent.qml
+CanopySpring 1.0 CanopySpring.qml
+CanopyPanel 1.0 CanopyPanel.qml

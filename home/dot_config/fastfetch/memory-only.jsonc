@@ -1,8 +1,0 @@
-{
-  "logo": { "type": "none" },
-  // Command modules capture stdout; keep fastfetch's percentage colors enabled.
-  "display": { "pipe": false },
-  "modules": [
-    { "type": "memory", "key": " " }
-  ]
-}

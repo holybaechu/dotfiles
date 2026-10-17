@@ -1,0 +1,4 @@
+.config/fastfetch/config.jsonc
+.local/share/applications/yazi-ghostty.desktop
+.config/ghostty
+.config/yazi/keymap.toml

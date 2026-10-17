@@ -1,0 +1,14 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $associations := .chezmoi.stdin | fromIni -}}
+{{- range $mime := list "text/html" "x-scheme-handler/http" "x-scheme-handler/https" -}}
+{{- $associations = setValueAtPath (list "Default Applications" $mime) "helium.desktop;" $associations -}}
+{{- end -}}
+{{- $associations = setValueAtPath (list "Default Applications" "inode/directory") "yazi.desktop;" $associations -}}
+{{- range $mime := list "application/zip" "application/x-7z-compressed" "application/vnd.rar" "application/x-rar" "application/x-tar" "application/gzip" "application/x-bzip2" "application/x-xz" "application/zstd" -}}
+{{- $associations = setValueAtPath (list "Default Applications" $mime) "peazip.desktop;" $associations -}}
+{{- end -}}
+{{- range $mime := list "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "audio/mpeg" "audio/flac" "audio/ogg" "audio/x-wav" -}}
+{{- $associations = setValueAtPath (list "Default Applications" $mime) "mpv.desktop;" $associations -}}
+{{- end -}}
+{{- /* xdg-utils requires keys without spaces around the equals sign. */ -}}
+{{- $associations | toIni | replace " = " "=" -}}

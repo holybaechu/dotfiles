@@ -1,4 +1,4 @@
-# Shared Git defaults. Keep per-machine overrides in ~/.gitconfig.
+# Git defaults. Keep per-machine overrides in ~/.gitconfig.
 [user]
     name = holybaechu
     email = holybaechu@gmail.com
@@ -6,21 +6,9 @@
 [gpg]
     format = ssh
 [gpg "ssh"]
-{{ if eq .chezmoi.os "windows" }}
-    program = {{ joinPath .chezmoi.homeDir "AppData" "Local" "Microsoft" "WindowsApps" "op-ssh-sign.exe" | replace "\\" "/" | quote }}
-{{ else }}
-{{- /* Authentication is completed after bootstrap; resolve on PATH at commit time if unavailable now. */}}
-    program = {{ lookPath "op-ssh-sign-wsl.exe" | default "op-ssh-sign-wsl.exe" | quote }}
-{{ end }}
+    program = /opt/1Password/op-ssh-sign
     allowedSignersFile = ~/.config/git/allowed_signers
 [commit]
     gpgSign = true
 [tag]
     gpgSign = true
-{{ if eq .chezmoi.os "windows" }}
-[core]
-    sshCommand = {{ joinPath (env "WINDIR") "System32" "OpenSSH" "ssh.exe" | replace "\\" "/" | quote }}
-{{ else }}
-[core]
-    sshCommand = /mnt/c/Windows/System32/OpenSSH/ssh.exe
-{{ end }}

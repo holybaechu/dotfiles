@@ -14,8 +14,8 @@ formatters in [formatting.lua](../home/dot_config/nvim/lua/plugins/formatting.lu
 and parsers in [treesitter.lua](../home/dot_config/nvim/lua/plugins/treesitter.lua).
 ESLint requires a project's ESLint configuration and dependency. Formatting is manual.
 
-If Windows opens with defaults, check `:echo stdpath('config')` and `:echo $MYVIMRC`
-in a regular PowerShell terminal, then apply the managed Neovim files there.
+If Neovim opens with defaults, check `:echo stdpath('config')` and `:echo $MYVIMRC`,
+then apply the managed files to `~/.config/nvim`.
 
 ## Editing
 
@@ -28,7 +28,7 @@ in a regular PowerShell terminal, then apply the managed Neovim files there.
 
 ## Sessions and undo
 
-Sessions are saved explicitly, separately on each OS, under `stdpath("state")/sessions`.
+Sessions are saved explicitly under `stdpath("state")/sessions`.
 They preserve the project layout, not unsaved text or terminal processes.
 Restoration refuses to discard unsaved buffers.
 
@@ -37,14 +37,14 @@ Git pickers browse history without switching branches.
 
 ## Copilot
 
-Run `:Copilot auth` in a code file, separately on Windows and WSL.
+Run `:Copilot auth` in a code file.
 Use `:Copilot disable` / `:Copilot enable` to toggle suggestions.
 Suggestions hide while the completion menu is open; Enter and Tab retain their usual behavior.
 
 ## Appearance
 
 The [Canopy colorscheme](../home/dot_config/nvim/colors/canopy.lua) follows the
-[desktop palette](desktop.md#colors). Increase Windows Terminal opacity for more contrast.
+[desktop palette](desktop.md#appearance). Increase terminal opacity for more contrast.
 Reload with `:colorscheme canopy` after editing.
 
 ## Shortcuts
@@ -83,12 +83,12 @@ Reload with `:colorscheme canopy` after editing.
 
 ## Update plugins and language tools
 
-Run `:PackUpdate`, then `:write` in its review buffer. Capture the lockfile from WSL:
+Run `:PackUpdate`, then `:write` in its review buffer. Capture the lockfile:
 
 ```sh
 chezmoi re-add ~/.config/nvim/nvim-pack-lock.json
 ```
 
-Commit the lockfile, apply it on the other installation, and run `:PackRestore`.
+Commit the lockfile. On another machine, apply it and run `:PackRestore`.
 Mason manages language tools separately. Inspect the setup with `:checkhealth`,
 `:CmpStatus`, `:Mason`, and `:ConformInfo`.

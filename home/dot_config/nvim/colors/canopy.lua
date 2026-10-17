@@ -1,4 +1,4 @@
--- Canopy's core palette comes from apps/yasb/canopy/theme.py.
+-- Match the shared Canopy palette documented in docs/desktop.md.
 local p = {
   black = "#000000",
   surface = "#11160f",

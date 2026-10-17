@@ -2,58 +2,43 @@
 
 | Purpose | Software |
 | --- | --- |
-| Window manager | [komorebi](https://github.com/LGUG2Z/komorebi) |
-| Status bar & launcher | [Canopy](../apps/yasb/) / [YASB](https://github.com/amnweb/yasb) |
-| Global keybindings | [whkd](https://github.com/LGUG2Z/whkd) |
-| Mouse window movement & resizing | [AltSnap](https://github.com/RamonUnch/AltSnap) |
-| Terminal | Windows Terminal |
-| Text editor | Neovim (Windows and Arch WSL) |
-| Archive manager | [Bandizip](https://www.bandisoft.com/bandizip/) (Windows) |
-| Shells | PowerShell 7 (Windows), Fish (WSL), Bash (fallback) |
-| Prompt | Starship |
-| Terminal startup summary | Fastfetch |
-| Linux environment | Arch Linux on WSL2 |
-| File search | Everything |
-| Browsers | [Aside](https://aside.com/) and [Helium](https://helium.computer/) |
-| Media player | [PotPlayer](https://potplayer.daum.net/) |
-| Git & GitHub | Git, GitHub CLI |
-| SSH & commit signing | 1Password |
-| YubiKey authentication | [Yubico Authenticator](https://www.yubico.com/products/yubico-authenticator/) |
-| Fonts | JetBrainsMono Nerd Font Mono (terminal), Inter (bar) |
-| Dotfile management | chezmoi |
-| Windows provisioning | WinGet + DSC v3 |
-| Linux provisioning | Ansible + pacman; yay for AUR packages |
-| Python environment | Latest uv through mise (Windows and Arch WSL) |
-| JavaScript runtime & package manager | Latest [Bun](https://bun.sh/) through mise (Windows and Arch WSL) |
-| Node.js & npm | Latest Node.js LTS with bundled npm through [mise](https://mise.jdx.dev/) (Windows and Arch WSL) |
+| Desktop and shortcuts | [Hyprland](https://hypr.land/) |
+| Bar, launcher, panels, notifications | Custom [Canopy](desktop.md) with [Quickshell](https://quickshell.org/) |
+| Terminal | [Kitty](https://sw.kovidgoyal.net/kitty/) |
+| Shell and prompt | Fish, Fisher (`done`, `autopair.fish`), Starship |
+| File manager | [Yazi](https://yazi-rs.github.io/) in Kitty |
+| Archives | [PeaZip](https://peazip.github.io/) and 7-Zip |
+| Browser | [Helium](https://helium.computer/) |
+| Media | mpv with mpv-mpris; playerctl for media keys |
+| Editor | [Neovim](neovim.md) |
+| Git and SSH signing | Git, GitHub CLI, 1Password |
+| Hardware authentication | Yubico Authenticator |
+| Fonts | JetBrainsMono Nerd Font Mono, Inter |
+| Application appearance | adw-gtk3, GTK 4 Canopy colors, qt6ct with a Canopy palette |
+| File listing, man pages, search | eza, bat, ripgrep, fd |
+| System summary | Fastfetch |
+| Runtime management | mise: Bun, Node.js LTS, uv |
+| Configuration | chezmoi |
 
-Package lists: [Windows](../system/windows/packages.winget) ·
-[Arch](../system/wsl/provision.yml).
+Package manifests: [Arch repository packages](../system/linux/packages.arch) and
+[AUR packages](../system/linux/packages.aur). The optional installer uses pacman/yay;
+the managed settings do not source distribution configuration.
+
+Canopy searches desktop entries and filenames directly with `fd`; no separate
+file indexer is required. MIME defaults select Helium, Yazi, PeaZip, and mpv,
+preserving unrelated entries in `mimeapps.list`. Yazi opens text files in Neovim.
 
 ## Runtimes and uv
 
-Mise manages Bun, Node.js LTS (including npm), and uv on Windows and Arch WSL. Their versions
-are declared in the [managed mise configuration](../home/dot_config/mise/modify_config.toml).
-Bootstrap and Ansible apply it before installing the tools as your regular user.
-The Windows `packages` module installs mise itself; bootstrap installs its managed tools.
-Shell hooks load its tools and project-specific `mise.toml` settings. Open a new
-terminal after provisioning.
+Mise owns the versions declared in the
+[managed configuration](../home/dot_config/mise/modify_config.toml).
+Run from your home directory to avoid project overrides:
 
 ```sh
-chezmoi apply
-mise install bun node uv  # Install configured defaults
-mise upgrade bun node uv  # Update
+mise install bun node uv
+mise upgrade bun node uv
 ```
 
-Before switching, uninstall standalone Bun and nvm/fnm packages. Their data and
-global npm packages are not migrated or deleted automatically.
-
-Run mise commands from your home directory to avoid project overrides. For an existing
-Windows installation, install the managed uv first, then remove the old copy with
-`winget uninstall --id astral-sh.uv --exact`. Existing Python environments and uv's cache
-are retained. Canopy uses `mise exec -- uv`, so shell activation is not required for setup.
-
-## Browsers
-
-Setup installs Helium and Aside before removing Edge. Choose your default browser
-in **Settings → Apps → Default apps**.
+Fish activates mise automatically. Remove conflicting standalone Bun or nvm/fnm
+installations after verifying the new tools. Existing Python environments, caches,
+and global npm packages are not migrated automatically.

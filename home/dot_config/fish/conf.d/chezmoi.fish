@@ -1,10 +1,7 @@
-# Interactive defaults managed by chezmoi. Keep local additions in config.fish.
+# Interactive colors; shell setup lives in config.fish.
 status is-interactive; or return
 
-set -g fish_greeting
-set -g fish_autosuggestion_enabled 1
-
-# Canopy syntax and completion colors match Neovim and Windows Terminal.
+# Canopy syntax and completion colors match Neovim.
 set -g fish_color_normal f0f3e7
 set -g fish_color_command aecddd
 set -g fish_color_keyword cfb9dd
@@ -29,15 +26,3 @@ set -g fish_pager_color_prefix bfdc96 --bold
 set -g fish_pager_color_completion f0f3e7
 set -g fish_pager_color_description aab69e
 set -g fish_pager_color_selected_background --background=3c502b
-
-# Use Windows OpenSSH and the 1Password agent, as in the Bash fallback.
-alias ssh /mnt/c/Windows/System32/OpenSSH/ssh.exe
-alias ssh-add /mnt/c/Windows/System32/OpenSSH/ssh-add.exe
-
-if command -q starship
-    starship init fish | source
-end
-
-if isatty stdin; and isatty stdout; and command -q fastfetch
-    fastfetch
-end

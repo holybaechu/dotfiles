@@ -1,0 +1,3 @@
+# Authentication stays local, outside the managed defaults.
+.config/gh/hosts.yml
+.config/github-copilot

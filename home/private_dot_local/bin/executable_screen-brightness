@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""Read or change the brightness of one connected Hyprland output."""
+
+import argparse
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+DRM = Path("/sys/class/drm")
+BACKLIGHT = Path("/sys/class/backlight")
+
+
+def run(command):
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=3)
+    except FileNotFoundError:
+        raise RuntimeError(f"{command[0]} is not installed.") from None
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"{command[0]} timed out.") from None
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or result.stdout.strip() or f"{command[0]} failed.")
+    return result.stdout
+
+
+def target(output=None):
+    monitors = json.loads(run(["hyprctl", "-j", "monitors"]))
+    monitor = next((m for m in monitors if m["name"] == output), None) if output else next(
+        (m for m in monitors if m.get("focused")), None
+    )
+    if not monitor or monitor.get("disabled"):
+        raise RuntimeError("The selected display is not connected.")
+    output = monitor["name"]
+    if not re.fullmatch(r"[A-Za-z0-9-]+", output):
+        raise RuntimeError("Invalid display connector.")
+    connectors = [p for p in DRM.glob(f"card*-{output}") if (p / "status").read_text().strip() == "connected"]
+    if len(connectors) != 1:
+        raise RuntimeError(f"Cannot identify the hardware connector for {output}.")
+    connector = connectors[0].resolve()
+    backlights = [p for p in BACKLIGHT.iterdir() if p.resolve().parent == connector]
+    info = {"output": output, "name": monitor.get("model") or output}
+    if len(backlights) == 1:
+        return info, backlights[0], None
+    if output.startswith(("eDP-", "LVDS-", "DSI-")):
+        raise RuntimeError(f"No backlight control found for {output}.")
+    bus = re.fullmatch(r"i2c-(\d+)", (connector / "ddc").resolve().name)
+    if not bus or not (connector / "ddc").exists():
+        raise RuntimeError(f"No DDC/CI channel found for {output}.")
+    return info, None, bus.group(1)
+
+
+def read_brightness(backlight, bus):
+    if backlight:
+        return int((backlight / "brightness").read_text()), int((backlight / "max_brightness").read_text())
+    response = run(["ddcutil", "--bus", bus, "--terse", "getvcp", "10"])
+    value = re.search(r"^VCP 10 C (\d+) (\d+)\s*$", response, re.MULTILINE)
+    if not value:
+        raise RuntimeError("The monitor did not report brightness. Enable DDC/CI in its on-screen menu.")
+    return int(value[1]), int(value[2])
+
+
+def control(action, value=None, output=None):
+    info, backlight, bus = target(output)
+    current, maximum = read_brightness(backlight, bus)
+    if maximum <= 0:
+        raise RuntimeError("The display reported an invalid brightness range.")
+    if action != "get":
+        level = value if action == "set" else current * 100 / maximum + value
+        minimum = 1 if backlight else 0
+        level = max(minimum, min(100, round(level)))
+        if backlight:
+            run(["brightnessctl", "--class", "backlight", "--device", backlight.name, "set", f"{level}%"])
+        else:
+            run(["ddcutil", "--bus", bus, "setvcp", "10", str(round(maximum * level / 100))])
+        current, maximum = read_brightness(backlight, bus)
+        if maximum <= 0 or abs(current * 100 / maximum - level) > 1:
+            raise RuntimeError("The display did not accept the requested brightness.")
+    return {**info, "value": round(current * 100 / maximum)}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", help="Connector name; defaults to the focused output")
+    parser.add_argument("action", choices=("get", "set", "change"))
+    parser.add_argument("value", nargs="?", type=int, help="Percentage for set, percentage-point delta for change")
+    args = parser.parse_args()
+    if (args.action == "get") != (args.value is None):
+        parser.error("get takes no value; set and change require a value")
+    try:
+        print(json.dumps(control(args.action, args.value, args.output)))
+    except (RuntimeError, OSError, ValueError, KeyError) as error:
+        print(f"{args.output or 'Focused display'}: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
