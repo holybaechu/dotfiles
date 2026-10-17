@@ -11,6 +11,7 @@
 | Archives | [PeaZip](https://peazip.github.io/) and 7-Zip |
 | Browser | [Helium](https://helium.computer/) |
 | Media | mpv with mpv-mpris; playerctl for media keys |
+| Apple Music | [Cider](https://cider.sh/) (license required) |
 | Editor | [Neovim](neovim.md) |
 | Git and SSH signing | Git, 1Password |
 | Desktop application credentials | GNOME Keyring |
@@ -22,7 +23,7 @@
 | Runtime management | mise: Bun, Node.js LTS, uv |
 | Configuration | chezmoi |
 
-Package manifests: [Arch repository packages](../system/linux/packages.arch) and
+Package manifests: [pacman packages](../system/linux/packages.arch) and
 [AUR packages](../system/linux/packages.aur). The optional installer uses pacman/yay;
 the managed settings do not source distribution configuration.
 

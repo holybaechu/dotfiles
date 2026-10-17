@@ -7,18 +7,23 @@ compositors need their own desktop configuration.
 
 ## Install packages
 
-On Arch or a derivative, install `git` and `yay`, then run from the checkout:
+On Arch or a derivative, install `git`, `curl`, and `yay`, then run from the checkout:
 
 ```sh
 cd ~/.local/share/chezmoi
 ./bootstrap.sh
 ```
 
-The helper runs a full pacman upgrade, installs the listed repository/AUR packages,
+The helper adds the signed [Cider repository](https://repo.cider.sh/), runs a full
+pacman upgrade, installs the listed repository/AUR packages,
 marks them explicitly installed to protect them from dependency cleanup, and
 registers this checkout with chezmoi. Review AUR build prompts. It does not
 apply dotfiles or enable system services. If a package step fails, resolve the error
 and rerun the helper.
+
+To configure only Cider's repository, run `./system/linux/setup-cider.sh`.
+The setup pins its signing key fingerprint and can be rerun without adding
+duplicate repository entries.
 
 On another distribution, install the equivalent packages from the
 [Arch list](../system/linux/packages.arch) and [AUR list](../system/linux/packages.aur),

@@ -11,6 +11,7 @@ if ! command -v pacman >/dev/null || ! command -v yay >/dev/null; then
 fi
 
 repository=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+"$repository/system/linux/setup-cider.sh"
 mapfile -t packages < "$repository/system/linux/packages.arch"
 sudo pacman -Syu --needed "${packages[@]}"
 sudo pacman -D --asexplicit "${packages[@]}"
