@@ -47,6 +47,7 @@ neovim
 networkmanager
 noto-fonts-cjk
 openssh
+otf-monaspace-nerdfonts
 peazip
 pipewire-pulse
 playerctl
@@ -60,7 +61,6 @@ sddm
 slurp
 starship
 tree-sitter-cli
-ttf-jetbrains-mono-nerd
 unzip
 upower
 wireplumber

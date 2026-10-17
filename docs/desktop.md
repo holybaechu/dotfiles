@@ -142,7 +142,7 @@ The bell opens notifications and turns green when notifications are present.
 The tray chevron opens a four-column icon grid; right-click for app menus. The
 calendar starts on Monday and supports arrow keys, Page Up/Down, and Home/End for
 the beginning/end of a week. Click the month heading to return to today.
-Inter and JetBrains Mono replace the Windows display and utility fonts. The
+Inter and Monaspace Neon replace the Windows display and utility fonts. The
 Windows taskbar toggle is replaced by microphone mute; Linux has no Explorer
 taskbar to control.
 
@@ -182,6 +182,8 @@ same panel motion as the desktop.
 GTK 3 uses adw-gtk3-dark with the [Canopy colors](../home/dot_config/gtk-3.0/gtk.css).
 GTK 4 and libadwaita use the matching [CSS palette](../home/dot_config/gtk-4.0/gtk.css).
 Qt 6 uses qt6ct, Fusion, and the [Canopy palette](../home/dot_config/qt6ct/colors/Canopy.conf).
+Monaspace Neon NF supplies monospace text and Nerd Font symbols. Korean monospace
+falls back to Noto Sans Mono CJK KR from `noto-fonts-cjk`.
 The [SDDM login screen](sddm.md) has a matching theme and display layout.
 The desktop preference is dark with a green accent; GTK and Qt use Inter 11.
 Chezmoi applies these preferences through its desktop-appearance script.

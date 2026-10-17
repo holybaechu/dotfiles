@@ -15,7 +15,7 @@
 | Git and SSH signing | Git, 1Password |
 | Desktop application credentials | GNOME Keyring |
 | Korean input | [Fcitx5 with Hangul](desktop.md#korean-input) |
-| Fonts | JetBrainsMono Nerd Font Mono, Inter, Noto CJK |
+| Fonts | Monaspace Neon NF, Inter, Noto CJK |
 | Application appearance | adw-gtk3, GTK 4 Canopy colors, qt6ct with a Canopy palette |
 | File listing, man pages, search | eza, bat, ripgrep, fd |
 | System summary | Fastfetch |

@@ -16,6 +16,6 @@ QtObject {
     readonly property color border: "#849575"
     readonly property string font: "Inter"
     readonly property string displayFont: "Inter"
-    readonly property string utilityFont: "JetBrains Mono"
-    readonly property string icons: "JetBrainsMono Nerd Font Mono"
+    readonly property string utilityFont: "Monaspace Neon NF"
+    readonly property string icons: "Monaspace Neon NF"
 }

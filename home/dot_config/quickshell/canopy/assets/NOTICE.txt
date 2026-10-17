@@ -2,4 +2,4 @@ Canopy SVG paths in IconData.js retain the original Windows Canopy artwork.
 Lucide: https://github.com/lucide-icons/lucide (ISC); see Lucide-LICENSE.txt.
 Windows 10 and CachyOS: https://github.com/simple-icons/simple-icons (CC0); see SimpleIcons-LICENSE.txt.
 Trademark rights remain with their respective owners. Additional utility glyphs are drawn for this port.
-Inter and JetBrains Mono are supplied by the system font packages.
+Inter and Monaspace are supplied by the system font packages.
