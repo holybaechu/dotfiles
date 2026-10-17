@@ -81,13 +81,12 @@ then enable **Settings → Developer → Use the SSH Agent**. The managed public
 must match a key in 1Password and be registered on GitHub for authentication and
 signing. The official Linux install supplies `/opt/1Password/op-ssh-sign`.
 
-In a new Fish terminal, verify the agent and authenticate GitHub CLI:
+In a new Fish terminal, verify the agent and GitHub SSH authentication:
 
 ```sh
 ssh-add -l
-gh auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key
+ssh -T git@github.com
 ```
 
-GitHub CLI credentials stay local. Applying these dotfiles does not sign in to
-accounts or copy private keys. Confirm the setup with `ssh -T git@github.com`;
-GitHub reports successful authentication with exit status 1.
+GitHub reports successful authentication with exit status 1. Applying these
+dotfiles does not sign in to accounts or copy private keys.

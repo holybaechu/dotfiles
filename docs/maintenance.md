@@ -10,7 +10,7 @@ chezmoi apply
 ```
 
 `.chezmoiroot` restricts deployment to `home/`. System packages and services are
-separate from chezmoi. GitHub CLI credentials remain local.
+separate from chezmoi.
 
 | Tool | Reload |
 | --- | --- |
