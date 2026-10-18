@@ -6,9 +6,9 @@ for the Egis ETU906Axx-E reader (`1c7a:05d5`). The
 revision, adds this device ID, and builds only the Egis driver. It replaces the
 distribution's `libfprint` package. Other reader models need their own driver.
 
-Ansible configures SDDM, sudo, and Polkit to try fingerprints first and fall back
-to passwords. It preserves their account/session rules and leaves `system-auth`
-unchanged.
+Ansible configures password or fingerprint login in SDDM and fingerprint-first
+authentication in sudo and Polkit. It preserves their account/session rules and
+leaves `system-auth` unchanged.
 
 ## Enroll
 
@@ -28,14 +28,16 @@ enable Hyprlock's fingerprint support.
 
 | Prompt | Fingerprint action |
 | --- | --- |
-| SDDM | Select your user, press Enter on Fingerprint, then scan |
+| SDDM | Press Enter with an empty password, or choose Fingerprint, then scan |
 | sudo | Scan when sudo requests authentication |
 | Polkit permission dialog | Scan when the dialog appears |
 | Hyprlock | Scan directly; password input also works |
 
-SDDM, sudo, and Polkit fall back to the password after three unsuccessful scans
-or ten seconds without a match. In SDDM, enter your password before submitting
-to use it after scanning fails or times out. A successful scan needs no password.
+In SDDM, a correct password completes login immediately. An empty password starts
+fingerprint verification; a successful scan needs no password. If scanning fails,
+enter your password and submit again. Sudo and Polkit try fingerprints first and
+fall back to the password after three unsuccessful scans or ten seconds without
+a match.
 
 Test with `sudo -k; sudo -v`: scan once, then repeat and wait for the password
 prompt. GNOME Keyring still needs a password after fingerprint login; see

@@ -93,9 +93,10 @@ on login** when unlocking Default Keyring. GNOME stores that keyring's unlock
 password inside Login, allowing both to unlock after a password login. Changing
 the default keyring alone does not enable this.
 
-Fingerprint login cannot unlock the encrypted keyring because it does not supply
-your password. After a fingerprint login, an application may ask you to unlock
-the keyring. Keep its password set to preserve encryption.
+SDDM's password login passes your password to PAM to unlock Login. Fingerprint
+login cannot unlock the encrypted keyring because it does not supply your
+password; an application may then ask you to unlock the keyring. Keep its
+password set to preserve encryption.
 
 ## Login screen
 

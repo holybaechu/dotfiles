@@ -4,6 +4,8 @@
   gather_facts: true
   vars:
     ansible_python_interpreter: /usr/bin/python3
+    # Allow sudo's fingerprint scan to time out before password fallback.
+    ansible_local_become_success_timeout: 30
     dotfiles_root: "{{ playbook_dir }}/../.."
     arch_packages: "{{ lookup('ansible.builtin.file', playbook_dir + '/packages.arch').splitlines() }}"
     aur_packages: "{{ lookup('ansible.builtin.file', playbook_dir + '/packages.aur').splitlines() }}"

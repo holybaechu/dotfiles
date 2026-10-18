@@ -21,6 +21,7 @@ Rectangle {
     readonly property int verticalInset: Math.round(height * 0.08)
     readonly property bool loginScreen: primaryScreen || Application.screens.length === 1
     property bool authenticating: false
+    property bool focusInitialized: false
     property bool failed: false
     property string statusMessage: ""
     property string pendingPower: ""
@@ -50,18 +51,23 @@ Rectangle {
     }
 
     function focusInput() {
-        if (loginScreen)
-            fingerprint.forceActiveFocus();
+        if (!loginScreen || authenticating)
+            return;
+        const window = root.Window.window;
+        if (window && window.visible && !window.active)
+            window.requestActivate();
+        password.forceActiveFocus();
+        focusInitialized = !!window && window.active;
     }
 
-    function submit() {
+    function submit(fingerprintOnly) {
         if (authenticating || !selectedUser || session.count === 0 || session.currentIndex < 0)
             return;
         authenticating = true;
         failed = false;
-        statusMessage = "Scan your finger…";
-        // PAM tries the fingerprint first, then uses this password if needed.
-        sddm.login(selectedUser, password.text, session.currentIndex);
+        const submittedPassword = fingerprintOnly ? "" : password.text;
+        statusMessage = submittedPassword.length ? "Signing in…" : "Scan your finger…";
+        sddm.login(selectedUser, submittedPassword, session.currentIndex);
     }
 
     function power(action) {
@@ -77,8 +83,23 @@ Rectangle {
         else if (action === "sleep") sddm.suspend();
     }
 
-    Component.onCompleted: focusInput()
-    onLoginScreenChanged: Qt.callLater(focusInput)
+    Component.onCompleted: Qt.callLater(focusInput)
+    onLoginScreenChanged: {
+        focusInitialized = false;
+        Qt.callLater(focusInput);
+    }
+
+    Connections {
+        target: root.Window.window
+        function onVisibleChanged() {
+            if (root.Window.window.visible && !root.focusInitialized)
+                Qt.callLater(root.focusInput);
+        }
+        function onActiveChanged() {
+            if (root.Window.window.active && !root.focusInitialized)
+                Qt.callLater(root.focusInput);
+        }
+    }
 
     Timer {
         interval: 30000
@@ -157,6 +178,7 @@ Rectangle {
                 echoMode: TextInput.Password
                 placeholderText: "Password"
                 enabled: !root.authenticating
+                focus: root.loginScreen
                 Keys.forwardTo: [root]
                 Accessible.name: "Password"
                 onAccepted: root.submit()
@@ -194,9 +216,9 @@ Rectangle {
                 enabled: !root.authenticating && root.selectedUser.length > 0 && session.count > 0 && session.currentIndex >= 0
                 Accessible.name: "Sign in with fingerprint"
                 KeyNavigation.tab: password
-                Keys.onReturnPressed: root.submit()
-                Keys.onEnterPressed: root.submit()
-                onClicked: root.submit()
+                Keys.onReturnPressed: root.submit(true)
+                Keys.onEnterPressed: root.submit(true)
+                onClicked: root.submit(true)
             }
         }
     }
@@ -207,7 +229,7 @@ Rectangle {
         anchors { left: loginForm.left; top: loginForm.bottom; topMargin: 12 }
         width: loginForm.width
         text: root.statusMessage || (keyboard.capsLock ? "Caps Lock is on" :
-              fingerprint.activeFocus ? "Press Enter to scan your finger." : "")
+              !password.text.length && (password.activeFocus || fingerprint.activeFocus) ? "Press Enter to scan your finger." : "")
         color: root.failed || keyboard.capsLock ? "#eea99a" : root.muted
         font { family: "Inter"; pixelSize: 12 }
         wrapMode: Text.WordWrap
