@@ -23,9 +23,11 @@
 | Runtime management | mise: Bun, Node.js LTS, uv |
 | Configuration | chezmoi for home files; Ansible for system setup |
 
-Package manifests: [pacman packages](../system/linux/packages.arch) and
-[AUR packages](../system/linux/packages.aur). The Ansible playbook uses pacman/yay;
-the managed settings do not source distribution configuration.
+Package manifests: [pacman packages](../system/linux/packages.arch),
+[AUR packages](../system/linux/packages.aur), and
+[packages removed by bootstrap](../system/linux/packages.remove). The Ansible
+playbook uses pacman/yay; the managed settings do not source distribution
+configuration.
 
 Canopy searches desktop entries and filenames directly with `fd`; no separate
 file indexer is required. MIME defaults select Helium, Yazi, PeaZip, and mpv,

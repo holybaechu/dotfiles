@@ -145,3 +145,11 @@
     state: present
     reason: explicit
     reason_for: all
+
+- name: Remove unwanted distribution packages and unused dependencies
+  become: true
+  community.general.pacman:
+    name: "{{ removed_packages }}"
+    state: absent
+    extra_args: --recursive
+    remove_nosave: true

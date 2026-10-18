@@ -19,8 +19,9 @@ Bootstrap installs the required Ansible collections and runs the
 [local playbook](../system/linux/playbook.yml), asking for your Linux password
 for privileged tasks. It configures the signed [Cider repository](https://repo.cider.sh/),
 upgrades the system, installs the package lists and patched Egis fingerprint
-driver, enables desktop services, installs SDDM's theme and monitors, configures
-fingerprint authentication, and registers this checkout with chezmoi.
+driver, removes unwanted distribution packages, enables desktop services,
+installs SDDM's theme and monitors, configures fingerprint authentication, and
+registers this checkout with chezmoi.
 Fingerprint enrollment and applying home files remain manual.
 
 AUR packages and the fingerprint driver build as your normal user. During those
@@ -33,6 +34,10 @@ and commands that change system state are skipped in check mode. To rerun one
 part, use `./bootstrap.sh --tags packages`, `services`, `sddm`, `fingerprint`, or
 `dotfiles`; the packages tag includes the fingerprint driver build. The `power`
 and `brightness` tags select those service settings alone.
+
+Package cleanup runs automatically after installation. It removes the listed
+packages and their unused dependencies, skips packages already absent, and
+preserves the automatic snapshot tools.
 
 On another distribution, install the equivalent packages from the
 [Arch list](../system/linux/packages.arch) and [AUR list](../system/linux/packages.aur),

@@ -9,6 +9,7 @@
     dotfiles_root: "{{ playbook_dir }}/../.."
     arch_packages: "{{ lookup('ansible.builtin.file', playbook_dir + '/packages.arch').splitlines() }}"
     aur_packages: "{{ lookup('ansible.builtin.file', playbook_dir + '/packages.aur').splitlines() }}"
+    removed_packages: "{{ lookup('ansible.builtin.file', playbook_dir + '/packages.remove').splitlines() }}"
     cider_fingerprint: A0CD6B993438E22634450CDD2A236C3F42A61682
     desktop_externals: "{{ lookup('ansible.builtin.file', dotfiles_root + '/home/.chezmoiexternal.yaml') | from_yaml }}"
 
