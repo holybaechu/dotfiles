@@ -1,5 +1,6 @@
 import importlib.machinery
 import importlib.util
+import io
 import json
 import subprocess
 import tempfile
@@ -87,6 +88,22 @@ class ScreenBrightnessTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "timed out"):
                 brightness.run(["ddcutil", "getvcp", "10"])
         self.assertEqual(command.call_args.kwargs["timeout"], 3)
+
+    def test_popup_does_not_delay_or_fail_a_successful_change(self):
+        result = {"output": "HDMI-A-1", "name": "External", "value": 40}
+        with patch("sys.argv", [str(SCRIPT), "set", "40"]), patch.object(brightness, "control", return_value=result), \
+                patch.object(brightness.subprocess, "run", side_effect=subprocess.TimeoutExpired("quickshell", 0.5)) as popup, \
+                patch("sys.stdout", new_callable=io.StringIO):
+            self.assertEqual(brightness.main(), 0)
+        self.assertEqual(popup.call_args.args[0][-3:], ["HDMI-A-1", "External", "40"])
+        self.assertEqual(popup.call_args.kwargs["timeout"], 0.5)
+
+    def test_failed_change_does_not_show_success_popup(self):
+        with patch("sys.argv", [str(SCRIPT), "set", "40"]), \
+                patch.object(brightness, "control", side_effect=RuntimeError("Permission denied")), \
+                patch.object(brightness.subprocess, "run") as popup, patch("sys.stderr", new_callable=io.StringIO):
+            self.assertEqual(brightness.main(), 1)
+        popup.assert_not_called()
 
 
 if __name__ == "__main__":

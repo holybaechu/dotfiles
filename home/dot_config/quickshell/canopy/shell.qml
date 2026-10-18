@@ -20,6 +20,24 @@ ShellRoot {
         }
     }
     IpcHandler {
+        target: "osd"
+        function brightness(output: string, name: string, value: int): void { OsdState.brightness(output, name, value); }
+    }
+    PanelWindow {
+        visible: osd.present
+        screen: OsdState.screen || CanopyState.focusedScreen()
+        anchors.bottom: true
+        margins.bottom: 64
+        implicitWidth: osd.implicitWidth
+        implicitHeight: osd.implicitHeight
+        color: "transparent"
+        exclusionMode: ExclusionMode.Ignore
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.namespace: "canopy-osd"
+        mask: Region {}
+        OsdContent { id: osd; anchors.fill: parent }
+    }
+    IpcHandler {
         target: "panel"
         function toggle(): void { CanopyState.togglePanel("quick", null); }
         function show(kind: string): void {

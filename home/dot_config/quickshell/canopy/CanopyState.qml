@@ -106,7 +106,11 @@ Singleton {
         if (adapter) run(["bluetoothctl", "--timeout", "8", "power", adapter.enabled ? "off" : "on"]);
     }
     function toggleMicrophone() { run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]); }
-    function toggleMute() { run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]); }
+    function toggleMute() {
+        if (preview || action.running || !sink) return;
+        OsdState.expectAudio("mute", !muted);
+        run(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]);
+    }
     function setVolume(value) {
         if (preview || !isFinite(value)) return;
         pendingVolume = Math.max(0, Math.min(100, Math.round(value)));
@@ -200,6 +204,7 @@ Singleton {
             if (root.pendingVolume >= 0) {
                 const level = root.pendingVolume;
                 root.pendingVolume = -1;
+                if (level !== root.volume) OsdState.expectAudio("volume", level);
                 root.run(["wpctl", "set-volume", "-l", "1", "@DEFAULT_AUDIO_SINK@", level + "%"]);
             } else {
                 const pending = Object.assign({}, root.pendingBrightness);
@@ -208,7 +213,7 @@ Singleton {
                 const level = pending[output];
                 delete pending[output];
                 root.pendingBrightness = pending;
-                root.run([root.brightnessCommand, "--output", output, "set", String(level)]);
+                root.run([root.brightnessCommand, "--no-osd", "--output", output, "set", String(level)]);
             }
         }
     }

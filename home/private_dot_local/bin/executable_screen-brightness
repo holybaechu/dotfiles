@@ -82,16 +82,27 @@ def control(action, value=None, output=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", help="Connector name; defaults to the focused output")
+    parser.add_argument("--no-osd", action="store_true", help="Skip the Canopy popup (for Quick Settings)")
     parser.add_argument("action", choices=("get", "set", "change"))
     parser.add_argument("value", nargs="?", type=int, help="Percentage for set, percentage-point delta for change")
     args = parser.parse_args()
     if (args.action == "get") != (args.value is None):
         parser.error("get takes no value; set and change require a value")
     try:
-        print(json.dumps(control(args.action, args.value, args.output)))
+        result = control(args.action, args.value, args.output)
     except (RuntimeError, OSError, ValueError, KeyError) as error:
         print(f"{args.output or 'Focused display'}: {error}", file=sys.stderr)
         return 1
+    print(json.dumps(result))
+    if args.action != "get" and not args.no_osd:
+        # Feedback must not make a successful hotkey fail or wait for the shell.
+        try:
+            subprocess.run([
+                "quickshell", "--config", "canopy", "ipc", "call", "osd", "brightness",
+                result["output"], result["name"], str(result["value"]),
+            ], capture_output=True, timeout=0.5)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
     return 0
 
 

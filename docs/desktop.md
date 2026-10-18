@@ -128,6 +128,12 @@ screen-brightness --output HDMI-A-1 set 40
 
 Use connector names from `hyprctl monitors`. Failures appear in the panel; an
 unsupported external monitor never falls back to changing the laptop panel.
+
+Volume changes show a compact popup on the focused screen; brightness keys and
+`screen-brightness` show it on the display being adjusted. Quick Settings skips
+these popups. Volume adjustments play a short preview sound, including in Quick
+Settings; muted output stays silent.
+
 Media controls use MPRIS; mpv's integration is supplied by mpv-mpris. Power actions require a second click;
 failed command actions show an error and keep the panel open. Hardware support
 and service permissions determine which controls are available.
@@ -172,6 +178,8 @@ QML_DISABLE_DISK_CACHE=1 CANOPY_PREVIEW=1 quickshell --path ~/.config/quickshell
 Click the preview's islands to check opening, closing, and switching animations;
 Space toggles quick controls and Escape closes the popup. The preview uses the
 same panel motion as the desktop.
+Set `CANOPY_OSD_PREVIEW=volume` or `CANOPY_OSD_PREVIEW=brightness` to preview the
+corresponding popup instead.
 
 ## Appearance
 

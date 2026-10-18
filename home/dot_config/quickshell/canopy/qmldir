@@ -1,5 +1,7 @@
 singleton Theme 1.0 Theme.qml
 singleton CanopyState 1.0 CanopyState.qml
+singleton OsdState 1.0 OsdState.qml
+OsdContent 1.0 OsdContent.qml
 BarContent 1.0 BarContent.qml
 CalendarContent 1.0 CalendarContent.qml
 CanopyButton 1.0 CanopyButton.qml

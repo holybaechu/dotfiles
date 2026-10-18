@@ -70,6 +70,11 @@ ShellRoot {
                 font.family: Theme.font
                 font.pixelSize: 12
             }
+            OsdContent {
+                anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 64 }
+                width: implicitWidth
+                height: implicitHeight
+            }
             Keys.onSpacePressed: { if (!CanopyState.launcherOpen) CanopyState.togglePanel("quick", null); }
             Keys.onEscapePressed: CanopyState.close()
             function syncPanel() {
@@ -83,7 +88,15 @@ ShellRoot {
                 function onPanelChanged() { canvas.syncPanel(); }
             }
         }
-        Timer { interval: 200; running: true; onTriggered: CanopyState.togglePanel("quick", null) }
+        Timer {
+            interval: 200
+            running: true
+            onTriggered: {
+                const kind = Quickshell.env("CANOPY_OSD_PREVIEW");
+                if (kind.length) OsdState.show(kind, kind === "brightness" ? "Built-in display" : "Volume", 64, false, null);
+                else CanopyState.togglePanel("quick", null);
+            }
+        }
         Timer {
             interval: 1200
             running: Quickshell.env("CANOPY_SCREENSHOT").length > 0
