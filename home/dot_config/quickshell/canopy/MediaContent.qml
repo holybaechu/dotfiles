@@ -13,12 +13,6 @@ ColumnLayout {
         const seconds = Math.max(0, Math.floor(value));
         return Math.floor(seconds / 60) + ":" + (seconds % 60).toString().padStart(2, "0");
     }
-    Timer {
-        interval: 1000
-        running: root.visible && !!root.player && root.player.isPlaying && root.player.positionSupported
-        repeat: true
-        onTriggered: root.player.positionChanged()
-    }
     Text {
         visible: !root.hasTrack
         Layout.fillWidth: true

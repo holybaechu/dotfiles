@@ -213,5 +213,11 @@ Singleton {
         }
     }
     Timer { interval: 10000; running: !root.preview; repeat: true; onTriggered: root.refresh() }
+    Timer {
+        interval: 1000
+        running: !root.preview && !!root.player && root.player.isPlaying && root.player.positionSupported
+        repeat: true
+        onTriggered: root.player.positionChanged()
+    }
     Component.onCompleted: refresh()
 }
