@@ -53,7 +53,6 @@ $appNames = @(
     'Microsoft.WindowsFeedbackHub'
 )
 $desktopIds = @(
-    'Microsoft.Edge'
     'ARP\Machine\X86\Microsoft Copilot'
     'Microsoft.OneDrive'
     'Microsoft.Teams.Classic'

@@ -40,3 +40,18 @@ resources:
     metadata:
       winget:
         securityContext: elevated
+
+  - name: RemoveMicrosoftEdge
+    type: Microsoft.DSC.Transitional/WindowsPowerShellScript
+    dependsOn:
+      - RemoveUnwantedDesktopApps
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\RemoveEdge.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\RemoveEdge.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\RemoveEdge.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
