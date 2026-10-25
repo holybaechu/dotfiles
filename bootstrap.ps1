@@ -112,7 +112,11 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Installing Windows integrations failed.' }
     Update-SessionPath
 
-    $step = 'Apply Windows settings and startup'
+    $step = 'Start Flow Launcher'
+    Write-Host "==> $step"
+    Start-Process -FilePath (Join-Path $env:LOCALAPPDATA 'FlowLauncher\Flow.Launcher.exe') -WindowStyle Hidden
+
+    $step = 'Apply Windows settings'
     Write-Host "==> $step"
     & $configure -Action Apply -Module preferences, privacy, graphics, debloat
     if ($LASTEXITCODE -ne 0) { throw 'Applying Windows configuration failed.' }
@@ -124,4 +128,4 @@ try {
 Write-Host 'Windows provisioning and dotfile application are complete.'
 Write-Host 'Review any warnings for unsupported removals or pending restarts; recheck those items after restarting.'
 Write-Host 'Open a new terminal to pick up persistent environment changes.'
-Write-Host 'In Raycast Settings > General, set Raycast Hotkey to a single Windows-key press and enable Open at Login.'
+Write-Host 'Flow Launcher starts at login; tap the left Windows key to open it (Win Hotkey plugin).'

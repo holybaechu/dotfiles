@@ -14,11 +14,11 @@ resources:
       useLatest: false
       acceptAgreements: true
 
-  - name: Raycast
+  - name: FlowLauncher
     type: Microsoft.WinGet/Package
     properties:
-      id: 9PFXXSHC64H3
-      source: msstore
+      id: Flow-Launcher.Flow-Launcher
+      source: winget
       useLatest: false
       acceptAgreements: true
 

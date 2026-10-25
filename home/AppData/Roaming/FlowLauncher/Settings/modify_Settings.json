@@ -1,0 +1,7 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $settings := .chezmoi.stdin | default "{}" | fromJson -}}
+{{- /* Win Hotkey forwards a single left Windows-key press to this hotkey. */ -}}
+{{- $settings = setValueAtPath "Hotkey" "Alt + Space" $settings -}}
+{{- $settings = setValueAtPath "StartFlowLauncherOnSystemStartup" true $settings -}}
+{{- $settings = setValueAtPath "HideOnStartup" true $settings -}}
+{{- $settings | toPrettyJson -}}
