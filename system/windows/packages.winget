@@ -1,0 +1,42 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+
+# These need Windows installation or registration; portable tools live in mise.
+resources:
+  - name: OnePassword
+    type: Microsoft.WinGet/Package
+    properties:
+      id: AgileBits.1Password
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: Raycast
+    type: Microsoft.WinGet/Package
+    properties:
+      id: 9PFXXSHC64H3
+      source: msstore
+      useLatest: false
+      acceptAgreements: true
+
+  - name: WindowsTerminal
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Microsoft.WindowsTerminal
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: JetBrainsMonoNerdFont
+    type: Microsoft.WinGet/Package
+    properties:
+      id: DEVCOM.JetBrainsMonoNerdFont
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+    metadata:
+      winget:
+        securityContext: elevated

@@ -1,6 +1,20 @@
 {{- /* chezmoi:modify-template */ -}}
 {{- $config := .chezmoi.stdin | fromToml -}}
-{{- $config = setValueAtPath "tools.bun" "latest" $config -}}
-{{- $config = setValueAtPath "tools.node" "lts" $config -}}
-{{- $config = setValueAtPath "tools.uv" "latest" $config -}}
+{{- $tools := dict
+    "bun" "latest"
+    "node" "lts"
+    "chezmoi" "latest"
+    "powershell-core" "latest"
+    "starship" "latest"
+    "fastfetch" "latest"
+    "aqua:neovim/neovim" "latest"
+    "ripgrep" "latest"
+    "tree-sitter" "latest"
+    "github-cli" "latest"
+    "github:git-for-windows/git" (dict "version" "latest" "asset_pattern" "MinGit-*-64-bit.zip" "strip_components" 0 "bin_path" "cmd")
+    "github:mstorsjo/llvm-mingw" (dict "version" "latest" "asset_pattern" "llvm-mingw-*-ucrt-x86_64.zip")
+-}}
+{{- range $name, $tool := $tools -}}
+    {{- $config = setValueAtPath (list "tools" $name) $tool $config -}}
+{{- end -}}
 {{- $config | toToml -}}

@@ -1,0 +1,215 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
+metadata:
+  winget:
+    processor:
+      identifier: dscv3
+
+resources:
+  - name: PowerShellExecutionPolicy
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        (Get-ExecutionPolicy -Scope CurrentUser).ToString()
+      testScript: |
+        (Get-ExecutionPolicy -Scope CurrentUser).ToString() -eq 'RemoteSigned'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        try {
+          Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+        } catch {
+          # Setup may use a process policy that overrides the saved user policy.
+          if ($_.FullyQualifiedErrorId -notlike 'ExecutionPolicyOverride,*') { throw }
+        }
+        if ((Get-ExecutionPolicy -Scope CurrentUser).ToString() -ne 'RemoteSigned') {
+          throw 'PowerShell did not retain the current-user RemoteSigned execution policy.'
+        }
+
+  - name: WindowsSearchIndexing
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        Get-Service -Name WSearch -ErrorAction Stop | Select-Object Status, StartType
+      testScript: |
+        $service = Get-Service -Name WSearch -ErrorAction Stop
+        $service.Status -eq 'Running' -and $service.StartType -eq 'Automatic'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        Set-Service -Name WSearch -StartupType Automatic
+        Start-Service -Name WSearch
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: OnePasswordSshAgentPipe
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        Get-Service -Name ssh-agent | Select-Object Status, StartType
+      testScript: |
+        $agent = Get-Service -Name ssh-agent
+        $agent.Status -eq 'Stopped' -and $agent.StartType -eq 'Disabled'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        # 1Password owns the OpenSSH pipe; the Windows service must not compete.
+        Stop-Service -Name ssh-agent
+        Set-Service -Name ssh-agent -StartupType Disabled
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: ExplorerPreferences
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      input:
+        hideDesktopIcons: true
+        showHiddenFiles: true
+        showFileExtensions: true
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        $current = & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Get
+        $current.HideDesktopIcons -eq $settings.hideDesktopIcons -and
+          $current.ShowHiddenFiles -eq $settings.showHiddenFiles -and
+          $current.ShowFileExtensions -eq $settings.showFileExtensions
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Set -HideDesktopIcons $settings.hideDesktopIcons -ShowHiddenFiles $settings.showHiddenFiles -ShowFileExtensions $settings.showFileExtensions
+
+  - name: MouseAcceleration
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      input:
+        enabled: false
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\MouseAcceleration.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        (& "${WinGetConfigRoot}\scripts\MouseAcceleration.ps1" -Operation Get) -eq $settings.enabled
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\MouseAcceleration.ps1" -Operation Set -Enabled $settings.enabled
+
+  - name: VisualEffects
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\VisualEffects.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\VisualEffects.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\VisualEffects.ps1" -Operation Set
+
+  - name: WindowShadows
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      input:
+        enabled: false
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\WindowShadows.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        (& "${WinGetConfigRoot}\scripts\WindowShadows.ps1" -Operation Get) -eq $settings.enabled
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\WindowShadows.ps1" -Operation Set -Enabled $settings.enabled
+
+  - name: WindowsAccentColor
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\AccentColor.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\AccentColor.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\AccentColor.ps1" -Operation Set
+
+  - name: TaskbarAutoHide
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      input:
+        enabled: false
+      getScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\TaskbarAutoHide.ps1" -Operation Get
+      testScript: |
+        param($settings)
+        (& "${WinGetConfigRoot}\scripts\TaskbarAutoHide.ps1" -Operation Get) -eq $settings.enabled
+      setScript: |
+        param($settings)
+        & "${WinGetConfigRoot}\scripts\TaskbarAutoHide.ps1" -Operation Set -Enabled $settings.enabled
+
+  - name: SelectedUserPreferences
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Get -Context User
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Test -Context User
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Set -Context User
+
+  - name: CurrentUserSearchPolicy
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Get -Context UserPolicy
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Test -Context UserPolicy
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Set -Context UserPolicy
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: SelectedMachinePreferences
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Get -Context Machine
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Test -Context Machine
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\SelectedPreferences.ps1" -Operation Set -Context Machine
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: ToolTelemetryOptOut
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        @{
+          PowerShell = [Environment]::GetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'User')
+          DotNet = [Environment]::GetEnvironmentVariable('DOTNET_CLI_TELEMETRY_OPTOUT', 'User')
+        }
+      testScript: |
+        [Environment]::GetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', 'User') -eq '1' -and
+          [Environment]::GetEnvironmentVariable('DOTNET_CLI_TELEMETRY_OPTOUT', 'User') -eq '1'
+      setScript: |
+        $ErrorActionPreference = 'Stop'
+        foreach ($name in @('POWERSHELL_TELEMETRY_OPTOUT', 'DOTNET_CLI_TELEMETRY_OPTOUT')) {
+          if ([Environment]::GetEnvironmentVariable($name, 'User') -ne '1') {
+            [Environment]::SetEnvironmentVariable($name, '1', 'User')
+          }
+          [Environment]::SetEnvironmentVariable($name, '1', 'Process')
+          if ([Environment]::GetEnvironmentVariable($name, 'User') -ne '1') {
+            throw "Windows did not retain $name."
+          }
+        }
+
+  - name: DefenderProtection
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\DefenderProtection.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\DefenderProtection.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\DefenderProtection.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated

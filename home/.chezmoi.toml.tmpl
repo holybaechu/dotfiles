@@ -1,2 +1,2 @@
-{{- if ne .chezmoi.os "linux" }}{{ fail "This checkout supports Linux only." }}{{ end -}}
+{{- if ne .chezmoi.os "windows" }}{{ fail "This checkout supports Windows only." }}{{ end -}}
 sourceDir = {{ .chezmoi.workingTree | quote }}

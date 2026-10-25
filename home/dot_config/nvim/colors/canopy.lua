@@ -1,4 +1,4 @@
--- Match the shared Canopy palette documented in docs/desktop.md.
+-- Shared dark green palette for the editor and terminal.
 local p = {
   black = "#000000",
   surface = "#11160f",
