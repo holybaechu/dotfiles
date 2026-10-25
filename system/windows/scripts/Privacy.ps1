@@ -19,7 +19,6 @@ if ($Context -eq 'User') {
         ,@('HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy', 'TailoredExperiencesWithDiagnosticDataEnabled', 0)
         ,@($explorer, 'Start_IrisRecommendations', 0)
         ,@($explorer, 'ShowSyncProviderNotifications', 0)
-        ,@($explorer, 'TaskbarDa', 0)
         ,@($content, 'SubscribedContent-338388Enabled', 0)
         ,@($content, 'SubscribedContent-338389Enabled', 0)
         ,@($content, 'SubscribedContent-353694Enabled', 0)
@@ -41,6 +40,8 @@ if ($Context -eq 'User') {
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection', 'AllowTelemetry', $(if ($version.EditionID -match 'Enterprise|Education') { 0 } else { 1 }))
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization', 'DODownloadMode', 0)
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR', 'AllowGameDVR', 0)
+        # Device policy also removes the taskbar entry without writing protected TaskbarDa.
+        ,@('HKLM:\SOFTWARE\Policies\Microsoft\Dsh', 'AllowNewsAndInterests', 0)
     )
     if ([int]$version.CurrentBuild -gt 26100 -or ([int]$version.CurrentBuild -eq 26100 -and [int]$version.UBR -ge 3915)) {
         $rows += ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', 'DisableAIDataAnalysis', 1)

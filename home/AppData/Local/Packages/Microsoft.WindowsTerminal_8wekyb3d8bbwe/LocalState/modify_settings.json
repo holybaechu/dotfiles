@@ -54,7 +54,7 @@
 {{- end -}}
 {{- $settings = setValueAtPath "profiles.list" $profileList $settings -}}
 
-{{- /* Focus mode hides tabs; unbind their default creation/navigation shortcuts. */ -}}
+{{- /* Restore the tab shortcuts previously disabled for focus mode. */ -}}
 {{- $tabKeys := list "ctrl+shift+t" "ctrl+shift+d" "ctrl+shift+space"
     "ctrl+tab" "ctrl+shift+tab"
     "ctrl+shift+1" "ctrl+shift+2" "ctrl+shift+3" "ctrl+shift+4" "ctrl+shift+5"
@@ -64,22 +64,19 @@
 -}}
 {{- $keybindings := list -}}
 {{- range (get $settings "keybindings" | default (list)) -}}
-    {{- if not (has (get . "keys") $tabKeys) -}}
+    {{- if not (and (has (get . "keys") $tabKeys) (eq (get . "id") "unbound")) -}}
         {{- $keybindings = append $keybindings . -}}
     {{- end -}}
 {{- end -}}
-{{- range $tabKeys -}}
-    {{- $keybindings = append $keybindings (dict "keys" . "id" "unbound") -}}
-{{- end -}}
 {{- $settings = setValueAtPath "keybindings" $keybindings $settings -}}
 {{- $settings = unset $settings "confirmCloseAllTabs" -}}
+{{- $settings = unset $settings "warning.confirmCloseAllTabs" -}}
+{{- $settings = unset $settings "launchMode" -}}
 
 {{- $settings = $settings
     | setValueAtPath "defaultProfile" $powerShellGuid
     | setValueAtPath "theme" "dark"
-    | setValueAtPath "launchMode" "focus"
     | setValueAtPath "windowingBehavior" "useNew"
-    | setValueAtPath (list "warning.confirmCloseAllTabs") false
     | setValueAtPath (list "compatibility.enableUnfocusedAcrylic") true
 -}}
 {{ $settings | toPrettyJson }}

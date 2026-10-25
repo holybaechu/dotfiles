@@ -48,7 +48,7 @@ function New-Item {
 }
 function New-ItemProperty {
     [CmdletBinding()]param([string]$LiteralPath,[string]$Name,$Value,[string]$PropertyType,[switch]$Force)
-    if ($global:SettingsFixture.Deny) { throw 'Registry access denied.' }
+    if ($global:SettingsFixture.Deny -or $Name -eq 'TaskbarDa') { throw 'Registry access denied.' }
     $global:SettingsFixture.Writes++
     $global:SettingsFixture.Registry[$LiteralPath][$Name] = @{ Value=$Value; Kind=$PropertyType }
 }
@@ -166,6 +166,7 @@ try {
     Assert ($caught -and $global:SettingsFixture.Writes -eq $writes) 'Unsupported HAGS must never be forced.'
     $diagnostics = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
     & $privacy -Operation Set -Context Machine -WarningAction SilentlyContinue
+    Assert ($global:SettingsFixture.Registry['HKLM:\SOFTWARE\Policies\Microsoft\Dsh'].AllowNewsAndInterests.Value -eq 0) 'Disable Widgets through the device policy instead of protected TaskbarDa.'
     Assert ($global:SettingsFixture.Registry[$diagnostics].AllowTelemetry.Value -eq 1) 'Pro must retain the minimum supported required diagnostic level.'
     $global:SettingsFixture.Edition = 'Enterprise'
     & $privacy -Operation Set -Context Machine -WarningAction SilentlyContinue

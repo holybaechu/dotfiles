@@ -108,6 +108,7 @@ try {
     Assert (@($state.Settings | Where-Object Path -like 'HKCU:\Software\Policies\*').Count -eq 0) 'Normal-user changes must not require protected policy keys.'
     & $selected -Operation Set -Context User
     Assert (& $selected -Operation Test -Context User) 'User preferences must converge.'
+    Assert ($global:SelectedFixture.Registry[$advanced].TaskbarAl.Value -eq 0 -and $global:SelectedFixture.Registry['HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'].SearchboxTaskbarMode.Value -eq 0) 'Align taskbar items left and hide the Search icon.'
     Assert ([Dotfiles.SelectedPreferences]::Arranging -and $global:SelectedFixture.Registry[$advanced].SnapAssist.Value -eq 1) 'Windows snapping must replace the removed window manager.'
     Assert ($global:SelectedFixture.Registry[$advanced].ShowRecent.Value -eq 1 -and $global:SelectedFixture.Registry[$advanced].TaskbarEndTask.Value -eq 0) 'Declined and unrelated preferences must survive.'
     $writes=$global:SelectedFixture.Writes; $nativeWrites=[Dotfiles.SelectedPreferences]::Writes

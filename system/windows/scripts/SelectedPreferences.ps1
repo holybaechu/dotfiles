@@ -26,6 +26,7 @@ if ($Context -eq 'User') {
         ,@($advanced, 'EnableSnapAssistFlyout', 1)
         ,@($advanced, 'ShowTaskViewButton', 0)
         ,@($advanced, 'TaskbarMn', 0)
+        ,@($advanced, 'TaskbarAl', 0)
         ,@('HKCU:\Software\Microsoft\Windows\CurrentVersion\Search', 'SearchboxTaskbarMode', 0)
         ,@('HKCU:\Software\Microsoft\Windows\CurrentVersion\Search', 'BingSearchEnabled', 0)
         ,@('HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings', 'IsDynamicSearchBoxEnabled', 0)
