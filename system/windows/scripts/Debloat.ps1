@@ -53,13 +53,16 @@ $appNames = @(
     'Microsoft.WindowsFeedbackHub'
 )
 $desktopIds = @(
+    'Microsoft.Edge'
+    'ARP\Machine\X86\Microsoft Copilot'
     'Microsoft.OneDrive'
     'Microsoft.Teams.Classic'
     'Microsoft.PowerAutomateDesktop'
 )
 
 function Test-WinGetPackage([string]$Id) {
-    $output = & winget.exe list --id $Id --exact --source winget --accept-source-agreements --disable-interactivity 2>&1
+    # Native Copilot is an installed ARP entry without a WinGet catalog source.
+    $output = & winget.exe list --id $Id --exact --accept-source-agreements --disable-interactivity 2>&1
     $code = $LASTEXITCODE
     if ($code -eq 0) { return $true }
     # APPINSTALLER_CLI_ERROR_NO_APPLICATIONS_FOUND; all other errors are failures.
@@ -129,13 +132,15 @@ switch ($Operation) {
 
         foreach ($id in $state.Desktop) {
             try {
-                $output = & winget.exe uninstall --id $id --exact --source winget --silent --accept-source-agreements --disable-interactivity 2>&1
+                $output = & winget.exe uninstall --id $id --exact --silent --accept-source-agreements --disable-interactivity 2>&1
                 $code = $LASTEXITCODE
                 if ($code -eq -1978335107) {
                     throw 'This user-scope app must be uninstalled from a normal, non-administrator PowerShell window. Run Configure.ps1 -Action Apply -Module debloat there.'
                 }
                 # The Store-app resource may already have removed the WinGet match.
-                if ($code -notin @(0, -1978335212)) {
+                # Native Copilot can uninstall successfully with Chromium's code 19,
+                # which WinGet reports as a failure without a matching manifest.
+                if ($code -notin @(0, -1978335212) -and (Test-WinGetPackage $id)) {
                     throw "WinGet exit code ${code}: $($output -join ' ')"
                 }
             } catch {

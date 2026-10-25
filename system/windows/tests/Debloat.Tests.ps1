@@ -27,6 +27,7 @@ function Reset-Fixture {
     $global:DotfilesDebloatTest.listError = $false
     $global:DotfilesDebloatTest.blocked = ''
     $global:DotfilesDebloatTest.falseSuccess = ''
+    $global:DotfilesDebloatTest.removedWithError = ''
     $global:DotfilesDebloatTest.deprovisionRemovesRegistration = $false
     $global:DotfilesDebloatTest.adminBlocked = $false
 }
@@ -72,7 +73,8 @@ function Remove-AppxProvisionedPackage {
 
 function winget.exe {
     $id = $args[[Array]::IndexOf($args, '--id') + 1]
-    Assert ('--exact' -in $args -and '--source' -in $args -and 'winget' -in $args) 'WinGet must use an exact ID and source.'
+    Assert ('--exact' -in $args) 'WinGet must use exact installed IDs.'
+    Assert ('--source' -notin $args) 'Installed ARP entries must not require a catalog source.'
     Assert ('--disable-interactivity' -in $args) 'WinGet must not wait for input.'
     $global:LASTEXITCODE = 0
     switch ($args[0]) {
@@ -85,7 +87,10 @@ function winget.exe {
             $global:DotfilesDebloatTest.calls.Add("desktop:$id")
             if ($id -eq 'Microsoft.OneDrive' -and $global:DotfilesDebloatTest.adminBlocked) { $global:LASTEXITCODE = -1978335107 }
             elseif ($id -eq $global:DotfilesDebloatTest.blocked) { $global:LASTEXITCODE = 5 }
-            elseif ($id -ne $global:DotfilesDebloatTest.falseSuccess) { $global:DotfilesDebloatTest.desktop = @($global:DotfilesDebloatTest.desktop | Where-Object { $_ -ne $id }) }
+            elseif ($id -ne $global:DotfilesDebloatTest.falseSuccess) {
+                $global:DotfilesDebloatTest.desktop = @($global:DotfilesDebloatTest.desktop | Where-Object { $_ -ne $id })
+                if ($id -eq $global:DotfilesDebloatTest.removedWithError) { $global:LASTEXITCODE = -1978335184 }
+            }
         }
         default { throw "Unexpected WinGet action: $($args[0])" }
     }
@@ -113,11 +118,11 @@ $global:DotfilesDebloatTest.provisioned = @(
     [pscustomobject]@{ DisplayName = 'Microsoft.BingSearch'; PackageName = 'Bing_provisioned' }
     [pscustomobject]@{ DisplayName = 'Microsoft.WindowsStore'; PackageName = 'Store_provisioned' }
 )
-$global:DotfilesDebloatTest.desktop += @('Microsoft.Edge', 'Microsoft.OneDrive', 'Microsoft.EdgeWebView2Runtime', 'Microsoft.Edge.Beta')
+$global:DotfilesDebloatTest.desktop += @('Microsoft.Edge', 'ARP\Machine\X86\Microsoft Copilot', 'Microsoft.OneDrive', 'Microsoft.EdgeWebView2Runtime', 'Microsoft.Edge.Beta')
 $before = & $target -Operation Get -AppType Store
 Assert ($before.Installed.Count -eq 3 -and $before.Desktop.Count -eq 0) 'Store inventory must not include desktop apps or the retained player.'
 $beforeDesktop = & $target -Operation Get -AppType Desktop
-Assert ($beforeDesktop.Installed.Count -eq 0 -and $beforeDesktop.Provisioned.Count -eq 0 -and $beforeDesktop.Desktop.Count -eq 1) 'Desktop inventory must not include Store apps or the retained browser.'
+Assert ($beforeDesktop.Installed.Count -eq 0 -and $beforeDesktop.Provisioned.Count -eq 0 -and $beforeDesktop.Desktop.Count -eq 3) 'Desktop inventory must include Edge, native Copilot, and OneDrive without matching other channels or shared runtimes.'
 Assert (-not (& $target -Operation Test -AppType Store)) 'Test must detect unwanted apps.'
 Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'Get and Test must not remove apps.'
 & $target -Operation Set -AppType Store
@@ -125,7 +130,7 @@ Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'Get and Test must not re
 Assert (& $target -Operation Test -AppType Store) 'Set must converge to the desired state.'
 Assert (& $target -Operation Test -AppType Desktop) 'Desktop Set must converge to the desired state.'
 Assert ($global:DotfilesDebloatTest.installed.Count -eq 6 -and $global:DotfilesDebloatTest.provisioned.Count -eq 1) 'Unrelated apps and the media player must survive.'
-Assert ('Microsoft.Edge' -in $global:DotfilesDebloatTest.desktop -and 'Microsoft.EdgeWebView2Runtime' -in $global:DotfilesDebloatTest.desktop -and 'Microsoft.Edge.Beta' -in $global:DotfilesDebloatTest.desktop) 'Preserve the browser, shared runtime, and other channels.'
+Assert ('Microsoft.Edge' -notin $global:DotfilesDebloatTest.desktop -and 'ARP\Machine\X86\Microsoft Copilot' -notin $global:DotfilesDebloatTest.desktop -and 'Microsoft.EdgeWebView2Runtime' -in $global:DotfilesDebloatTest.desktop -and 'Microsoft.Edge.Beta' -in $global:DotfilesDebloatTest.desktop) 'Remove stable Edge and native Copilot while preserving the shared runtime and other channels.'
 Assert (@($global:DotfilesDebloatTest.calls | Where-Object { $_ -like 'app:Microsoft.StartExperiencesApp*' }).Count -eq 1) 'Remove a bundle once, via its parent.'
 $count = $global:DotfilesDebloatTest.calls.Count
 & $target -Operation Set -AppType Store
@@ -146,7 +151,7 @@ Assert-Failure 'Access denied'
 Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'An inventory failure must not be treated as absence.'
 $global:DotfilesDebloatTest.inventoryError = $false
 $global:DotfilesDebloatTest.listError = $true
-Assert-Failure 'Checking Microsoft.OneDrive failed' 'Desktop'
+Assert-Failure 'Checking Microsoft.Edge failed' 'Desktop'
 Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'A WinGet source failure must not trigger removals.'
 Write-Output 'PASS: denied inventory and WinGet source failures stop before removal'
 
@@ -164,6 +169,13 @@ $global:DotfilesDebloatTest.desktop += 'Microsoft.OneDrive'
 $global:DotfilesDebloatTest.falseSuccess = 'Microsoft.OneDrive'
 Assert-Failure 'Still installed or provisioned' 'Desktop'
 Write-Output 'PASS: a successful exit code cannot hide an uninstall that did nothing'
+
+Reset-Fixture
+$global:DotfilesDebloatTest.desktop = @('ARP\Machine\X86\Microsoft Copilot')
+$global:DotfilesDebloatTest.removedWithError = 'ARP\Machine\X86\Microsoft Copilot'
+& $target -Operation Set -AppType Desktop
+Assert (& $target -Operation Test -AppType Desktop) 'A nonzero installer code is acceptable only when the app is confirmed absent.'
+Write-Output 'PASS: native Copilot removal is verified despite WinGet reporting an installer error'
 
 Reset-Fixture
 $global:DotfilesDebloatTest.installed = @((New-App 'Microsoft.BingSearch' $false $true))
@@ -206,6 +218,7 @@ Write-Output 'PASS: direct calls require an explicit app type'
 
 Reset-Fixture
 $global:DotfilesDebloatTest.installed = @(
+    (New-App 'Microsoft.Copilot')
     (New-App 'Microsoft.WidgetsPlatformRuntime')
     (New-App 'Microsoft.MicrosoftOfficeHub')
     (New-App 'Microsoft.YourPhone')
