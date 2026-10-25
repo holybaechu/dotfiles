@@ -6,6 +6,19 @@ metadata:
 
 # These need Windows installation or registration; portable tools live in mise.
 resources:
+  - name: Aside
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\Aside.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\Aside.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\Aside.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: OnePassword
     type: Microsoft.WinGet/Package
     properties:
@@ -13,6 +26,19 @@ resources:
       source: winget
       useLatest: false
       acceptAgreements: true
+
+  - name: OnePasswordAsideExtension
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\OnePasswordExtension.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\OnePasswordExtension.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\OnePasswordExtension.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
 
   - name: FlowLauncher
     type: Microsoft.WinGet/Package

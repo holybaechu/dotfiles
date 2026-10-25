@@ -131,7 +131,7 @@ resources:
     type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       input:
-        enabled: false
+        enabled: true
       getScript: |
         param($settings)
         & "${WinGetConfigRoot}\scripts\TaskbarAutoHide.ps1" -Operation Get
