@@ -1,5 +1,11 @@
 {{- /* chezmoi:modify-template */ -}}
-{{- $settings := .chezmoi.stdin | default "{}" | fromJson -}}
+{{- $original := .chezmoi.stdin | default "{}" -}}
+{{- $settings := $original | fromJson -}}
+{{- $before := $settings | toJson -}}
 {{- $settings = setValueAtPath "InterrModifier" "LWin" $settings -}}
 {{- $settings = setValueAtPath "DoubleTap" false $settings -}}
+{{- if eq ($settings | toJson) $before -}}
+{{- $original -}}
+{{- else -}}
 {{- $settings | toPrettyJson -}}
+{{- end -}}
