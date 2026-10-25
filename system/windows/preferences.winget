@@ -5,6 +5,16 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: AsidePreferences
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\AsidePreferences.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\AsidePreferences.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\AsidePreferences.ps1" -Operation Set
+
   - name: PowerShellExecutionPolicy
     type: Microsoft.DSC.Transitional/PowerShellScript
     properties:

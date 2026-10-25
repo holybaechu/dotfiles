@@ -1,0 +1,57 @@
+[
+  {
+    "name": "EasyList",
+    "url": "https://ublockorigin.github.io/uAssets/thirdparties/easylist.txt"
+  },
+  {
+    "name": "uBlock filters – Ads",
+    "url": "https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt",
+    "aliases": ["https://ublockorigin.github.io/uAssets/filters/filters.txt"]
+  },
+  {
+    "name": "uBlock filters – Badware risks",
+    "url": "https://ublockorigin.github.io/uAssets/filters/badware.txt"
+  },
+  {
+    "name": "uBlock filters – Unbreak",
+    "url": "https://ublockorigin.github.io/uAssets/filters/unbreak.txt"
+  },
+  {
+    "name": "EasyPrivacy",
+    "url": "https://ublockorigin.github.io/uAssets/thirdparties/easyprivacy.txt"
+  },
+  {
+    "name": "uBlock filters – Privacy",
+    "url": "https://ublockorigin.github.io/uAssetsCDN/filters/privacy.min.txt",
+    "aliases": ["https://ublockorigin.github.io/uAssets/filters/privacy.txt"]
+  },
+  {
+    "name": "EasyList – Cookie Notices",
+    "url": "https://ublockorigin.github.io/uAssets/thirdparties/easylist-cookies.txt"
+  },
+  {
+    "name": "uBlock filters – Cookie Notices",
+    "url": "https://ublockorigin.github.io/uAssets/filters/annoyances-cookies.txt"
+  },
+  {
+    "name": "AdGuard/uBO – URL Tracking Protection",
+    "url": "https://ublockorigin.github.io/uAssets/filters/privacy-removeparam.txt"
+  },
+  {
+    "name": "EasyList – Social Widgets",
+    "url": "https://ublockorigin.github.io/uAssets/thirdparties/easylist-social.txt"
+  },
+  {
+    "name": "uBlock filters – Annoyances",
+    "url": "https://ublockorigin.github.io/uAssetsCDN/filters/annoyances.min.txt",
+    "aliases": ["https://ublockorigin.github.io/uAssets/filters/annoyances.txt"]
+  },
+  {
+    "name": "yokoffing's click2load filters",
+    "url": "https://raw.githubusercontent.com/yokoffing/filterlists/main/click2load.txt"
+  },
+  {
+    "name": "Actually Legitimate URL Shortener Tool",
+    "url": "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt"
+  }
+]
