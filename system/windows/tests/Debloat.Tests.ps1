@@ -122,7 +122,7 @@ $global:DotfilesDebloatTest.desktop += @('Microsoft.Edge', 'ARP\Machine\X86\Micr
 $before = & $target -Operation Get -AppType Store
 Assert ($before.Installed.Count -eq 3 -and $before.Desktop.Count -eq 0) 'Store inventory must not include desktop apps or the retained player.'
 $beforeDesktop = & $target -Operation Get -AppType Desktop
-Assert ($beforeDesktop.Installed.Count -eq 0 -and $beforeDesktop.Provisioned.Count -eq 0 -and $beforeDesktop.Desktop.Count -eq 2) 'Desktop inventory must include native Copilot and OneDrive; Edge has a separate elevated remover.'
+Assert ($beforeDesktop.Installed.Count -eq 0 -and $beforeDesktop.Provisioned.Count -eq 0 -and $beforeDesktop.Desktop.Count -eq 2) 'Desktop inventory must include only native Copilot and OneDrive.'
 Assert (-not (& $target -Operation Test -AppType Store)) 'Test must detect unwanted apps.'
 Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'Get and Test must not remove apps.'
 & $target -Operation Set -AppType Store
@@ -130,7 +130,7 @@ Assert ($global:DotfilesDebloatTest.calls.Count -eq 0) 'Get and Test must not re
 Assert (& $target -Operation Test -AppType Store) 'Set must converge to the desired state.'
 Assert (& $target -Operation Test -AppType Desktop) 'Desktop Set must converge to the desired state.'
 Assert ($global:DotfilesDebloatTest.installed.Count -eq 6 -and $global:DotfilesDebloatTest.provisioned.Count -eq 1) 'Unrelated apps and the media player must survive.'
-Assert ('Microsoft.Edge' -in $global:DotfilesDebloatTest.desktop -and 'ARP\Machine\X86\Microsoft Copilot' -notin $global:DotfilesDebloatTest.desktop -and 'Microsoft.EdgeWebView2Runtime' -in $global:DotfilesDebloatTest.desktop -and 'Microsoft.Edge.Beta' -in $global:DotfilesDebloatTest.desktop) 'Remove native Copilot here; leave Edge to its elevated remover and preserve the shared runtime and other channels.'
+Assert ('Microsoft.Edge' -in $global:DotfilesDebloatTest.desktop -and 'ARP\Machine\X86\Microsoft Copilot' -notin $global:DotfilesDebloatTest.desktop -and 'Microsoft.EdgeWebView2Runtime' -in $global:DotfilesDebloatTest.desktop -and 'Microsoft.Edge.Beta' -in $global:DotfilesDebloatTest.desktop) 'Remove native Copilot and preserve Edge, the shared runtime and other channels.'
 Assert (@($global:DotfilesDebloatTest.calls | Where-Object { $_ -like 'app:Microsoft.StartExperiencesApp*' }).Count -eq 1) 'Remove a bundle once, via its parent.'
 $count = $global:DotfilesDebloatTest.calls.Count
 & $target -Operation Set -AppType Store

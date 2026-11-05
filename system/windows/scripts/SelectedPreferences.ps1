@@ -95,7 +95,6 @@ public static void Notify() {
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\System', 'PublishUserActivities', 0)
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\System', 'UploadUserActivities', 0)
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\Device Metadata', 'PreventDeviceMetadataFromNetwork', 1)
-        ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors', 'DisableLocation', 1)
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice', 'AllowFindMyDevice', 0)
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\InputPersonalization', 'AllowInputPersonalization', 0)
         ,@('HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', 1)
