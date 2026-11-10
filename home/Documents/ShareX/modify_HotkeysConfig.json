@@ -1,0 +1,30 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $original := .chezmoi.stdin | default "{}" -}}
+{{- $settings := $original | fromJson -}}
+{{- $before := $settings | toJson -}}
+{{- $hotkeys := list -}}
+{{- /* Replace all global hotkeys, retaining task preferences for these actions. */ -}}
+{{- range (list
+    (dict "job" "RectangleRegion" "key" "X, Shift, Control" "win" false)
+    (dict "job" "ClipboardUpload" "key" "S, Shift, Control" "win" false)
+) -}}
+    {{- $binding := . -}}
+    {{- $task := dict "Job" $binding.job -}}
+    {{- $found := false -}}
+    {{- range (get $settings "Hotkeys" | default (list)) -}}
+        {{- if and (not $found) (eq (get .TaskSettings "Job") $binding.job) -}}
+            {{- $task = .TaskSettings -}}
+            {{- $found = true -}}
+        {{- end -}}
+    {{- end -}}
+    {{- $hotkeys = append $hotkeys (dict
+        "HotkeyInfo" (dict "Hotkey" $binding.key "Win" $binding.win)
+        "TaskSettings" $task
+    ) -}}
+{{- end -}}
+{{- $settings = setValueAtPath "Hotkeys" $hotkeys $settings -}}
+{{- if eq ($settings | toJson) $before -}}
+{{- $original -}}
+{{- else -}}
+{{- $settings | toPrettyJson -}}
+{{- end -}}

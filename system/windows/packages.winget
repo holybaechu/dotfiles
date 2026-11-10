@@ -31,11 +31,24 @@ resources:
     type: Microsoft.DSC.Transitional/PowerShellScript
     properties:
       getScript: |
-        & "${WinGetConfigRoot}\scripts\OnePasswordExtension.ps1" -Operation Get
+        & "${WinGetConfigRoot}\scripts\BrowserExtension.ps1" -Operation Get -Extension 1Password
       testScript: |
-        & "${WinGetConfigRoot}\scripts\OnePasswordExtension.ps1" -Operation Test
+        & "${WinGetConfigRoot}\scripts\BrowserExtension.ps1" -Operation Test -Extension 1Password
       setScript: |
-        & "${WinGetConfigRoot}\scripts\OnePasswordExtension.ps1" -Operation Set
+        & "${WinGetConfigRoot}\scripts\BrowserExtension.ps1" -Operation Set -Extension 1Password
+    metadata:
+      winget:
+        securityContext: elevated
+
+  - name: UBlockOriginLiteAsideExtension
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\BrowserExtension.ps1" -Operation Get -Extension uBlockOriginLite
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\BrowserExtension.ps1" -Operation Test -Extension uBlockOriginLite
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\BrowserExtension.ps1" -Operation Set -Extension uBlockOriginLite
     metadata:
       winget:
         securityContext: elevated
@@ -44,6 +57,14 @@ resources:
     type: Microsoft.WinGet/Package
     properties:
       id: Flow-Launcher.Flow-Launcher
+      source: winget
+      useLatest: false
+      acceptAgreements: true
+
+  - name: ShareX
+    type: Microsoft.WinGet/Package
+    properties:
+      id: ShareX.ShareX
       source: winget
       useLatest: false
       acceptAgreements: true

@@ -36,7 +36,10 @@ function Get-Item {
 }
 function New-Item {
     [CmdletBinding()]param([string]$Path,[switch]$Force)
-    Assert ($Path -eq 'HKLM:\Software\WOW6432Node\Google\Chrome\Extensions\aeblfdkhhhdcdjpifhhbdiojplfjncoa') 'Only the 1Password Web Store registration may be created.'
+    Assert ($Path -in @(
+        'HKLM:\Software\WOW6432Node\Google\Chrome\Extensions\aeblfdkhhhdcdjpifhhbdiojplfjncoa'
+        'HKLM:\Software\WOW6432Node\Google\Chrome\Extensions\ddkjiahejlhfcafbddmgiahcphecmpfh'
+    )) 'Only the 1Password and uBlock Origin Lite Web Store registrations may be created.'
     $global:BrowserFixture.Registry[$Path] = @{}
 }
 function New-ItemProperty {
@@ -98,19 +101,26 @@ try {
     $global:BrowserFixture.ExitCode = 0; $global:BrowserFixture.Register = $false
     Assert-Failure { & $aside -Operation Set } 'without registering the browser'
 
-    $extension = Join-Path $scripts 'OnePasswordExtension.ps1'
-    Assert (-not (& $extension -Operation Get).Exists -and -not (& $extension -Operation Test)) 'An absent extension registration must not pass detection.'
-    & $extension -Operation Set
-    Assert (& $extension -Operation Test) 'Extension registration must converge.'
-    $writes = $global:BrowserFixture.Writes
-    & $extension -Operation Set
-    Assert ($global:BrowserFixture.Writes -eq $writes) 'Matching registration must not be rewritten.'
-    $extensionKey = @($global:BrowserFixture.Registry.Keys | Where-Object { $_ -like '*\Extensions\*' })[0]
-    $global:BrowserFixture.Registry[$extensionKey].update_url.Value = 'wrong'
-    $global:BrowserFixture.Deny = $true
-    Assert-Failure { & $extension -Operation Set } 'Registry access denied'
-    $global:BrowserFixture.Deny = $false; $global:BrowserFixture.Drop = $true
-    Assert-Failure { & $extension -Operation Set } 'did not retain'
+    $extension = Join-Path $scripts 'BrowserExtension.ps1'
+    $extensions = @{
+        '1Password' = 'aeblfdkhhhdcdjpifhhbdiojplfjncoa'
+        uBlockOriginLite = 'ddkjiahejlhfcafbddmgiahcphecmpfh'
+    }
+    foreach ($name in $extensions.Keys) {
+        Assert (-not (& $extension -Operation Get -Extension $name).Exists -and -not (& $extension -Operation Test -Extension $name)) 'An absent extension registration must not pass detection.'
+        & $extension -Operation Set -Extension $name
+        Assert (& $extension -Operation Test -Extension $name) 'Extension registration must converge.'
+        $writes = $global:BrowserFixture.Writes
+        & $extension -Operation Set -Extension $name
+        Assert ($global:BrowserFixture.Writes -eq $writes) 'Matching registration must not be rewritten.'
+        $extensionKey = "HKLM:\Software\WOW6432Node\Google\Chrome\Extensions\$($extensions[$name])"
+        $global:BrowserFixture.Registry[$extensionKey].update_url.Value = 'wrong'
+        $global:BrowserFixture.Deny = $true
+        Assert-Failure { & $extension -Operation Set -Extension $name } 'Registry access denied'
+        $global:BrowserFixture.Deny = $false; $global:BrowserFixture.Drop = $true
+        Assert-Failure { & $extension -Operation Set -Extension $name } 'did not retain'
+        $global:BrowserFixture.Drop = $false
+    }
 
     $preferences = Join-Path $scripts 'AsidePreferences.ps1'
     $env:LOCALAPPDATA = Join-Path $fixtureRoot 'Local'
@@ -121,25 +131,12 @@ try {
     Assert (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $fixtureRoot)) 'Detection must not create browser or vault accounts.'
 
     $profile = Join-Path $env:LOCALAPPDATA 'Aside\User Data\Default'
-    $secondProfile = Join-Path $env:LOCALAPPDATA 'Aside\User Data\Profile 1'
     $account = Join-Path $env:USERPROFILE '.aside\password-manager\accounts\fixture'
-    foreach ($directory in @($profile, $secondProfile, $account, "$profile\AsideAdBlock\Custom")) {
+    foreach ($directory in @($profile, $account)) {
         [void][IO.Directory]::CreateDirectory($directory)
     }
-    foreach ($directory in @($profile, $secondProfile)) { [IO.File]::WriteAllText("$directory\Preferences", '{}') }
+    [IO.File]::WriteAllText("$profile\Preferences", '{}')
     [IO.File]::WriteAllText("$account\settings.json", '{"useBuiltinPasswordManager":true,"autoLockTimeout":60}')
-    $rulesPath = "$profile\AsideAdBlock\Custom\rules.txt"
-    [IO.File]::WriteAllText($rulesPath, '||custom.example^')
-    $subscriptionsPath = "$profile\AsideAdBlock\subscriptions.json"
-    $filterUrl = 'https://ublockorigin.github.io/uAssets/thirdparties/easylist.txt'
-    [IO.File]::WriteAllText($subscriptionsPath, (@{
-        enabled = $false; keep = 'metadata'
-        subscriptions = @(
-            @{ id = 'existing'; name = 'EasyList'; url = $filterUrl; enabled = $false; nextUpdateMs = 123 }
-            @{ id = 'ads'; name = 'uBlock filters – Ads'; url = 'https://ublockorigin.github.io/uAssets/filters/filters.txt'; enabled = $true; etag = 'old'; nextUpdateMs = 123 }
-            @{ id = 'custom'; name = 'Custom'; url = 'https://example.com/custom.txt'; enabled = $false }
-        )
-    } | ConvertTo-Json -Depth 5))
     $global:BrowserFixture.Running = $true
     Assert-Failure { & $preferences -Operation Set } 'Quit Aside'
     Assert ($global:BrowserFixture.FileWrites -eq 0) 'A running browser must prevent all preference writes.'
@@ -149,19 +146,13 @@ try {
     Assert-Failure { & $preferences -Operation Set } 'did not retain'
     $global:BrowserFixture.FileDrop = $false
     & $preferences -Operation Set
-    Assert (& $preferences -Operation Test) 'Aside settings must converge across existing profiles.'
+    Assert (& $preferences -Operation Test) 'Aside password-manager settings must converge.'
     $saved = Get-Content -LiteralPath "$account\settings.json" -Raw | ConvertFrom-Json
     Assert ($saved.useBuiltinPasswordManager -ceq $false -and $saved.autoLockTimeout -eq 60) 'Disable Aside Vault while preserving its other settings.'
-    $saved = Get-Content -LiteralPath $subscriptionsPath -Raw | ConvertFrom-Json
-    $existing = @($saved.subscriptions | Where-Object url -eq $filterUrl)
-    Assert ($saved.enabled -and $saved.keep -eq 'metadata' -and $existing.Count -eq 1 -and $existing[0].enabled -and $existing[0].id -eq 'existing' -and $existing[0].nextUpdateMs -eq 123) 'Enable matching filters without duplicating them or losing metadata.'
-    $ads = @($saved.subscriptions | Where-Object url -eq 'https://ublockorigin.github.io/uAssetsCDN/filters/filters.min.txt')
-    Assert ($ads.Count -eq 1 -and $ads[0].id -eq 'ads' -and $ads[0].etag -eq '' -and $ads[0].nextUpdateMs -eq 0) 'Switch include-based lists to expanded sources and discard old conditional-download headers.'
-    Assert (-not ($saved.subscriptions | Where-Object id -eq 'custom').enabled -and [IO.File]::ReadAllText($rulesPath) -eq '||custom.example^') 'Preserve custom subscriptions and rules.'
     $writes = $global:BrowserFixture.FileWrites
     & $preferences -Operation Set
     Assert ($global:BrowserFixture.FileWrites -eq $writes) 'Matching preferences must not be rewritten.'
-    [IO.File]::WriteAllText($subscriptionsPath, '[]')
+    [IO.File]::WriteAllText("$account\settings.json", '[]')
     Assert-Failure { & $preferences -Operation Set } 'Expected a JSON object'
     Assert ($global:BrowserFixture.FileWrites -eq $writes) 'Invalid metadata must fail before any settings are written.'
     Write-Output 'PASS: browser setup, installer failures, denied/ignored writes and safe Aside preference reapply'

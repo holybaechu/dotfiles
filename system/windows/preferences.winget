@@ -87,6 +87,16 @@ resources:
         param($settings)
         & "${WinGetConfigRoot}\scripts\ExplorerPreferences.ps1" -Operation Set -HideDesktopIcons $settings.hideDesktopIcons -ShowHiddenFiles $settings.showHiddenFiles -ShowFileExtensions $settings.showFileExtensions
 
+  - name: RecycleBinQuickAccess
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\RecycleBinQuickAccess.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\RecycleBinQuickAccess.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\RecycleBinQuickAccess.ps1" -Operation Set
+
   - name: MouseAcceleration
     type: Microsoft.DSC.Transitional/PowerShellScript
     properties:

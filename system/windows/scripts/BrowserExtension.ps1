@@ -1,14 +1,19 @@
 #requires -Version 7.0
 [CmdletBinding()]
 param(
-    [ValidateSet('Get', 'Test', 'Set')][string]$Operation = 'Test'
+    [ValidateSet('Get', 'Test', 'Set')][string]$Operation = 'Test',
+    [Parameter(Mandatory)][ValidateSet('1Password', 'uBlockOriginLite')][string]$Extension
 )
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\RegistryState.ps1"
 
 # Aside's Windows build reads Chromium's shared Google\Chrome extension key.
+$extensionIds = @{
+    '1Password' = 'aeblfdkhhhdcdjpifhhbdiojplfjncoa'
+    uBlockOriginLite = 'ddkjiahejlhfcafbddmgiahcphecmpfh'
+}
 $setting = @{
-    Path = 'HKLM:\Software\WOW6432Node\Google\Chrome\Extensions\aeblfdkhhhdcdjpifhhbdiojplfjncoa'
+    Path = "HKLM:\Software\WOW6432Node\Google\Chrome\Extensions\$($extensionIds[$Extension])"
     Name = 'update_url'
     Kind = 'String'
     Value = 'https://clients2.google.com/service/update2/crx'
@@ -20,5 +25,5 @@ if (Test-RegistrySetting $setting) { return }
 if (-not (Test-Path -LiteralPath $setting.Path)) { [void](New-Item -Path $setting.Path -Force) }
 [void](New-ItemProperty -LiteralPath $setting.Path -Name $setting.Name -Value $setting.Value -PropertyType $setting.Kind -Force)
 if (-not (Test-RegistrySetting $setting)) {
-    throw 'Windows did not retain the 1Password extension registration for Aside.'
+    throw "Windows did not retain the $Extension extension registration for Aside."
 }
