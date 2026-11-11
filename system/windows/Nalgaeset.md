@@ -8,10 +8,12 @@ Restart apps after applying changed input settings.
 
 | Shortcut | Action |
 | --- | --- |
-| Hangul key or left Shift+Space | Switch Korean two-set and Gallium Colstag |
+| Hangul key or left Shift+Space | Switch Shin Sebeolsik P2 and Gallium Colstag |
 | Right Shift+Space or Shift+Hangul | Select the required QWERTY pass-through mode |
 | Win+Space | Switch between Nalgaeset and Microsoft IME |
 
+Korean uses the creator's [Shin Sebeolsik P2 basic layout](https://pat.im/1136),
+imported from the [Nalgaeset input-type file](https://pat.im/attachment/8041590585.ist).
 Gallium uses the Colstag arrangement with Y, P, F down the right index column.
 It changes text input handled by Nalgaeset; application shortcuts, password
 fields and IME-off input use the underlying Windows keyboard layout.
