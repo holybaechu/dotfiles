@@ -1,7 +1,8 @@
 # Nalgaeset
 
 Windows package setup installs [Nalgaeset 11.01](https://smlooking4u.mycafe24.com/ngs_download.htm).
-The preferences module enables it as the current user's default input method.
+The preferences module keeps Korean with Nalgaeset as the current user's only
+input method and selects it as the default, removing Microsoft IME and US.
 Its native configuration is managed in `home/AppData/Roaming/YmSoft/NgsLib/imeconf.dat`.
 Restart apps after applying changed input settings.
 
@@ -9,7 +10,6 @@ Restart apps after applying changed input settings.
 | --- | --- |
 | Hangul key or left Shift+Space | Switch Korean two-set and Gallium Colstag |
 | Right Shift+Space or Shift+Hangul | Select the required QWERTY pass-through mode |
-| Win+Space | Switch Windows input methods |
 
 Gallium uses the Colstag arrangement with Y, P, F down the right index column.
 It changes text input handled by Nalgaeset; application shortcuts, password
@@ -22,4 +22,6 @@ Control Panel > Import**. Click **OK**, then run
 Keep the XML export and native file together when updating the settings.
 
 Applying the dotfiles removes the old EPKL folder and startup shortcut.
-The Microsoft IME and US keyboard remain available through Win+Space for recovery.
+To restore another input method, add it under **Settings > Time & language >
+Language & region > Language options > Keyboards**. Reapplying the preferences
+module removes other input methods again.

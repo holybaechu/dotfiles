@@ -49,9 +49,9 @@ try {
     [void](& $scriptPath -Operation Get)
     Assert ($global:NalgaesetFixture.Writes -eq 0) 'Detection must not change input settings.'
     & $scriptPath -Operation Set
-    Assert (& $scriptPath -Operation Test) 'Nalgaeset must become an enabled, default input method.'
+    Assert (& $scriptPath -Operation Test) 'Nalgaeset must become the only enabled, default input method.'
     $tips = @($global:NalgaesetFixture.Languages | ForEach-Object InputMethodTips)
-    Assert ($microsoftTip -in $tips -and '0409:00000409' -in $tips) 'Existing input methods must remain available.'
+    Assert ($global:NalgaesetFixture.Languages.Count -eq 1 -and $tips.Count -eq 1 -and $tips[0] -eq $tip) 'Microsoft IME and the US keyboard must be removed.'
     $writes = $global:NalgaesetFixture.Writes
     & $scriptPath -Operation Set
     Assert ($global:NalgaesetFixture.Writes -eq $writes) 'Matching input settings must not be rewritten.'
@@ -59,10 +59,13 @@ try {
     $global:NalgaesetFixture.Deny = $true
     Assert-Failure { & $scriptPath -Operation Set } 'access denied'
     $global:NalgaesetFixture.Deny = $false; $global:NalgaesetFixture.Drop = $true
+    $global:NalgaesetFixture.Default = $tip
+    $global:NalgaesetFixture.Languages[0].InputMethodTips.Add($microsoftTip)
+    Assert (-not (& $scriptPath -Operation Test)) 'An extra input method must fail detection even when Nalgaeset is the default.'
     Assert-Failure { & $scriptPath -Operation Set } 'did not retain'
     $global:NalgaesetFixture.Installed = $false
     Assert-Failure { & $scriptPath -Operation Set } 'packages module'
-    Write-Output 'PASS: input-method selection, preserved fallbacks, safe reapply and denied/ignored settings'
+    Write-Output 'PASS: exclusive Nalgaeset selection, safe reapply and denied/ignored settings'
 } finally {
     Remove-Variable NalgaesetFixture -Scope Global
 }
