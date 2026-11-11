@@ -5,7 +5,7 @@ $scriptPath = Join-Path (Split-Path $PSScriptRoot) 'scripts\NalgaesetInputMethod
 $tip = '0412:{5CC2EDB1-F5F4-456C-A871-CF6B62415CD9}{36207E64-3175-433E-A713-2D0F7473273A}'
 $microsoftTip = '0412:{A028AE76-01B1-46C2-99C4-ACD9858AE02F}{B5FE1F02-D5F2-4445-9C03-C568F23C99A1}'
 $global:NalgaesetFixture = @{
-    Installed = $true; Default = '0409:00000409'; Writes = 0; Deny = $false; Drop = $false
+    Installed = $true; Default = '0409:00000409'; Writes = 0; Deny = $false; Drop = $false; Correction = 0
     Languages = @(
         @{ LanguageTag = 'ko'; InputMethodTips = @($microsoftTip) }
         @{ LanguageTag = 'en-US'; InputMethodTips = @('0409:00000409') }
@@ -19,8 +19,25 @@ function Assert-Failure([scriptblock]$Action, [string]$Expected) {
 }
 function Test-Path {
     [CmdletBinding()]param([string]$LiteralPath)
+    if ($LiteralPath -eq 'HKCU:\Software\YMSoft\NgsEdit\Settings') { return $true }
     Assert ($LiteralPath -like 'HKLM:\SOFTWARE\Microsoft\CTF\TIP\*') 'Only the Nalgaeset profile may be checked.'
     $global:NalgaesetFixture.Installed
+}
+function Get-Item {
+    [CmdletBinding()]param([string]$LiteralPath)
+    Assert ($LiteralPath -eq 'HKCU:\Software\YMSoft\NgsEdit\Settings') 'Only Nalgaeset settings may be read.'
+    $item = [pscustomobject]@{ Correction = $global:NalgaesetFixture.Correction }
+    $item | Add-Member ScriptMethod GetValueNames { @('KbdDriverModifier') }
+    $item | Add-Member ScriptMethod GetValueKind { param($name) 'DWord' }
+    $item | Add-Member ScriptMethod GetValue { param($name,$default,$options) $this.Correction }
+    $item
+}
+function New-ItemProperty {
+    [CmdletBinding()]param([string]$LiteralPath,[string]$Name,$Value,[string]$PropertyType,[switch]$Force)
+    Assert ($LiteralPath -eq 'HKCU:\Software\YMSoft\NgsEdit\Settings' -and $Name -eq 'KbdDriverModifier' -and $Value -eq 3 -and $PropertyType -eq 'DWord') 'Only the width shortcut correction may be written.'
+    $global:NalgaesetFixture.Writes++
+    if ($global:NalgaesetFixture.Deny) { throw 'Registry access denied.' }
+    if (-not $global:NalgaesetFixture.Drop) { $global:NalgaesetFixture.Correction = $Value }
 }
 function Get-WinUserLanguageList {
     $languages = [Collections.Generic.List[object]]::new()
@@ -49,9 +66,10 @@ try {
     [void](& $scriptPath -Operation Get)
     Assert ($global:NalgaesetFixture.Writes -eq 0) 'Detection must not change input settings.'
     & $scriptPath -Operation Set
-    Assert (& $scriptPath -Operation Test) 'Nalgaeset must become the only enabled, default input method.'
+    Assert (& $scriptPath -Operation Test) 'Nalgaeset must become the default alongside Microsoft IME.'
     $tips = @($global:NalgaesetFixture.Languages | ForEach-Object InputMethodTips)
-    Assert ($global:NalgaesetFixture.Languages.Count -eq 1 -and $tips.Count -eq 1 -and $tips[0] -eq $tip) 'Microsoft IME and the US keyboard must be removed.'
+    Assert ($global:NalgaesetFixture.Languages.Count -eq 1 -and $tips.Count -eq 2 -and $tip -in $tips -and $microsoftTip -in $tips) 'Nalgaeset and Microsoft IME must remain, without the US keyboard.'
+    Assert ($global:NalgaesetFixture.Correction -eq 3) 'The Alt+= width shortcut must be disabled.'
     $writes = $global:NalgaesetFixture.Writes
     & $scriptPath -Operation Set
     Assert ($global:NalgaesetFixture.Writes -eq $writes) 'Matching input settings must not be rewritten.'
@@ -60,12 +78,18 @@ try {
     Assert-Failure { & $scriptPath -Operation Set } 'access denied'
     $global:NalgaesetFixture.Deny = $false; $global:NalgaesetFixture.Drop = $true
     $global:NalgaesetFixture.Default = $tip
-    $global:NalgaesetFixture.Languages[0].InputMethodTips.Add($microsoftTip)
-    Assert (-not (& $scriptPath -Operation Test)) 'An extra input method must fail detection even when Nalgaeset is the default.'
+    [void]$global:NalgaesetFixture.Languages[0].InputMethodTips.Remove($microsoftTip)
+    Assert (-not (& $scriptPath -Operation Test)) 'Missing Microsoft IME must fail detection even when Nalgaeset is the default.'
+    Assert-Failure { & $scriptPath -Operation Set } 'did not retain'
+    $global:NalgaesetFixture.Drop = $false
+    & $scriptPath -Operation Set
+    $global:NalgaesetFixture.Correction = 0; $global:NalgaesetFixture.Deny = $true
+    Assert-Failure { & $scriptPath -Operation Set } 'Registry access denied'
+    $global:NalgaesetFixture.Deny = $false; $global:NalgaesetFixture.Drop = $true
     Assert-Failure { & $scriptPath -Operation Set } 'did not retain'
     $global:NalgaesetFixture.Installed = $false
     Assert-Failure { & $scriptPath -Operation Set } 'packages module'
-    Write-Output 'PASS: exclusive Nalgaeset selection, safe reapply and denied/ignored settings'
+    Write-Output 'PASS: Nalgaeset with Microsoft IME, width shortcut disabled, safe reapply and denied/ignored settings'
 } finally {
     Remove-Variable NalgaesetFixture -Scope Global
 }
