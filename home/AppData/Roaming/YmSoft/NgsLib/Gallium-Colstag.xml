@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EditContextSetting version="0x500">
+  <EditorLayer flag="DEL_MOVE|ARROW_MOVE|WORD_CANDIDATE|WORD_SCAN_L2R">
+    <ShortcutTable>
+      <Shortcut key="VK_SPACE" modifier="L_SHIFT" usage="IME_SWITCH" value="!A" />
+      <Shortcut key="VK_HANGUL" usage="IME_SWITCH" value="!A" />
+      <Shortcut key="VK_SPACE" modifier="R_SHIFT" usage="IME_SWITCH" value="2" />
+      <Shortcut key="VK_HANGUL" modifier="SHIFT" usage="IME_SWITCH" value="2" />
+      <Shortcut key="VK_HANJA" usage="KEYCHAR" value="C0|0x82" />
+      <Shortcut key="VK_HANJA" modifier="CTRL" usage="KEYCHAR" value="C0|0x82" />
+      <Shortcut key="VK_HANJA" modifier="SHIFT" usage="KEYCHAR" value="C0|0x83" />
+    </ShortcutTable>
+    <FinalConvTable />
+  </EditorLayer>
+  <InputLayer default="0" current="0">
+    <InputEntry>
+      <InputSchemeSetting flag="0" object="CBasicInputScheme">
+        <KeyTable name="KS X 5002 두벌식" flag="0" from="33" to="126">
+          <Key at="0x21" value="0x21" />
+          <Key at="0x22" value="0x22" />
+          <Key at="0x23" value="0x23" />
+          <Key at="0x24" value="0x24" />
+          <Key at="0x25" value="0x25" />
+          <Key at="0x26" value="0x26" />
+          <Key at="0x27" value="0x27" />
+          <Key at="0x28" value="0x28" />
+          <Key at="0x29" value="0x29" />
+          <Key at="0x2A" value="0x2A" />
+          <Key at="0x2B" value="0x2B" />
+          <Key at="0x2C" value="0x2C" />
+          <Key at="0x2D" value="0x2D" />
+          <Key at="0x2E" value="0x2E" />
+          <Key at="0x2F" value="0x2F" />
+          <Key at="0x30" value="0x30" />
+          <Key at="0x31" value="0x31" />
+          <Key at="0x32" value="0x32" />
+          <Key at="0x33" value="0x33" />
+          <Key at="0x34" value="0x34" />
+          <Key at="0x35" value="0x35" />
+          <Key at="0x36" value="0x36" />
+          <Key at="0x37" value="0x37" />
+          <Key at="0x38" value="0x38" />
+          <Key at="0x39" value="0x39" />
+          <Key at="0x3A" value="0x3A" />
+          <Key at="0x3B" value="0x3B" />
+          <Key at="0x3C" value="0x3C" />
+          <Key at="0x3D" value="0x3D" />
+          <Key at="0x3E" value="0x3E" />
+          <Key at="0x3F" value="0x3F" />
+          <Key at="0x40" value="0x40" />
+          <Key at="0x41" value="T&lt;=1 ? H2|M_ : H2|_M" />
+          <Key at="0x42" value="H2|YU" />
+          <Key at="0x43" value="T&lt;=1 ? H2|C_ : H2|_C" />
+          <Key at="0x44" value="T&lt;=1 ? H2|Q_ : H2|_Q" />
+          <Key at="0x45" value="H3|DD" />
+          <Key at="0x46" value="T&lt;=1 ? H2|R_ : H2|_R" />
+          <Key at="0x47" value="T&lt;=1 ? H2|H_ : H2|_H" />
+          <Key at="0x48" value="H2|O_" />
+          <Key at="0x49" value="H2|YA" />
+          <Key at="0x4A" value="H2|EO" />
+          <Key at="0x4B" value="H2|A_" />
+          <Key at="0x4C" value="H2|I_" />
+          <Key at="0x4D" value="H2|EU" />
+          <Key at="0x4E" value="H2|U_" />
+          <Key at="0x4F" value="H2|YAE" />
+          <Key at="0x50" value="H2|YE" />
+          <Key at="0x51" value="H3|BB" />
+          <Key at="0x52" value="T&lt;=1 ? H2|GG : H2|_GG" />
+          <Key at="0x53" value="T&lt;=1 ? H2|N_ : H2|_N" />
+          <Key at="0x54" value="T&lt;=1 ? H2|SS : H2|_SS" />
+          <Key at="0x55" value="H2|YEO" />
+          <Key at="0x56" value="T&lt;=1 ? H2|P_ : H2|_P" />
+          <Key at="0x57" value="H3|JJ" />
+          <Key at="0x58" value="T&lt;=1 ? H2|T_ : H2|_T" />
+          <Key at="0x59" value="H2|YO" />
+          <Key at="0x5A" value="T&lt;=1 ? H2|K_ : H2|_K" />
+          <Key at="0x5B" value="0x5B" />
+          <Key at="0x5C" value="0x5C" />
+          <Key at="0x5D" value="0x5D" />
+          <Key at="0x5E" value="0x5E" />
+          <Key at="0x5F" value="0x5F" />
+          <Key at="0x60" value="0x60" />
+          <Key at="0x61" value="T&lt;=1 ? H2|M_ : H2|_M" />
+          <Key at="0x62" value="H2|YU" />
+          <Key at="0x63" value="T&lt;=1 ? H2|C_ : H2|_C" />
+          <Key at="0x64" value="T&lt;=1 ? H2|Q_ : H2|_Q" />
+          <Key at="0x65" value="T&lt;=1 ? H2|D_ : H2|_D" />
+          <Key at="0x66" value="T&lt;=1 ? H2|R_ : H2|_R" />
+          <Key at="0x67" value="T&lt;=1 ? H2|H_ : H2|_H" />
+          <Key at="0x68" value="H2|O_" />
+          <Key at="0x69" value="H2|YA" />
+          <Key at="0x6A" value="H2|EO" />
+          <Key at="0x6B" value="H2|A_" />
+          <Key at="0x6C" value="H2|I_" />
+          <Key at="0x6D" value="H2|EU" />
+          <Key at="0x6E" value="H2|U_" />
+          <Key at="0x6F" value="H2|AE" />
+          <Key at="0x70" value="H2|E_" />
+          <Key at="0x71" value="T&lt;=1 ? H2|B_ : H2|_B" />
+          <Key at="0x72" value="T&lt;=1 ? H2|G_ : H2|_G" />
+          <Key at="0x73" value="T&lt;=1 ? H2|N_ : H2|_N" />
+          <Key at="0x74" value="T&lt;=1 ? H2|S_ : H2|_S" />
+          <Key at="0x75" value="H2|YEO" />
+          <Key at="0x76" value="T&lt;=1 ? H2|P_ : H2|_P" />
+          <Key at="0x77" value="T&lt;=1 ? H2|J_ : H2|_J" />
+          <Key at="0x78" value="T&lt;=1 ? H2|T_ : H2|_T" />
+          <Key at="0x79" value="H2|YO" />
+          <Key at="0x7A" value="T&lt;=1 ? H2|K_ : H2|_K" />
+          <Key at="0x7B" value="0x7B" />
+          <Key at="0x7C" value="0x7C" />
+          <Key at="0x7D" value="0x7D" />
+          <Key at="0x7E" value="0x7E" />
+        </KeyTable>
+      </InputSchemeSetting>
+      <GeneratorSetting flag="0" object="CNgsIme">
+        <UnitMixTable predefined="DOOBEOLSIK">
+          <UnitMix unit="CHO" a="G_" b="G_" to="GG" />
+          <UnitMix unit="CHO" a="D_" b="D_" to="DD" />
+          <UnitMix unit="CHO" a="B_" b="B_" to="BB" />
+          <UnitMix unit="CHO" a="S_" b="S_" to="SS" />
+          <UnitMix unit="CHO" a="J_" b="J_" to="JJ" />
+          <UnitMix unit="JUNG" a="O_" b="A_" to="WA" />
+          <UnitMix unit="JUNG" a="O_" b="AE" to="WAE" />
+          <UnitMix unit="JUNG" a="O_" b="I_" to="OI" />
+          <UnitMix unit="JUNG" a="U_" b="EO" to="UEO" />
+          <UnitMix unit="JUNG" a="U_" b="E_" to="WE" />
+          <UnitMix unit="JUNG" a="U_" b="I_" to="WI" />
+          <UnitMix unit="JUNG" a="EU" b="I_" to="EUI" />
+          <UnitMix unit="JONG" a="G_" b="S_" to="GS" />
+          <UnitMix unit="JONG" a="N_" b="J_" to="NJ" />
+          <UnitMix unit="JONG" a="N_" b="H_" to="NH" />
+          <UnitMix unit="JONG" a="R_" b="G_" to="RG" />
+          <UnitMix unit="JONG" a="R_" b="M_" to="RM" />
+          <UnitMix unit="JONG" a="R_" b="B_" to="RB" />
+          <UnitMix unit="JONG" a="R_" b="S_" to="RS" />
+          <UnitMix unit="JONG" a="R_" b="T_" to="RT" />
+          <UnitMix unit="JONG" a="R_" b="P_" to="RP" />
+          <UnitMix unit="JONG" a="R_" b="H_" to="RH" />
+          <UnitMix unit="JONG" a="B_" b="S_" to="BS" />
+        </UnitMixTable>
+        <VirtualUnitTable />
+        <UnitAbbrTable />
+        <AutomataTable default="0" predefined="SEQUENTIAL">
+          <Automata state="0" value="A ? 1 : B ? 2 : C ? 3 : 0" default="0" remark="초기 상태" />
+          <Automata state="1" value="A ? 1 : B ? 2 : C ? 3 : 0" default="0" remark="초성" />
+          <Automata state="2" value="B ? 2 : C ? 3 : 0" default="0" remark="[초성] + 중성" />
+          <Automata state="3" value="C ? 3 : 0" default="0" remark="[초성] + [중성] + 종성" />
+        </AutomataTable>
+        <Extra>
+          <Bksp key="1" value1="0" value2="BySyllable" condition1="0" condition2="0" />
+          <Bksp key="2" value1="BySyllable" value2="ByUnitStep" condition1="0" condition2="0" />
+          <Bksp key="3" value1="0" value2="0" condition1="0" condition2="0" />
+          <Bksp key="4" value1="0" value2="0" condition1="0" condition2="0" />
+        </Extra>
+      </GeneratorSetting>
+    </InputEntry>
+    <InputEntry>
+      <InputSchemeSetting flag="0" object="CBasicInputScheme">
+        <KeyTable name="Gallium Colstag" flag="0" from="33" to="126">
+          <Key at="0x21" value="0x21" />
+          <Key at="0x22" value="0x3F" />
+          <Key at="0x23" value="0x23" />
+          <Key at="0x24" value="0x24" />
+          <Key at="0x25" value="0x25" />
+          <Key at="0x26" value="0x26" />
+          <Key at="0x27" value="0x2F" />
+          <Key at="0x28" value="0x28" />
+          <Key at="0x29" value="0x29" />
+          <Key at="0x2A" value="0x2A" />
+          <Key at="0x2B" value="0x2B" />
+          <Key at="0x2C" value="0x27" />
+          <Key at="0x2D" value="0x2D" />
+          <Key at="0x2E" value="0x3B" />
+          <Key at="0x2F" value="0x2E" />
+          <Key at="0x30" value="0x30" />
+          <Key at="0x31" value="0x31" />
+          <Key at="0x32" value="0x32" />
+          <Key at="0x33" value="0x33" />
+          <Key at="0x34" value="0x34" />
+          <Key at="0x35" value="0x35" />
+          <Key at="0x36" value="0x36" />
+          <Key at="0x37" value="0x37" />
+          <Key at="0x38" value="0x38" />
+          <Key at="0x39" value="0x39" />
+          <Key at="0x3A" value="P&amp;1 ? 'i' : 'I'" />
+          <Key at="0x3B" value="P&amp;1 ? 'I' : 'i'" />
+          <Key at="0x3C" value="0x22" />
+          <Key at="0x3D" value="0x3D" />
+          <Key at="0x3E" value="0x3A" />
+          <Key at="0x3F" value="0x3E" />
+          <Key at="0x40" value="0x40" />
+          <Key at="0x41" value="P&amp;1 ? 'n' : 'N'" />
+          <Key at="0x42" value="P&amp;1 ? 'z' : 'Z'" />
+          <Key at="0x43" value="P&amp;1 ? 'm' : 'M'" />
+          <Key at="0x44" value="P&amp;1 ? 't' : 'T'" />
+          <Key at="0x45" value="P&amp;1 ? 'd' : 'D'" />
+          <Key at="0x46" value="P&amp;1 ? 's' : 'S'" />
+          <Key at="0x47" value="P&amp;1 ? 'g' : 'G'" />
+          <Key at="0x48" value="P&amp;1 ? 'p' : 'P'" />
+          <Key at="0x49" value="P&amp;1 ? 'o' : 'O'" />
+          <Key at="0x4A" value="P&amp;1 ? 'h' : 'H'" />
+          <Key at="0x4B" value="P&amp;1 ? 'a' : 'A'" />
+          <Key at="0x4C" value="P&amp;1 ? 'e' : 'E'" />
+          <Key at="0x4D" value="P&amp;1 ? 'f' : 'F'" />
+          <Key at="0x4E" value="P&amp;1 ? 'k' : 'K'" />
+          <Key at="0x4F" value="P&amp;1 ? 'u' : 'U'" />
+          <Key at="0x50" value="0x3C" />
+          <Key at="0x51" value="P&amp;1 ? 'b' : 'B'" />
+          <Key at="0x52" value="P&amp;1 ? 'c' : 'C'" />
+          <Key at="0x53" value="P&amp;1 ? 'r' : 'R'" />
+          <Key at="0x54" value="P&amp;1 ? 'v' : 'V'" />
+          <Key at="0x55" value="P&amp;1 ? 'y' : 'Y'" />
+          <Key at="0x56" value="P&amp;1 ? 'w' : 'W'" />
+          <Key at="0x57" value="P&amp;1 ? 'l' : 'L'" />
+          <Key at="0x58" value="P&amp;1 ? 'q' : 'Q'" />
+          <Key at="0x59" value="P&amp;1 ? 'j' : 'J'" />
+          <Key at="0x5A" value="P&amp;1 ? 'x' : 'X'" />
+          <Key at="0x5B" value="0x5B" />
+          <Key at="0x5C" value="0x5C" />
+          <Key at="0x5D" value="0x5D" />
+          <Key at="0x5E" value="0x5E" />
+          <Key at="0x5F" value="0x5F" />
+          <Key at="0x60" value="0x60" />
+          <Key at="0x61" value="P&amp;1 ? 'N' : 'n'" />
+          <Key at="0x62" value="P&amp;1 ? 'Z' : 'z'" />
+          <Key at="0x63" value="P&amp;1 ? 'M' : 'm'" />
+          <Key at="0x64" value="P&amp;1 ? 'T' : 't'" />
+          <Key at="0x65" value="P&amp;1 ? 'D' : 'd'" />
+          <Key at="0x66" value="P&amp;1 ? 'S' : 's'" />
+          <Key at="0x67" value="P&amp;1 ? 'G' : 'g'" />
+          <Key at="0x68" value="P&amp;1 ? 'P' : 'p'" />
+          <Key at="0x69" value="P&amp;1 ? 'O' : 'o'" />
+          <Key at="0x6A" value="P&amp;1 ? 'H' : 'h'" />
+          <Key at="0x6B" value="P&amp;1 ? 'A' : 'a'" />
+          <Key at="0x6C" value="P&amp;1 ? 'E' : 'e'" />
+          <Key at="0x6D" value="P&amp;1 ? 'F' : 'f'" />
+          <Key at="0x6E" value="P&amp;1 ? 'K' : 'k'" />
+          <Key at="0x6F" value="P&amp;1 ? 'U' : 'u'" />
+          <Key at="0x70" value="0x2C" />
+          <Key at="0x71" value="P&amp;1 ? 'B' : 'b'" />
+          <Key at="0x72" value="P&amp;1 ? 'C' : 'c'" />
+          <Key at="0x73" value="P&amp;1 ? 'R' : 'r'" />
+          <Key at="0x74" value="P&amp;1 ? 'V' : 'v'" />
+          <Key at="0x75" value="P&amp;1 ? 'Y' : 'y'" />
+          <Key at="0x76" value="P&amp;1 ? 'W' : 'w'" />
+          <Key at="0x77" value="P&amp;1 ? 'L' : 'l'" />
+          <Key at="0x78" value="P&amp;1 ? 'Q' : 'q'" />
+          <Key at="0x79" value="P&amp;1 ? 'J' : 'j'" />
+          <Key at="0x7A" value="P&amp;1 ? 'X' : 'x'" />
+          <Key at="0x7B" value="0x7B" />
+          <Key at="0x7C" value="0x7C" />
+          <Key at="0x7D" value="0x7D" />
+          <Key at="0x7E" value="0x7E" />
+        </KeyTable>
+      </InputSchemeSetting>
+      <GeneratorSetting flag="0" object="CIme" />
+    </InputEntry>
+    <InputEntry>
+      <InputSchemeSetting object="CInputScheme" />
+    </InputEntry>
+  </InputLayer>
+</EditContextSetting>

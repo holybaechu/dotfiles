@@ -5,6 +5,16 @@ metadata:
       identifier: dscv3
 
 resources:
+  - name: NalgaesetInputMethod
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\NalgaesetInputMethod.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\NalgaesetInputMethod.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\NalgaesetInputMethod.ps1" -Operation Set
+
   - name: AsidePreferences
     type: Microsoft.DSC.Transitional/PowerShellScript
     properties:

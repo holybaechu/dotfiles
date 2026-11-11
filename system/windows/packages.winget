@@ -61,6 +61,19 @@ resources:
       useLatest: false
       acceptAgreements: true
 
+  - name: Nalgaeset
+    type: Microsoft.DSC.Transitional/PowerShellScript
+    properties:
+      getScript: |
+        & "${WinGetConfigRoot}\scripts\Nalgaeset.ps1" -Operation Get
+      testScript: |
+        & "${WinGetConfigRoot}\scripts\Nalgaeset.ps1" -Operation Test
+      setScript: |
+        & "${WinGetConfigRoot}\scripts\Nalgaeset.ps1" -Operation Set
+    metadata:
+      winget:
+        securityContext: elevated
+
   - name: ShareX
     type: Microsoft.WinGet/Package
     properties:
