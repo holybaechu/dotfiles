@@ -1,7 +1,7 @@
 #requires -Version 7.0
 [CmdletBinding()]
 param(
-    [ValidateSet('Get', 'Test', 'Set', 'Restore')][string]$Operation = 'Test',
+    [ValidateSet('Get', 'Test', 'Set')][string]$Operation = 'Test',
     [Parameter(Mandatory)][ValidateSet('User', 'Machine')][string]$Context
 )
 $ErrorActionPreference = 'Stop'
@@ -11,7 +11,6 @@ if ([int]$version.CurrentBuild -lt 22000) { throw 'This privacy configuration re
 $unsupported = @()
 
 if ($Context -eq 'User') {
-    $journalPath = Join-Path $env:LOCALAPPDATA 'dotfiles\rollback\privacy-user.json'
     $content = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
     $explorer = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
     $rows = @(
@@ -34,7 +33,6 @@ if ($Context -eq 'User') {
     )
     if ($version.EditionID -like 'Professional*') { $unsupported += 'The broad cloud consumer-content policy is not supported on Windows Pro. User suggestion settings are managed separately; Settings Home Microsoft 365 cards are not guaranteed to disappear.' }
 } else {
-    $journalPath = Join-Path $env:ProgramData 'dotfiles\rollback\privacy-machine.json'
     $rows = @(
         # Diagnostic data off is supported on Enterprise/Education; Pro/Home retain required data.
         ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection', 'AllowTelemetry', $(if ($version.EditionID -match 'Enterprise|Education') { 0 } else { 1 }))
@@ -46,19 +44,24 @@ if ($Context -eq 'User') {
     if ([int]$version.CurrentBuild -gt 26100 -or ([int]$version.CurrentBuild -eq 26100 -and [int]$version.UBR -ge 3915)) {
         $rows += ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', 'DisableAIDataAnalysis', 1)
     } else { $unsupported += 'The Recall snapshot policy is unsupported on this Windows build; component inventory reports removal separately.' }
+    $windowsAiPolicy = Join-Path $env:SystemRoot 'PolicyDefinitions\WindowsCopilot.admx'
+    if ($version.EditionID -match '^(Professional|Enterprise|Education|IoTEnterprise)' -and
+        (Test-Path -LiteralPath $windowsAiPolicy) -and
+        (Select-String -LiteralPath $windowsAiPolicy -SimpleMatch 'name="DisableClickToDo"' -Quiet)) {
+        $rows += ,@('HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI', 'DisableClickToDo', 1)
+    } else { $unsupported += 'The Click to Do policy is unavailable on this Windows build or edition.' }
 }
 $settings = @($rows | ForEach-Object { @{ Path = $_[0]; Name = $_[1]; Value = $_[2]; Kind = 'DWord' } })
-if ($Operation -ne 'Restore') { foreach ($message in $unsupported) { Write-Warning $message } }
+foreach ($message in $unsupported) { Write-Warning $message }
 switch ($Operation) {
     Get { @{ Settings = @($settings | ForEach-Object { @{ Path = $_.Path; Name = $_.Name; Matches = [bool](Test-RegistrySetting $_) } }); Unsupported = $unsupported } }
     Test { @($settings | Where-Object { -not (Test-RegistrySetting $_) }).Count -eq 0 }
     Set {
         $failures = [Collections.Generic.List[string]]::new()
         foreach ($setting in $settings) {
-            try { Set-TrackedRegistryValue $setting $journalPath }
+            try { Set-RegistrySetting $setting }
             catch { $failures.Add("$($setting.Path)\$($setting.Name): $($_.Exception.Message)") }
         }
         if ($failures.Count) { throw "Some privacy settings could not be applied. $($failures -join ' ')" }
     }
-    Restore { Restore-RegistryValues $settings $journalPath }
 }

@@ -1,6 +1,6 @@
 #requires -Version 7.0
 [CmdletBinding()]
-param([ValidateSet('Get', 'Test', 'Set', 'Restore')][string]$Operation = 'Test')
+param([ValidateSet('Get', 'Test', 'Set')][string]$Operation = 'Test')
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\RegistryState.ps1"
 
@@ -50,73 +50,26 @@ public static void Notify() {
 
 # The Windows minimize/maximize preference (documented as minimize/restore).
 # https://learn.microsoft.com/windows/win32/api/winuser/ns-winuser-animationinfo
-$animations = @(
-    @{ Name='MinimizeMaximize'; Get=0x0048; Set=0x0049 }
-)
-# Migrate the earlier broad preset back to recorded values, then leave these alone.
-$legacyAnimations = @(
-    @{ Name='ClientArea'; Get=0x1042; Set=0x1043 }
-    @{ Name='Menu'; Get=0x1002; Set=0x1003 }
-    @{ Name='ComboBox'; Get=0x1004; Set=0x1005 }
-    @{ Name='ListBoxSmoothScroll'; Get=0x1006; Set=0x1007 }
-    @{ Name='SelectionFade'; Get=0x1014; Set=0x1015 }
-    @{ Name='Tooltip'; Get=0x1016; Set=0x1017 }
-)
-$settings = @(
-    @{ Path='HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'; Name='EnableTransparency'; Kind='DWord'; Value=1 }
-)
-$legacyTaskbar = @{ Path='HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name='TaskbarAnimations' }
-$journalPath = Join-Path $env:LOCALAPPDATA 'dotfiles\rollback\visual-effects-user.json'
-function Restore-AnimationValues([array]$Entries) {
-    $journal = Read-RegistryJournal $journalPath
-    foreach ($animation in $Entries) {
-        $id = 'Animation:' + $animation.Name
-        if (-not $journal.ContainsKey($id)) { continue }
-        if ($journal[$id] -isnot [bool]) { throw "Invalid rollback value for $id." }
-        if ([Dotfiles.VisualEffects]::Read($animation.Get) -ne $journal[$id]) {
-            [Dotfiles.VisualEffects]::Write($animation.Set, $journal[$id])
-        }
-        if ([Dotfiles.VisualEffects]::Read($animation.Get) -ne $journal[$id]) { throw "Restore verification failed: $id" }
-        $journal.Remove($id)
-        Save-RegistryJournal $journalPath $journal
-    }
-}
+$transparency = @{ Path='HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'; Name='EnableTransparency'; Kind='DWord'; Value=1 }
+
 function Get-VisualState {
-    $journal = Read-RegistryJournal $journalPath
-    $legacyIds = @($legacyAnimations | ForEach-Object { 'Animation:' + $_.Name }) + @($legacyTaskbar.Path + '\' + $legacyTaskbar.Name)
     [pscustomobject]@{
         WindowAnimationsDisabled = -not [Dotfiles.VisualEffects]::Read(0x0048)
-        TransparencyEnabled = [bool](Test-RegistrySetting $settings[0])
-        LegacyPreferencesPendingRestore = @($legacyIds | Where-Object { $journal.ContainsKey($_) }).Count -gt 0
+        TransparencyEnabled = [bool](Test-RegistrySetting $transparency)
     }
 }
+
 switch ($Operation) {
     Get { Get-VisualState }
-    Test { $state = Get-VisualState; $state.WindowAnimationsDisabled -and $state.TransparencyEnabled -and -not $state.LegacyPreferencesPendingRestore }
+    Test { $state = Get-VisualState; $state.WindowAnimationsDisabled -and $state.TransparencyEnabled }
     Set {
-        Restore-RegistryValues @($legacyTaskbar) $journalPath
-        Restore-AnimationValues $legacyAnimations
-        $journal = Read-RegistryJournal $journalPath
-        foreach ($animation in $animations) {
-            $current = [Dotfiles.VisualEffects]::Read($animation.Get)
-            if (-not $current) { continue }
-            $id = 'Animation:' + $animation.Name
-            if (-not $journal.ContainsKey($id)) {
-                $journal[$id] = $current
-                Save-RegistryJournal $journalPath $journal
-            }
-            [Dotfiles.VisualEffects]::Write($animation.Set, $false)
-            if ([Dotfiles.VisualEffects]::Read($animation.Get)) { throw "Windows did not disable $($animation.Name) animations." }
+        if ([Dotfiles.VisualEffects]::Read(0x0048)) {
+            [Dotfiles.VisualEffects]::Write(0x0049, $false)
+            if ([Dotfiles.VisualEffects]::Read(0x0048)) { throw 'Windows did not disable minimize/maximize animations.' }
         }
-        foreach ($setting in $settings) { Set-TrackedRegistryValue $setting $journalPath }
+        Set-RegistrySetting $transparency
         [Dotfiles.VisualEffects]::Notify()
         $state = Get-VisualState
-        if (-not ($state.WindowAnimationsDisabled -and $state.TransparencyEnabled) -or $state.LegacyPreferencesPendingRestore) { throw 'Windows did not retain the requested visual settings.' }
-    }
-    Restore {
-        # Restore only these named preferences, preserving unrelated or later visual changes.
-        Restore-RegistryValues ($settings + @($legacyTaskbar)) $journalPath
-        Restore-AnimationValues ($animations + $legacyAnimations)
-        [Dotfiles.VisualEffects]::Notify()
+        if (-not ($state.WindowAnimationsDisabled -and $state.TransparencyEnabled)) { throw 'Windows did not retain the requested visual settings.' }
     }
 }
