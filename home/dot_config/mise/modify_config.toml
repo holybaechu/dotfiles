@@ -1,16 +1,15 @@
 {{- /* chezmoi:modify-template */ -}}
 {{- $config := .chezmoi.stdin | fromToml -}}
 {{- $tools := dict
-    "bun" "latest"
     "node" "lts"
     "chezmoi" "latest"
+    "codex" "latest"
     "powershell-core" "latest"
     "starship" "latest"
     "fastfetch" "latest"
     "aqua:neovim/neovim" "latest"
     "ripgrep" "latest"
     "tree-sitter" "latest"
-    "github-cli" "latest"
     "github:git-for-windows/git" (dict "version" "latest" "asset_pattern" "MinGit-*-64-bit.zip" "strip_components" 0 "bin_path" "cmd")
     "github:mstorsjo/llvm-mingw" (dict "version" "latest" "asset_pattern" "llvm-mingw-*-ucrt-x86_64.zip")
 -}}

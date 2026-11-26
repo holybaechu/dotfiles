@@ -100,7 +100,7 @@ try {
         $miseEnvironment = mise.exe env --shell pwsh
         if ($LASTEXITCODE -ne 0) { throw 'Loading the mise environment failed.' }
         $miseEnvironment | Out-String | Invoke-Expression
-        foreach ($command in 'bun', 'node', 'npm.cmd', 'git', 'clang') {
+        foreach ($command in 'node', 'npm.cmd', 'git', 'clang') {
             mise.exe exec -- $command --version
             if ($LASTEXITCODE -ne 0) { throw "Verifying $command failed." }
         }
