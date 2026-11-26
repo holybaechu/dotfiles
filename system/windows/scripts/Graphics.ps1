@@ -1,7 +1,7 @@
 #requires -Version 7.0
 [CmdletBinding()]
 param(
-    [ValidateSet('Get', 'Test', 'Set', 'Restore')][string]$Operation = 'Test',
+    [ValidateSet('Get', 'Test', 'Set')][string]$Operation = 'Test',
     [Parameter(Mandatory)][ValidateSet('User', 'Machine')][string]$Context
 )
 $ErrorActionPreference = 'Stop'
@@ -40,37 +40,16 @@ function Get-HardwareScheduling {
 
 if ($Context -eq 'User') {
     if ($build -lt 22621) { throw 'Windowed-game optimizations require Windows 11 22H2 or later.' }
-    $journalPath = Join-Path $env:LOCALAPPDATA 'dotfiles\rollback\graphics-user.json'
     $setting = @{ Path = 'HKCU:\Software\Microsoft\DirectX\UserGpuPreferences'; Name = 'DirectXUserGlobalSettings'; Kind = 'String' }
     $actual = Get-RegistryState $setting
     $setting.Value = Set-SwapEffectToken $actual.Value 'SwapEffectUpgradeEnable=1'
     switch ($Operation) {
         Get { @{ WindowedGamesEnabled = $actual.Value -match '(^|;)SwapEffectUpgradeEnable=1(;|$)'; VariableRefreshRate = 'Unchanged' } }
         Test { Test-RegistrySetting $setting }
-        Set { Set-TrackedRegistryValue $setting $journalPath }
-        Restore {
-            # Restore only our token; never overwrite later HDR/VRR preferences.
-            $journal = Read-RegistryJournal $journalPath
-            $id = $setting.Path + '\' + $setting.Name
-            if ($journal.ContainsKey($id)) {
-                $previous = $journal[$id]
-                $token = @($previous.Value -split ';' | Where-Object { $_ -match '^SwapEffectUpgradeEnable=' }) | Select-Object -Last 1
-                $restored = Set-SwapEffectToken $actual.Value $token
-                if (-not $previous.Exists -and -not $restored) {
-                    if ($actual.Exists) { Remove-ItemProperty -LiteralPath $setting.Path -Name $setting.Name }
-                } else {
-                    [void](New-ItemProperty -LiteralPath $setting.Path -Name $setting.Name -Value $restored -PropertyType String -Force)
-                }
-                if ((Get-RegistryState $setting).Value -cne $(if (-not $previous.Exists -and -not $restored) { $null } else { $restored })) { throw 'Graphics restore verification failed.' }
-                $journal.Remove($id)
-                Save-RegistryJournal $journalPath $journal
-            }
-        }
+        Set { Set-RegistrySetting $setting }
     }
 } else {
-    $journalPath = Join-Path $env:ProgramData 'dotfiles\rollback\graphics-machine.json'
     $setting = @{ Path = 'HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers'; Name = 'HwSchMode'; Kind = 'DWord'; Value = 2 }
-    if ($Operation -eq 'Restore') { Restore-RegistryValues @($setting) $journalPath; Write-Warning 'Restart Windows to complete graphics restoration.'; return }
     $hardware = Get-HardwareScheduling
     $actual = Get-RegistryState $setting
     $status = if (-not $hardware.Supported) { 'Unsupported' }
@@ -86,7 +65,7 @@ if ($Context -eq 'User') {
         Set {
             if ($status -eq 'Unsupported') { throw 'GPU scheduling support could not be confirmed from DxDiag. No setting was changed.' }
             if ($status -eq 'Enabled') { return }
-            Set-TrackedRegistryValue $setting $journalPath
+            Set-RegistrySetting $setting
             Write-Warning 'GPU scheduling is configured, not yet verified active. Restart Windows and rerun the graphics check.'
         }
     }

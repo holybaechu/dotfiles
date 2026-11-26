@@ -45,17 +45,9 @@ switch ($Operation) {
     Test { @(Get-RemainingComponents $state).Count -eq 0 }
     Set {
         if (-not @(Get-RemainingComponents $state).Count) { return }
-        $backup = Join-Path $env:ProgramData 'dotfiles\rollback\components.json'
-        $original = if (Test-Path -LiteralPath $backup) { Get-Content -LiteralPath $backup -Raw | ConvertFrom-Json } else { [pscustomobject]@{ Features=@(); Capabilities=@() } }
-        foreach ($feature in $state.Features) { if ($feature.FeatureName -notin $original.Features.FeatureName) { $original.Features += $feature } }
-        foreach ($capability in $state.Capabilities) { if ($capability.Name -notin $original.Capabilities.Name) { $original.Capabilities += $capability } }
-        [void](New-Item -ItemType Directory -Path (Split-Path $backup) -Force)
-        $temporary = $backup + '.' + [guid]::NewGuid().ToString('N')
-        try { $original | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $temporary -Encoding UTF8; Move-Item -LiteralPath $temporary -Destination $backup -Force }
-        finally { if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary -Force } }
         $restart = $false
         if ($state.RecallPolicySupported -and -not $state.RecallPolicyConfigured) {
-            Set-TrackedRegistryValue $recallSetting (Join-Path $env:ProgramData 'dotfiles\rollback\components-registry.json')
+            Set-RegistrySetting $recallSetting
             $restart = $true
         }
         $failures = New-Object 'System.Collections.Generic.List[string]'
