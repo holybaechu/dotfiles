@@ -1,0 +1,6 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $config := .chezmoi.stdin | fromToml -}}
+{{- $command := joinPath (env "LOCALAPPDATA") "Aside" "CLI" "current" "aside.exe" | replace "/" "\\" -}}
+{{- $config = setValueAtPath (list "mcp_servers" "aside" "command") $command $config -}}
+{{- $config = setValueAtPath (list "mcp_servers" "aside" "args") (list "mcp") $config -}}
+{{- $config | toToml -}}

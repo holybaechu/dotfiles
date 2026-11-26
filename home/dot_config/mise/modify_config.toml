@@ -1,9 +1,9 @@
 {{- /* chezmoi:modify-template */ -}}
 {{- $config := .chezmoi.stdin | fromToml -}}
 {{- $tools := dict
-    "bun" "latest"
     "node" "lts"
     "chezmoi" "latest"
+    "codex" "latest"
     "powershell-core" "latest"
     "starship" "latest"
     "fastfetch" "latest"
